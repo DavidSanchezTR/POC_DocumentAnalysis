@@ -1,2 +1,2 @@
-# -aiid202226_SWFBurgos_DocumentAnalysis
+# aiid202226_SWFBurgos_DocumentAnalysis
 Document Analysis Service
