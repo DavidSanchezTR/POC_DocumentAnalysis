@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "df18c308-9a08-4d15-b75b-72f4e75df037": {
+      "ProjectGuid": "df18c308-9a08-4d15-b75b-72f4e75df037",
+      "DisplayName": "DocumentAnalysis",
+      "ColorIndex": 0
+    }
+  },
+  "NextColorIndex": 1
+}

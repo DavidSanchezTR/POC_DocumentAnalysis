@@ -1,0 +1,95 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\GitHub_DocumentAnalysis\\DocumentAnalysis.csproj": {}
+  },
+  "projects": {
+    "C:\\GitHub_DocumentAnalysis\\DocumentAnalysis.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\GitHub_DocumentAnalysis\\DocumentAnalysis.csproj",
+        "projectName": "DocumentAnalysis",
+        "projectPath": "C:\\GitHub_DocumentAnalysis\\DocumentAnalysis.csproj",
+        "packagesPath": "C:\\Users\\david.sanchez\\.nuget\\packages\\",
+        "outputPath": "C:\\GitHub_DocumentAnalysis\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\david.sanchez\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net6.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {},
+          "https://pkgs.dev.azure.com/TR-Legal-OnlineServices/_packaging/SWF_Burgos_Spain_Artifacts_feed/nuget/v3/index.json": {}
+        },
+        "frameworks": {
+          "net6.0": {
+            "targetAlias": "net6.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net6.0": {
+          "targetAlias": "net6.0",
+          "dependencies": {
+            "Microsoft.EntityFrameworkCore.Cosmos": {
+              "target": "Package",
+              "version": "[7.0.4, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[6.2.3, )"
+            },
+            "System.Text.Json": {
+              "target": "Package",
+              "version": "[7.0.2, )"
+            },
+            "ThomsonReuters.BackgroundOperations.Messaging": {
+              "target": "Package",
+              "version": "[1.0.9, )"
+            },
+            "ThomsonReuters.BackgroundOperations.Messaging.DependencyInjection": {
+              "target": "Package",
+              "version": "[1.0.0, )"
+            },
+            "ThomsonReuters.BackgroundOperations.Queues": {
+              "target": "Package",
+              "version": "[1.0.0, )"
+            },
+            "ThomsonReuters.InfolexWeb.Tools.Core": {
+              "target": "Package",
+              "version": "[2020.1.1, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.201\\RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
