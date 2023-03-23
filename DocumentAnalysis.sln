@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocumentAnalysis", "DocumentAnalysis.csproj", "{DF18C308-9A08-4D15-B75B-72F4E75DF037}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocumentAnalysis", "DocumentAnalysis\DocumentAnalysis.csproj", "{3EA47B0F-B4E5-489F-9C53-4633D77B3D20}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{DF18C308-9A08-4D15-B75B-72F4E75DF037}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DF18C308-9A08-4D15-B75B-72F4E75DF037}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DF18C308-9A08-4D15-B75B-72F4E75DF037}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DF18C308-9A08-4D15-B75B-72F4E75DF037}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3EA47B0F-B4E5-489F-9C53-4633D77B3D20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EA47B0F-B4E5-489F-9C53-4633D77B3D20}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3EA47B0F-B4E5-489F-9C53-4633D77B3D20}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3EA47B0F-B4E5-489F-9C53-4633D77B3D20}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {0E5E89A3-6713-4D10-B919-FC97DE161DB5}
+		SolutionGuid = {8ECD96AA-8678-4E62-9A30-5902759118AE}
 	EndGlobalSection
 EndGlobal
