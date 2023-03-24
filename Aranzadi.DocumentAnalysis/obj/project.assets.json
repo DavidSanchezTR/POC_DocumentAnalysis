@@ -213,11 +213,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\david.sanchez\\source\\repos\\Aranzadi.DocumentAnalysis\\Aranzadi.DocumentAnalysis\\Aranzadi.DocumentAnalysis\\Aranzadi.DocumentAnalysis.csproj",
+      "projectUniqueName": "C:\\GitHub_DocumentAnalysis\\Aranzadi.DocumentAnalysis\\Aranzadi.DocumentAnalysis.csproj",
       "projectName": "Aranzadi.DocumentAnalysis",
-      "projectPath": "C:\\Users\\david.sanchez\\source\\repos\\Aranzadi.DocumentAnalysis\\Aranzadi.DocumentAnalysis\\Aranzadi.DocumentAnalysis\\Aranzadi.DocumentAnalysis.csproj",
+      "projectPath": "C:\\GitHub_DocumentAnalysis\\Aranzadi.DocumentAnalysis\\Aranzadi.DocumentAnalysis.csproj",
       "packagesPath": "C:\\Users\\david.sanchez\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\david.sanchez\\source\\repos\\Aranzadi.DocumentAnalysis\\Aranzadi.DocumentAnalysis\\Aranzadi.DocumentAnalysis\\obj\\",
+      "outputPath": "C:\\GitHub_DocumentAnalysis\\Aranzadi.DocumentAnalysis\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\david.sanchez\\AppData\\Roaming\\NuGet\\NuGet.Config",
