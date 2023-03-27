@@ -18,8 +18,4 @@
     <ProjectReference Include="..\Aranzadi.DocumentAnalysis.Data\Aranzadi.DocumentAnalysis.Data.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Configuration\" />
-  </ItemGroup>
-
 </Project>

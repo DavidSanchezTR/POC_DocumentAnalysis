@@ -1,5 +1,8 @@
+using Aranzadi.DocumentAnalysis;
+using Aranzadi.DocumentAnalysis.Configuration;
 using Aranzadi.DocumentAnalysis.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,13 +14,11 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-#region Add Services
-
-builder.Services.AddTransient<IDocumentAnalysisService, DocumentAnalysisService>();
-
-#endregion
+ConfigurationServicesApplication.ConfigureServices(builder);
 
 var app = builder.Build();
+
+var options = app.Services.GetRequiredService<IOptions<DocumentAnalysisOptions>>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
