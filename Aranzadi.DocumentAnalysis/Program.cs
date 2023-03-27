@@ -1,3 +1,7 @@
+using Aranzadi.DocumentAnalysis.Data;
+using Microsoft.EntityFrameworkCore;
+using System.Configuration;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -6,6 +10,12 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+#region Add Services
+
+builder.Services.AddTransient<IDocumentAnalysisService, DocumentAnalysisService>();
+
+#endregion
 
 var app = builder.Build();
 
