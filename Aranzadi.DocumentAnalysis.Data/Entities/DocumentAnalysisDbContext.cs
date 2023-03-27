@@ -1,10 +1,13 @@
 ﻿
+using Aranzadi.DocumentAnalysis.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Aranzadi.DocumentAnalysis.Data
 {
     public class DocumentAnalysisDbContext : DbContext
     {
+        //public DbSet<DocumentAnalysisData> DocumentAnalysisData => Set<DocumentAnalysisData>();
+
         public DocumentAnalysisDbContext(DbContextOptions<DocumentAnalysisDbContext> options)
             : base(options) 
         {            
@@ -13,6 +16,7 @@ namespace Aranzadi.DocumentAnalysis.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);            
-        }        
+        } 
+        
     }
 }

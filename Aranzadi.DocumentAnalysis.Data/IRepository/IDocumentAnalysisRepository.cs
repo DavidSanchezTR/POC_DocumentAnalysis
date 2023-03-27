@@ -1,5 +1,5 @@
 ﻿using Aranzadi.DocumentAnalysis.Data;
-using Aranzadi.DocumentAnalysis.Models;
+using Aranzadi.DocumentAnalysis.Data.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +10,6 @@ namespace Aranzadi.DocumentAnalysis.Data.IRepository
 {
     internal interface IDocumentAnalysisRepository
     {
-        Task<IEnumerable<DocumentAnalysisResult>> GetAllAnalysis(int LawfirmId);
+        Task<IEnumerable<DocumentAnalysisResult>> GetAllAnalysisAsync(int LawfirmId);
     }
 }

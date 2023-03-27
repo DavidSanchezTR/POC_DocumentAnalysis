@@ -4,7 +4,7 @@ using System;
 public interface IDocumentAnalysisService
 {
 
-	Task<string> GetSingleAnalysis(DocumentAnalysisData data, int LawfirmId);	
+	Task<string> GetSingleAnalysisAsync(DocumentAnalysisData data, int LawfirmId);	
 
-	Task<byte[]> GetBytes(DocumentAnalysisData data, int LawfirmId);
+	Task<byte[]> GetBytesAsync(DocumentAnalysisData data, int LawfirmId);
 }

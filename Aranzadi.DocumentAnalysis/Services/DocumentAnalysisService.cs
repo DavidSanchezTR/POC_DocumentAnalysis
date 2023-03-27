@@ -7,7 +7,7 @@ public class DocumentAnalysisService : IDocumentAnalysisService
 	{
 	}
 
-    public Task<string> GetSingleAnalysis(DocumentAnalysisData data, int LawfirmId)
+    public Task<string> GetSingleAnalysisAsync(DocumentAnalysisData data, int LawfirmId)
     {
         /*TODO
          * 
@@ -19,7 +19,7 @@ public class DocumentAnalysisService : IDocumentAnalysisService
         throw new NotImplementedException();
     }
 
-    public Task<byte[]> GetBytes(DocumentAnalysisData data, int LawfirmId)
+    public Task<byte[]> GetBytesAsync(DocumentAnalysisData data, int LawfirmId)
     {
         /*
             Leer documento.

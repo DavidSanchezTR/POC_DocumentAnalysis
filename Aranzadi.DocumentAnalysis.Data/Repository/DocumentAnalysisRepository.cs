@@ -1,5 +1,5 @@
-﻿using Aranzadi.DocumentAnalysis.Data.IRepository;
-using Aranzadi.DocumentAnalysis.Models;
+﻿using Aranzadi.DocumentAnalysis.Data.Entities;
+using Aranzadi.DocumentAnalysis.Data.IRepository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +10,7 @@ namespace Aranzadi.DocumentAnalysis.Data.Repository
 {
     internal class DocumentAnalysisRepository : IDocumentAnalysisRepository
     {
-        public Task<IEnumerable<DocumentAnalysisResult>> GetAllAnalysis(int LawfirmId)
+        public Task<IEnumerable<DocumentAnalysisResult>> GetAllAnalysisAsync(int LawfirmId)
         {
             throw new NotImplementedException();
         }
