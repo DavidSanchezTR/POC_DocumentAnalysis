@@ -2,7 +2,9 @@
 {
     public class DocumentAnalysisOptions
     {
-        public string CosmosDatabaseName { get; set; }
+		public string EnvironmentPrefix { get; set; }
+
+		public string CosmosDatabaseName { get; set; }
 
         public KeyVaultSettings KeyVault { get; set; }
 
