@@ -6,7 +6,10 @@ namespace Aranzadi.DocumentAnalysis.Data
 {
     public class DocumentAnalysisDbContext : DbContext
     {
-        //public DbSet<DocumentAnalysisData> DocumentAnalysisData => Set<DocumentAnalysisData>();
+
+		public static string DatabaseName = "documentAnalysis";
+
+		public DbSet<DocumentAnalysisData> DocumentAnalysisData => Set<DocumentAnalysisData>();
 
         public DocumentAnalysisDbContext(DbContextOptions<DocumentAnalysisDbContext> options)
             : base(options) 

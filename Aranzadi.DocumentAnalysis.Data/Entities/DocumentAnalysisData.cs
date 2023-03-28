@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Aranzadi.DocumentAnalysis.Data.Entities
 {
-    internal class DocumentAnalysisData
+    public class DocumentAnalysisData
     {
         [BsonId]
         public ObjectId Id { get; set; }
