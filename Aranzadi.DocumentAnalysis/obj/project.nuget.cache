@@ -1,11 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "omX5QO/a8qaSBdZSoNAXW2pMaBUKLcPjZj5Zt4XxmJ85C+dz5yZphfuhQar6eu/JffVxwQmLTTj93wpiSdE3dQ==",
+  "dgSpecHash": "HGgqt7pffawAbi9LXxtB/gY7lZbFqjK7byirPhgp4LNNoakrpMF/ZsBUA3+sGml+6wJ9EoqlWBDYWmKttYbLOA==",
   "success": true,
   "projectFilePath": "C:\\GitHub_DocumentAnalysis\\Aranzadi.DocumentAnalysis\\Aranzadi.DocumentAnalysis.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\david.sanchez\\.nuget\\packages\\azure.core\\1.30.0\\azure.core.1.30.0.nupkg.sha512",
     "C:\\Users\\david.sanchez\\.nuget\\packages\\azure.core.amqp\\1.2.0\\azure.core.amqp.1.2.0.nupkg.sha512",
+    "C:\\Users\\david.sanchez\\.nuget\\packages\\azure.extensions.aspnetcore.configuration.secrets\\1.2.2\\azure.extensions.aspnetcore.configuration.secrets.1.2.2.nupkg.sha512",
     "C:\\Users\\david.sanchez\\.nuget\\packages\\azure.identity\\1.8.2\\azure.identity.1.8.2.nupkg.sha512",
     "C:\\Users\\david.sanchez\\.nuget\\packages\\azure.messaging.servicebus\\7.5.1\\azure.messaging.servicebus.7.5.1.nupkg.sha512",
     "C:\\Users\\david.sanchez\\.nuget\\packages\\azure.security.keyvault.secrets\\4.5.0\\azure.security.keyvault.secrets.4.5.0.nupkg.sha512",
@@ -22,6 +23,8 @@
     "C:\\Users\\david.sanchez\\.nuget\\packages\\microsoft.extensions.apidescription.server\\3.0.0\\microsoft.extensions.apidescription.server.3.0.0.nupkg.sha512",
     "C:\\Users\\david.sanchez\\.nuget\\packages\\microsoft.extensions.caching.abstractions\\7.0.0\\microsoft.extensions.caching.abstractions.7.0.0.nupkg.sha512",
     "C:\\Users\\david.sanchez\\.nuget\\packages\\microsoft.extensions.caching.memory\\7.0.0\\microsoft.extensions.caching.memory.7.0.0.nupkg.sha512",
+    "C:\\Users\\david.sanchez\\.nuget\\packages\\microsoft.extensions.configuration\\2.1.0\\microsoft.extensions.configuration.2.1.0.nupkg.sha512",
+    "C:\\Users\\david.sanchez\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\2.1.0\\microsoft.extensions.configuration.abstractions.2.1.0.nupkg.sha512",
     "C:\\Users\\david.sanchez\\.nuget\\packages\\microsoft.extensions.dependencyinjection\\7.0.0\\microsoft.extensions.dependencyinjection.7.0.0.nupkg.sha512",
     "C:\\Users\\david.sanchez\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\7.0.0\\microsoft.extensions.dependencyinjection.abstractions.7.0.0.nupkg.sha512",
     "C:\\Users\\david.sanchez\\.nuget\\packages\\microsoft.extensions.logging\\7.0.0\\microsoft.extensions.logging.7.0.0.nupkg.sha512",

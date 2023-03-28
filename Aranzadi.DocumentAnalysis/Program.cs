@@ -57,15 +57,26 @@ var app = builder.Build();
 var options = app.Services.GetRequiredService<IOptions<DocumentAnalysisOptions>>();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-	app.UseSwagger();
-	app.UseSwaggerUI();
-}
+//if (app.Environment.IsDevelopment())
+//{
+//	app.UseSwagger();
+//	app.UseSwaggerUI();
+//}
 
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.Use(async (context, next) =>
+{
+	if (context.Request.Path == "/")
+	{
+		context.Response.StatusCode = StatusCodes.Status200OK;
+		await context.Response.WriteAsync("El servicio de Analisis de Documentos se encuentra ahora desplegado").ConfigureAwait(false);
+		return;
+	}
+	await next();
+});
 
 app.MapControllers();
 
