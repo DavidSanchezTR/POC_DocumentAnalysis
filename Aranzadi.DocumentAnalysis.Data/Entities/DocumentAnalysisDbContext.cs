@@ -1,26 +1,26 @@
 ﻿
 using Aranzadi.DocumentAnalysis.Data.Entities;
+using Microsoft.Azure.Cosmos;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
 using System.Text.Json;
 
 namespace Aranzadi.DocumentAnalysis.Data
 {
     public class DocumentAnalysisDbContext : DbContext
     {
-        public DbSet<DocumentAnalysisData> AnalysisData => Set<DocumentAnalysisData>();
+        public DbSet<DocumentAnalysisData> Analysis => Set<DocumentAnalysisData>();
 
-        public DocumentAnalysisDbContext()
+        public DocumentAnalysisDbContext(DbContextOptions<DocumentAnalysisDbContext> options)
+            : base(options)
         {
-        }
+        }        
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-                => optionsBuilder.UseCosmos(
-                    "https://uksouth-das-cosmos-dev.mongo.cosmos.azure.com:10255/",
-                    "SlA98NPnfxekWsecVxydj3J3BTGtcfzWljltyNyaRAIRmsJqjIPLZfItRGZ9rsmT0nx9qcrwZVTCpeBaU12CKw==",
-                    databaseName: "AnalysisService",
-                    optionsBuilder =>
-                    {
-                        optionsBuilder.RequestTimeout(TimeSpan.FromMinutes(5));
-                    });        
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+            builder.Entity<DocumentAnalysisData>();
+
+        }
     }
 }

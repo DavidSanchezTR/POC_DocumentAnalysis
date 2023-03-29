@@ -3,6 +3,7 @@ using Aranzadi.DocumentAnalysis.Configuration;
 using Aranzadi.DocumentAnalysis.Data;
 using Aranzadi.DocumentAnalysis.Data.IRepository;
 using Aranzadi.DocumentAnalysis.Data.Repository;
+using Aranzadi.DocumentAnalysis.Services;
 using Aranzadi.DocumentAnalysis.Util;
 using Azure.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -42,7 +43,12 @@ if (!string.IsNullOrEmpty(thumbprint))
 
 //TEST - 
 var configApiSecret = builder.Configuration.GetValue<string>("ApiSecret");
-var configConnetionString = builder.Configuration.GetConnectionString("DefaultConnection");
+//var configConnetionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+
+
+builder.Services.AddHostedService<QueuedHostedService>();
+
 
 
 // Add services to the container.
