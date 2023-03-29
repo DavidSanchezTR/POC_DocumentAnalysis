@@ -8,8 +8,10 @@ using System.Threading.Tasks;
 
 namespace Aranzadi.DocumentAnalysis.Data.IRepository
 {
-    internal interface IDocumentAnalysisRepository
+    public interface IDocumentAnalysisRepository
     {
         Task<IEnumerable<DocumentAnalysisResult>> GetAllAnalysisAsync(int LawfirmId);
+
+        Task AddAnalysisDataAsync(DocumentAnalysisData data);
     }
 }
