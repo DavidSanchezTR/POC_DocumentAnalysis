@@ -11,33 +11,39 @@ namespace Aranzadi.DocumentAnalysis.Data.Repository
 {
     public class DocumentAnalysisRepository : IDocumentAnalysisRepository
     {
+        private readonly DocumentAnalysisDbContext dbContext;
+
+        public DocumentAnalysisRepository(DocumentAnalysisDbContext context)
+        {
+            dbContext = context;
+        }
         public async Task AddAnalysisDataAsync(DocumentAnalysisData data)
         {
             try
             {
-                using (var context = new DocumentAnalysisDbContext())
+                await dbContext.Database.EnsureCreatedAsync();
+
+                var datos = new DocumentAnalysisData
                 {
-                    var datos = new DocumentAnalysisData
-                    {
-                        App = data.App,
-                        DocumentName = data.DocumentName,
-                        AccessUrl = data.AccessUrl,
-                        Analisis = data.Analisis,
-                        Estado = data.Estado,
-                        Id = data.Id,
-                        NewGuid = data.NewGuid,
-                        Origen = data.Origen,
-                        Sha256 = data.Sha256,
-                        TenantId = data.TenantId,
-                        UserId = data.UserId,
-                        FechaAnalisis = data.FechaAnalisis,
-                        FechaCreacion = data.FechaCreacion,
-                    };
+                    App = data.App,
+                    DocumentName = data.DocumentName,
+                    AccessUrl = data.AccessUrl,
+                    Analisis = data.Analisis,
+                    Estado = data.Estado,
+                    Id = data.Id,
+                    NewGuid = data.NewGuid,
+                    Origen = data.Origen,
+                    Sha256 = data.Sha256,
+                    TenantId = data.TenantId,
+                    UserId = data.UserId,
+                    FechaAnalisis = data.FechaAnalisis,
+                    FechaCreacion = data.FechaCreacion,
+                };
 
-                    context.Add(datos);
+                dbContext.Add(datos);
 
-                    await context.SaveChangesAsync();
-                }
+                await dbContext.SaveChangesAsync();
+                
             }
             catch (Exception ex)
             {
