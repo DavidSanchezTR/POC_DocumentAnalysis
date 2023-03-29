@@ -40,19 +40,7 @@ if (!string.IsNullOrEmpty(thumbprint))
 
 //TEST - 
 var configApiSecret = builder.Configuration.GetValue<string>("ApiSecret");
-
-
-
-string connString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<DocumentAnalysisDbContext>(dbOptions =>
-{
-	dbOptions.UseCosmos(connString, DocumentAnalysisDbContext.DatabaseName, (cosmosOptions) =>
-	{
-		cosmosOptions.RequestTimeout(TimeSpan.FromMinutes(5));
-	});
-});
-
-
+var configConnetionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 
 // Add services to the container.
@@ -67,15 +55,12 @@ ConfigurationServicesApplication.ConfigureServices(builder);
 var app = builder.Build();
 
 var options = app.Services.GetRequiredService<IOptions<DocumentAnalysisOptions>>();
-app.Services.GetRequiredService<DocumentAnalysisDbContext>().Database.EnsureCreated();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.EnvironmentName == "DEV")
+if (app.Environment.IsDevelopment())
 {
 	app.UseSwagger();
 	app.UseSwaggerUI();
 }
-
 app.UseHttpsRedirection();
 
 app.UseAuthorization();

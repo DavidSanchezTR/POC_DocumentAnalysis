@@ -7,14 +7,16 @@ namespace Aranzadi.DocumentAnalysis.Services
     public class KeyVaultService : IKeyvaultService
     {
         static SecretClient client;
-        //private IConfiguration _configuration;
+        private IConfiguration _configuration;
 
         public KeyVaultService(IConfiguration configuration, SecretClient secretClient)
-        {            
+        {
+            _configuration = configuration;
+
             if (secretClient == null)
             {
 
-                string keyVaultUrl = configuration.GetSection("KeyVault").GetValue<string>("Url");
+                string keyVaultUrl = _configuration.GetSection("KeyVault").GetValue<string>("Url");
                 client = new SecretClient(vaultUri: new Uri(keyVaultUrl), credential: new DefaultAzureCredential());
 
             }
@@ -24,11 +26,11 @@ namespace Aranzadi.DocumentAnalysis.Services
             }
         }
 
-        public KeyVaultService(IConfiguration configuration)
+        public KeyVaultService()
         {
             if (client == null)
             {
-                string keyVaultUrl = configuration.GetSection("KeyVault").GetValue<string>("Url");
+                string keyVaultUrl = _configuration.GetSection("KeyVault").GetValue<string>("Url");
                 client = new SecretClient(vaultUri: new Uri(keyVaultUrl), credential: new DefaultAzureCredential());
             }
         }
