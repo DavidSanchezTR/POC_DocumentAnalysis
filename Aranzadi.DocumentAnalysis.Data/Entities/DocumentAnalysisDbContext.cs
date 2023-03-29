@@ -7,31 +7,20 @@ namespace Aranzadi.DocumentAnalysis.Data
 {
     public class DocumentAnalysisDbContext : DbContext
     {
-        public DbSet<DocumentAnalysisData> Analysis => Set<DocumentAnalysisData>();        
+        public DbSet<DocumentAnalysisData> AnalysisData => Set<DocumentAnalysisData>();
 
         public DocumentAnalysisDbContext()
         {
         }
 
-        public DocumentAnalysisDbContext(DbContextOptions<DocumentAnalysisDbContext> options)
-            : base(options) 
-        {            
-        }
-
-        protected override void OnModelCreating(ModelBuilder builder)
-        {
-            builder.Entity<DocumentAnalysisData>().HasPartitionKey(x => x.NewGuid).Property(y => y.Analisis).HasConversion(
-                        j => ToJson(j),
-                        j => FromJson<string>(j)
-            );
-            base.OnModelCreating(builder);            
-        }
-        public static string ToJson<T>(T item) => JsonSerializer.Serialize(item);
-        public static T? FromJson<T>(string json) => JsonSerializer.Deserialize<T>(json);
-        public string? GetCosmosContainerName(Type type)
-        {
-            var entityType = Model.FindEntityType(type);
-            return entityType?.GetContainer();
-        }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+                => optionsBuilder.UseCosmos(
+                    "https://uksouth-das-cosmos-dev.mongo.cosmos.azure.com:10255/",
+                    "SlA98NPnfxekWsecVxydj3J3BTGtcfzWljltyNyaRAIRmsJqjIPLZfItRGZ9rsmT0nx9qcrwZVTCpeBaU12CKw==",
+                    databaseName: "AnalysisService",
+                    optionsBuilder =>
+                    {
+                        optionsBuilder.RequestTimeout(TimeSpan.FromMinutes(5));
+                    });        
     }
 }
