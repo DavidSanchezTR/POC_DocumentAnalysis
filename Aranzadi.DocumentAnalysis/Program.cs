@@ -56,6 +56,11 @@ var app = builder.Build();
 
 var options = app.Services.GetRequiredService<IOptions<DocumentAnalysisOptions>>();
 
+if (app.Environment.IsDevelopment())
+{
+	app.UseSwagger();
+	app.UseSwaggerUI();
+}
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
