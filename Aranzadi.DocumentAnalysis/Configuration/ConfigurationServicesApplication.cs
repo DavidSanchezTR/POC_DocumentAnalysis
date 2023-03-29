@@ -1,4 +1,6 @@
 ﻿using Aranzadi.DocumentAnalysis.Data;
+using Aranzadi.DocumentAnalysis.Data.IRepository;
+using Aranzadi.DocumentAnalysis.Data.Repository;
 using System.Text.Json.Serialization;
 using static Aranzadi.DocumentAnalysis.DocumentAnalysisOptions;
 
@@ -12,14 +14,7 @@ namespace Aranzadi.DocumentAnalysis.Configuration
             builder.Services.AddControllers().AddJsonOptions(jsonOptions =>
             {
                 jsonOptions.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-            });
-
-            string connString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-            builder.Services.AddCosmos<DocumentAnalysisDbContext>(connString, builder.Configuration.GetValue<string>(nameof(DocumentAnalysisOptions.CosmosDatabaseName)) ?? "AnalysisService", (cosmosOptions) =>
-            {
-                cosmosOptions.RequestTimeout(TimeSpan.FromMinutes(5));
-            });
+            });            
 
             builder.Services.AddSingleton(builder.Configuration);
             builder.Services.Configure<DocumentAnalysisOptions>(builder.Configuration);
@@ -33,6 +28,7 @@ namespace Aranzadi.DocumentAnalysis.Configuration
             #region SERVICES
 
             builder.Services.AddTransient<IDocumentAnalysisService, DocumentAnalysisService>();
+            builder.Services.AddTransient<IDocumentAnalysisRepository, DocumentAnalysisRepository>();
 
             #endregion
         }

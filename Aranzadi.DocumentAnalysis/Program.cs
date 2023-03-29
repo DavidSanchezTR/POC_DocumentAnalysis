@@ -1,6 +1,8 @@
 using Aranzadi.DocumentAnalysis;
 using Aranzadi.DocumentAnalysis.Configuration;
 using Aranzadi.DocumentAnalysis.Data;
+using Aranzadi.DocumentAnalysis.Data.IRepository;
+using Aranzadi.DocumentAnalysis.Data.Repository;
 using Aranzadi.DocumentAnalysis.Util;
 using Azure.Identity;
 using Microsoft.EntityFrameworkCore;
