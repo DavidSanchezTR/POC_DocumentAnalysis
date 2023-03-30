@@ -42,7 +42,7 @@ if (!string.IsNullOrEmpty(thumbprint))
 
 //TEST - 
 var configApiSecret = builder.Configuration.GetValue<string>("ApiSecret");
-var configConnetionString = builder.Configuration.GetConnectionString("DefaultConnection");
+//var configConnetionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 
 // Add services to the container.
