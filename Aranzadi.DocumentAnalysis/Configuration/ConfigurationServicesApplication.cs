@@ -17,12 +17,12 @@ namespace Aranzadi.DocumentAnalysis.Configuration
                 jsonOptions.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
             });
 
-            string connString = "mongodb://uksouth-das-cosmos-dev:SlA98NPnfxekWsecVxydj3J3BTGtcfzWljltyNyaRAIRmsJqjIPLZfItRGZ9rsmT0nx9qcrwZVTCpeBaU12CKw==@uksouth-das-cosmos-dev.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@uksouth-das-cosmos-dev@";
-                //builder.Configuration.GetConnectionString("DefaultConnection");
+            //string connString = "mongodb://uksouth-das-cosmos-dev:SlA98NPnfxekWsecVxydj3J3BTGtcfzWljltyNyaRAIRmsJqjIPLZfItRGZ9rsmT0nx9qcrwZVTCpeBaU12CKw==@uksouth-das-cosmos-dev.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@uksouth-das-cosmos-dev@";
+            string connString = builder.Configuration.GetConnectionString("DefaultConnection");
 
             builder.Services.AddDbContext<DocumentAnalysisDbContext>(dbOptions =>
             {
-                dbOptions.UseCosmos(connString, builder.Configuration.GetValue<string>(nameof(DocumentAnalysisOptions.CosmosDatabaseName)) ?? "AnalysisService", (cosmosOptions) =>
+                dbOptions.UseCosmos(connString, builder.Configuration.GetValue<string>(nameof(DocumentAnalysisOptions.CosmosDatabaseName)) ?? "documentAnalisis", (cosmosOptions) =>
                 {
                     cosmosOptions.RequestTimeout(TimeSpan.FromMinutes(5));
                 });
