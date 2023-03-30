@@ -46,11 +46,6 @@ var configApiSecret = builder.Configuration.GetValue<string>("ApiSecret");
 //var configConnetionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 
-
-builder.Services.AddHostedService<QueuedHostedService>();
-
-
-
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -59,6 +54,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 ConfigurationServicesApplication.ConfigureServices(builder);
+
+builder.Services.AddHostedService<QueuedHostedService>();
 
 var app = builder.Build();
 

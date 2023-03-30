@@ -1,8 +1,15 @@
 ﻿
+using Aranzadi.DocumentAnalysis.Data;
+using Aranzadi.DocumentAnalysis.Data.Entities;
+using Aranzadi.DocumentAnalysis.Data.IRepository;
+using Aranzadi.DocumentAnalysis.Data.Repository;
 using Aranzadi.DocumentAnalysis.DTO;
 using Aranzadi.DocumentAnalysis.DTO.Request;
 using Aranzadi.DocumentAnalysis.Messaging;
 using Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Runtime.CompilerServices;
 using ThomsonReuters.BackgroundOperations.Messaging.Models;
 
 namespace Aranzadi.DocumentAnalysis.Services
@@ -18,8 +25,10 @@ namespace Aranzadi.DocumentAnalysis.Services
 
 
 
-
 		private readonly ILogger<QueuedHostedService> _logger;
+		private IDocumentAnalysisRepository documentAnalysisRepository;
+		private DocumentAnalysisDbContext documentAnalysisDbContext;
+
 		public IServiceProvider serviceProvider { get; }
 
 		public QueuedHostedService(ILogger<QueuedHostedService> logger, IServiceProvider serviceProvider)
@@ -79,12 +88,48 @@ namespace Aranzadi.DocumentAnalysis.Services
 		}
 
 
-		private static async Task<bool> TratarMensaje(AnalysisContext context, DocumentAnalysisRequest request)
+		private async Task<bool> TratarMensaje(AnalysisContext context, DocumentAnalysisRequest request)
 		{
 			//lock (bds)
 			//{
 			//	bds.AddRequest(context, request);
 			//}
+
+			var data = new DocumentAnalysisData
+			{
+				App = "Infolex",
+				DocumentName = "PruebaAA.pdf",
+				NewGuid = Guid.NewGuid(),
+				Analisis = "Esto es un análisis",
+				AccessUrl = "www.prueba.com",
+				Sha256 = "HasCode",
+				Estado = "Pendiente",
+				TenantId = 122,
+				UserId = 22,
+				FechaAnalisis = DateTimeOffset.Now,
+				FechaCreacion = DateTimeOffset.Now,
+				Origen = "La Ley"
+			};
+			using (IServiceScope scope = serviceProvider.CreateScope())
+			{
+				IDocumentAnalysisRepository documentAnalysisRepository =
+					scope.ServiceProvider.GetRequiredService<IDocumentAnalysisRepository>();
+
+				await documentAnalysisRepository.AddAnalysisDataAsync(data);
+			}
+
+
+			//var con = this.serviceProvider.GetService<DocumentAnalysisDbContext>();
+
+			//var a = serviceProvider.GetService<IDocumentAnalysisRepository>();
+			//await a.AddAnalysisDataAsync(data);
+
+
+			//var a = new DocumentAnalysisRepository(con).AddAnalysisDataAsync(data);
+
+			//await documentAnalysisRepository.AddAnalysisDataAsync(data);
+			//await new DocumentAnalysisRepository(documentAnalysisDbContext).AddAnalysisDataAsync(data);
+
 			await Task.Delay(0);
 			return true;
 		}
