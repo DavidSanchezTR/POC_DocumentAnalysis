@@ -58,6 +58,13 @@ var app = builder.Build();
 
 var options = app.Services.GetRequiredService<IOptions<DocumentAnalysisOptions>>();
 
+#region create db if not exists
+using var scope = app.Services.CreateScope();
+using DocumentAnalysisDbContext dbContext = scope.ServiceProvider.GetRequiredService<DocumentAnalysisDbContext>();
+dbContext.Database.EnsureCreated();
+//SeedDatabase.Seed(dbContext);
+#endregion create db not exists
+
 if (app.Environment.IsDevelopment())
 {
 	app.UseSwagger();

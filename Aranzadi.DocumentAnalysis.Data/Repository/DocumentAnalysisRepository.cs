@@ -20,9 +20,7 @@ namespace Aranzadi.DocumentAnalysis.Data.Repository
         public async Task AddAnalysisDataAsync(DocumentAnalysisData data)
         {
             try
-            {
-                await dbContext.Database.EnsureCreatedAsync();
-
+            {                
                 var datos = new DocumentAnalysisData
                 {
                     App = data.App,
