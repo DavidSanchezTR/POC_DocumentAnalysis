@@ -1,7 +1,5 @@
 ﻿using Aranzadi.DocumentAnalysis.DTO;
 using Aranzadi.DocumentAnalysis.DTO.Request;
-using Aranzadi.DocumentAnalysis.DTO;
-using Aranzadi.DocumentAnalysis.DTO.Request;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -16,59 +14,59 @@ using ThomsonReuters.BackgroundOperations.Messaging.Models;
 
 namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
 {
-    internal class MessagingConsumer: IConsumer
+	internal class MessagingConsumer : IConsumer
 
-    {
-        private readonly IMessageReceiver receiver;
-        private Func<AnalysisContext, DocumentAnalysisRequest, Task<bool>> theAction;
-        private CancellationToken cancellationToken;
-        private readonly MessagingConfiguration confi;
-        private readonly IMessageSender sender;
+	{
+		private readonly IMessageReceiver receiver;
+		private Func<AnalysisContext, DocumentAnalysisRequest, Task<bool>> theAction;
+		private CancellationToken cancellationToken;
+		private readonly MessagingConfiguration confi;
+		private readonly IMessageSender sender;
 
-        public MessagingConsumer(IMessageReceiver receiver, MessagingConfiguration confi, IMessageSender sender)
-        {
-            this.receiver = receiver;
+		public MessagingConsumer(IMessageReceiver receiver, MessagingConfiguration confi, IMessageSender sender)
+		{
+			this.receiver = receiver;
 
-            this.confi = confi;
-            this.sender = sender;
-        }
+			this.confi = confi;
+			this.sender = sender;
+		}
 
-        public async void StartProcess(Func<AnalysisContext, DocumentAnalysisRequest, Task<bool>> theAction)
-        {
+		public async void StartProcess(Func<AnalysisContext, DocumentAnalysisRequest, Task<bool>> theAction)
+		{
 
-            this.theAction = theAction;
+			this.theAction = theAction;
 
-            await receiver.OnReceiveMessage<DocumentAnalysisRequest>(confi.ServicesBusCola, async (menssage, cancelationToken) =>
+			await receiver.OnReceiveMessage<DocumentAnalysisRequest>(confi.ServicesBusCola, async (menssage, cancelationToken) =>
 			{
-                            try
-                            {
-                                AnalysisContext additionalData = JsonConvert.DeserializeObject<AnalysisContext>(
-                                    menssage.Message.AdditionalData != null ? 
-                                    menssage.Message.AdditionalData.ToString() : String.Empty);                                
-                                foreach (var chunck in menssage.Message.DataChunks)
-                                {
-                                    
-                                    await this.theAction(additionalData,chunck.Data);
-                                }                                
-                            }
-                            catch (Exception ex) //In a more complex app, you could set up individually each failure on each chunk
-                            {
-                                menssage.Message.DataChunks.ForEach(chunk =>
-                                {
-                                    chunk.Success = false;
-                                    chunk.Detail = ex.Message;
-                                });
-                            }
-                            finally
-                            {
-                                var workDoneMessage = menssage.Message.GetWorkDoneMessage(confi.Source);
+				try
+				{
+					AnalysisContext additionalData = JsonConvert.DeserializeObject<AnalysisContext>(
+						menssage.Message.AdditionalData != null ?
+						menssage.Message.AdditionalData.ToString() : String.Empty);
+					foreach (var chunck in menssage.Message.DataChunks)
+					{
 
-                                await sender.Send(MessageDestinations.WorkDone, workDoneMessage);
-                                await menssage.Complete();
-                            }
-                        });
-        }
+						await this.theAction(additionalData, chunck.Data);
+					}
+				}
+				catch (Exception ex) //In a more complex app, you could set up individually each failure on each chunk
+				{
+					menssage.Message.DataChunks.ForEach(chunk =>
+					{
+						chunk.Success = false;
+						chunk.Detail = ex.Message;
+					});
+				}
+				finally
+				{
+					var workDoneMessage = menssage.Message.GetWorkDoneMessage(confi.Source);
 
-       
-    }
+					await sender.Send(MessageDestinations.WorkDone, workDoneMessage);
+					await menssage.Complete();
+				}
+			});
+		}
+
+
+	}
 }

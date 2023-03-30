@@ -1,49 +1,88 @@
-﻿namespace Aranzadi.DocumentAnalysis
+﻿namespace Aranzadi.DocumentAnalysis;
+
+public static class ApplicationSettings
 {
-    public class DocumentAnalysisOptions
-    {
-		public string EnvironmentPrefix { get; set; }
+	public static DocumentAnalysisOptions GetDocumentAnalysisOptions(IConfiguration configuration)
+	{
+		DocumentAnalysisOptions documentAnalysisOptions = new DocumentAnalysisOptions();
 
-		public string CosmosDatabaseName { get; set; }
+		configuration.Bind(documentAnalysisOptions);
 
-        public KeyVaultSettings KeyVault { get; set; }
+		return documentAnalysisOptions;
+	}
 
-        public class KeyVaultSettings
-        {
-            public string Url { get; set; }
-            public string CertificateThumbprint { get; set; }
-            public string ClientAppId { get; set; }
-            public string ActiveDirectoryTenantId { get; set; }
+	public static KeyVaultSettings GetKeyVaultSettings(IConfiguration configuration)
+	{
+		KeyVaultSettings keyVaultSettings = new KeyVaultSettings();
 
-            public string CertificateMode { get; set; }
-        }
+		configuration.Bind("KeyVault", keyVaultSettings);
 
-        public class EnvironmentNames
-        {
-            public const string Debug = "Debug";
-            public const string Dev = "Dev";
-            public const string Pre = "Pre";
-            public const string QA = "QA";
-            public const string RC = "RC";
-            public const string Pro = "Pro";
-        }
+		return keyVaultSettings;
+	}
 
-        public static class CertificateModes
-        {
-            public const string Webapp = "webapp";
-            public const string VirtualMachine = "virtualmachine";
-        }
 
-        public class DocumentAnalysisEnvironment
-        {
-            public DocumentAnalysisEnvironment(string contentRootPath, IHostEnvironment environment)
-            {
-                ContentRootPath = contentRootPath;
-                Environment = environment;
-            }
-
-            public string ContentRootPath { get; set; }
-            public IHostEnvironment Environment { get; set; }
-        }
-    }
 }
+
+public class DocumentAnalysisOptions
+{
+	public string EnvironmentPrefix { get; set; }
+
+	public string CosmosDatabaseName { get; set; }
+
+	public KeyVaultSettings KeyVault { get; set; }
+
+	public ConnectionStringsClass ConnectionStrings { get; set; }
+
+	public class ConnectionStringsClass
+	{
+		public string DefaultConnection { get; set; }
+	}
+
+	public ServiceBusClass ServiceBus { get; set; }
+	public class ServiceBusClass
+	{
+		public string ConnectionString { get; set; }
+		public string Queue { get; set; }
+	}
+
+	public class DocumentAnalysisEnvironment
+	{
+		public DocumentAnalysisEnvironment(string contentRootPath, IHostEnvironment environment)
+		{
+			ContentRootPath = contentRootPath;
+			Environment = environment;
+		}
+
+		public string ContentRootPath { get; set; }
+		public IHostEnvironment Environment { get; set; }
+	}
+}
+
+public class EnvironmentNames
+{
+	public const string Debug = "Debug";
+	public const string Dev = "Dev";
+	public const string Pre = "Pre";
+	public const string QA = "QA";
+	public const string RC = "RC";
+	public const string Pro = "Pro";
+}
+
+public static class CertificateModes
+{
+	public const string Webapp = "webapp";
+	public const string VirtualMachine = "virtualmachine";
+}
+
+
+public class KeyVaultSettings
+{
+	public string Url { get; set; }
+	public string CertificateThumbprint { get; set; }
+	public string ClientAppId { get; set; }
+	public string ActiveDirectoryTenantId { get; set; }
+	public string CertificateMode { get; set; }
+}
+
+
+

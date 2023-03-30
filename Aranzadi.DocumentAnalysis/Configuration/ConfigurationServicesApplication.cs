@@ -28,7 +28,14 @@ namespace Aranzadi.DocumentAnalysis.Configuration
                 });
             });
 
-            builder.Services.AddSingleton(builder.Configuration);
+			builder.Services.AddSingleton(sp =>
+			{
+				DocumentAnalysisOptions applicationSettings = new DocumentAnalysisOptions();
+				builder.Configuration.Bind(applicationSettings);
+				return applicationSettings;
+			});
+
+			builder.Services.AddSingleton(builder.Configuration);
             builder.Services.Configure<DocumentAnalysisOptions>(builder.Configuration);
             if (!builder.Environment.IsDevelopment()) { }
                
