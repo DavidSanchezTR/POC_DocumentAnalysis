@@ -1,8 +1,7 @@
-﻿using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,8 +10,9 @@ namespace Aranzadi.DocumentAnalysis.Data.Entities
 {
     public class DocumentAnalysisData
     {
-        [BsonId]
-        public ObjectId Id { get; set; }
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public string Id { get; set; }
         [Required]
         public string App { get; set; }
         [Required]

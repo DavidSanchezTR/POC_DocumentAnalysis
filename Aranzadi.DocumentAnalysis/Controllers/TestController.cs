@@ -42,7 +42,7 @@ namespace Aranzadi.DocumentAnalysis.Controllers
         [HttpGet(Name = "GetTestController")]
         public IEnumerable<Test> Get()
         {
-            Task.Run(() => documentAnalysisRepository.AddAnalysisDataAsync(datos));
+            //Task.Run(() => documentAnalysisRepository.AddAnalysisDataAsync(datos));
             return Enumerable.Range(1, 5).Select(index => new Test
             {
                 Date = DateTime.Now.AddDays(index),
