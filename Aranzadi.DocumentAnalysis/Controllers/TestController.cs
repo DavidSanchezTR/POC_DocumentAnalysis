@@ -21,8 +21,8 @@ namespace Aranzadi.DocumentAnalysis.Controllers
 	{
 
 		private readonly IDocumentAnalysisRepository documentAnalysisRepository;
-
-		private readonly ILogger<TestController> _logger;
+        private readonly IConfiguration config;
+        private readonly ILogger<TestController> _logger;
 		private readonly DocumentAnalysisOptions configuration;
 
 		public TestController(ILogger<TestController> logger
@@ -32,7 +32,7 @@ namespace Aranzadi.DocumentAnalysis.Controllers
 			_logger = logger;
 			this.configuration = configuration;
 			this.documentAnalysisRepository = documentAnalysisRepository;
-		}
+        }
 
 		[HttpGet]
 		[Route("SavedocumentAnalysisTest")]

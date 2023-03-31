@@ -22,14 +22,12 @@ builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnCh
 
 var documentAnalysisOptions = ApplicationSettings.GetDocumentAnalysisOptions(builder.Configuration);
 
-var settingsKeyVault = ApplicationSettings.GetKeyVaultSettings(builder.Configuration);
-
 #region Configure keyvault
-StoreLocation storeLocation = CertificateModes.Webapp.Equals(builder.Configuration[$"{nameof(DocumentAnalysisOptions.KeyVault)}:{nameof(KeyVaultSettings.CertificateMode)}"], StringComparison.OrdinalIgnoreCase)
+StoreLocation storeLocation = CertificateModes.Webapp.Equals(documentAnalysisOptions.KeyVault.CertificateMode, StringComparison.OrdinalIgnoreCase)
 	? StoreLocation.CurrentUser : StoreLocation.LocalMachine;
 using var store = new X509Store(StoreName.My, storeLocation);
 store.Open(OpenFlags.ReadOnly);
-string thumbprint = builder.Configuration[$"{nameof(DocumentAnalysisOptions.KeyVault)}:{nameof(KeyVaultSettings.CertificateThumbprint)}"];
+string thumbprint = documentAnalysisOptions.KeyVault.CertificateThumbprint;
 if (!string.IsNullOrEmpty(thumbprint))
 {
 	var certs = store.Certificates
@@ -41,12 +39,11 @@ if (!string.IsNullOrEmpty(thumbprint))
 	string clientId = documentAnalysisOptions.KeyVault.ClientAppId;
 	builder.Configuration.AddAzureKeyVault(new Uri(keyvaultUri),
 		new ClientCertificateCredential(adTenantId, clientId, certs.OfType<X509Certificate2>().Single())
-			, new ConditionalIgnoreSecretManager(builder.Environment, builder.Configuration[$"{nameof(DocumentAnalysisOptions.EnvironmentPrefix)}"]));
+			, new ConditionalIgnoreSecretManager(builder.Environment, documentAnalysisOptions.EnvironmentPrefix, documentAnalysisOptions.SecretsIncludedFromKeyVault));
 	store.Close();
 
 }
 #endregion Configure keyvault
-
 
 // Add services to the container.
 builder.Services.AddControllers();
