@@ -79,17 +79,16 @@ namespace Aranzadi.DocumentAnalysis.Services
 			var data = new DocumentAnalysisData
 			{
 				App = "Infolex",
-				DocumentName = "PruebaAA3.pdf",
-				NewGuid = Guid.NewGuid(),
-				Analisis = "Esto es un análisis",
+				DocumentName = "PruebaAA3.pdf",				
+				Analysis = "Esto es un análisis",
 				AccessUrl = "www.prueba.com",
 				Sha256 = "HasCode",
-				Estado = "Pendiente",
-				TenantId = 122,
-				UserId = 22,
-				FechaAnalisis = DateTimeOffset.Now,
-				FechaCreacion = DateTimeOffset.Now,
-				Origen = "La Ley"
+				Status = 1,
+				TenantId = "122",
+				UserId = "22",
+				AnalysisDate = DateTimeOffset.Now,
+				CreateDate = DateTimeOffset.Now,
+				Source = "La Ley"
 			};
 			using (IServiceScope scope = serviceProvider.CreateScope())
 			{

@@ -7,25 +7,23 @@ namespace Aranzadi.DocumentAnalysis.Configuration
     {
         public static void Seed(DocumentAnalysisDbContext context)
         {
-            bool save = false;
-            string analysisId = Guid.NewGuid().ToString();
+            bool save = false;            
             if (context.Analysis.Count() == 0)
             {
                 context.Analysis.Add(new DocumentAnalysisData 
                     { 
-                        Id = analysisId,
+                        Id = Guid.NewGuid(),
                         App = "Infolex",
-                        DocumentName = "Prueba.pdf",
-                        NewGuid = Guid.NewGuid(),
-                        Analisis = "Esto es un análisis",
+                        DocumentName = "Prueba.pdf",                        
+                        Analysis = "Esto es un análisis",
                         AccessUrl = "www.prueba.com",
                         Sha256 = "HasCode",
-                        Estado = "Pendiente",
-                        TenantId = 122,
-                        UserId = 22,
-                        Origen = "La Ley",
-                        FechaAnalisis = DateTimeOffset.Now,
-                        FechaCreacion = DateTimeOffset.Now,
+                        Status = 1,
+                        TenantId = "122",
+                        UserId = "22",
+                        Source = "La Ley",
+                        AnalysisDate = DateTimeOffset.Now,
+                        CreateDate = DateTimeOffset.Now,
                 });
                 save = true;
             }

@@ -42,23 +42,7 @@ namespace Aranzadi.DocumentAnalysis.Controllers
 				{
 				"Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 				};
-
-			DocumentAnalysisData datos = new DocumentAnalysisData
-			{
-				App = "Infolex",
-				DocumentName = "Prueba.pdf",
-				NewGuid = new Guid(Guid.NewGuid().ToString()),
-				Analisis = "Esto es un análisis",
-				AccessUrl = "www.prueba.com",
-				Sha256 = "HasCode",
-				Estado = "Pendiente",
-				TenantId = 122,
-				UserId = 22,
-				FechaAnalisis = new DateTimeOffset().ToLocalTime(),
-				FechaCreacion = new DateTimeOffset().ToLocalTime(),
-			};
-
-			Task.Run(() => documentAnalysisRepository.AddAnalysisDataAsync(datos));
+						
 			return Enumerable.Range(1, 5).Select(index => new Test
 			{
 				Date = DateTime.Now.AddDays(index),

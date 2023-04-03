@@ -10,7 +10,9 @@ namespace Aranzadi.DocumentAnalysis.Data.IRepository
 {
     public interface IDocumentAnalysisRepository
     {
-        Task<IEnumerable<DocumentAnalysisResult>> GetAllAnalysisAsync(int LawfirmId);
+        Task<IEnumerable<DocumentAnalysisResult>> GetAllAnalysisAsync(string TenantId, string UserId);
+
+        Task<DocumentAnalysisResult> GetAnalysisAsync(string TenantId, string UserId, Guid DocumentId);
 
         Task AddAnalysisDataAsync(DocumentAnalysisData data);
     }

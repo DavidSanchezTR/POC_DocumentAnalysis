@@ -10,31 +10,28 @@ namespace Aranzadi.DocumentAnalysis.Data.Entities
 {
     public class DocumentAnalysisData
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public string Id { get; set; }
+        [Key]        
+        public Guid Id { get; set; }
         [Required]
         public string App { get; set; }
         [Required]
-        public int TenantId { get; set; }
+        public string TenantId { get; set; }
         [Required]
-        public int UserId { get; set; }
+        public string UserId { get; set; }
         [Required]
         public string DocumentName { get; set; }
         [Required]
         public string AccessUrl { get; set; }
         [Required]
-        public Guid NewGuid { get; set; }
-        [Required]
         public string Sha256 { get; set; }
         [Required]
-        public DateTimeOffset FechaCreacion { get; set; }
+        public DateTimeOffset CreateDate { get; set; }
         [Required]
-        public DateTimeOffset FechaAnalisis { get; set; }        
-        public string? Analisis { get; set; }
+        public DateTimeOffset AnalysisDate { get; set; }        
+        public string? Analysis { get; set; }
         [Required]
-        public string Origen { get; set; }
+        public string Source { get; set; }
         [Required]
-        public string Estado { get; set; }
+        public int Status { get; set; }
     }
 }
