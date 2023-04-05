@@ -37,7 +37,7 @@ public class DocumentAnalysisService : IDocumentAnalysisService
     {
         if (string.IsNullOrEmpty(tenantId) || string.IsNullOrEmpty(userId))
         {
-            throw new NullReferenceException();
+            throw new ArgumentNullException();
         }
 
         var listaAnalisis = await _documentAnalysisRepository.GetAllAnalysisAsync(tenantId, userId);
@@ -49,7 +49,7 @@ public class DocumentAnalysisService : IDocumentAnalysisService
     {
         if (string.IsNullOrEmpty(tenantId) || string.IsNullOrEmpty(userId) || documentId == Guid.Empty)
         {
-            throw new NullReferenceException();
+            throw new ArgumentNullException();
         }
 
         var singleAnalisis = await _documentAnalysisRepository.GetAnalysisAsync(tenantId, userId, documentId);
