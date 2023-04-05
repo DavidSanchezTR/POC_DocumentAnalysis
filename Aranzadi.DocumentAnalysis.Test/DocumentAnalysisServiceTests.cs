@@ -27,6 +27,8 @@ namespace Aranzadi.DocumentAnalysis.Test
 
             var result = await documentAnalysisService.GetAnalysisAsync("122","22", documentAnalysisResult.DocumentId);
             Assert.AreEqual(documentAnalysisResult.Analysis,result.Analysis);
+            Assert.AreEqual(documentAnalysisResult.DocumentId,result.DocumentId);
+            Assert.AreEqual(documentAnalysisResult.Status,result.Status);
         } 
         
         [TestMethod]
@@ -56,6 +58,8 @@ namespace Aranzadi.DocumentAnalysis.Test
 
             var result = await documentAnalysisService.GetAllAnalysisAsync("122", "22");
             Assert.AreEqual(documentAnalysisResultList.Count, result.Count());
+            Assert.AreSame(documentAnalysisResultList, result);
+            CollectionAssert.AreEqual(documentAnalysisResultList, result.ToList());
         }
 
 
