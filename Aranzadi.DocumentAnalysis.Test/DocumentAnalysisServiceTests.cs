@@ -59,7 +59,7 @@ namespace Aranzadi.DocumentAnalysis.Test
 
         private Mock<IDocumentAnalysisRepository> GetIDocumentAnalysisRepositoryOKMock(DocumentAnalysisResult documentAnalysisResult)
         {
-            Mock<IDocumentAnalysisRepository> documentAnalysisRepositoryMock = new();
+            Mock<IDocumentAnalysisRepository> documentAnalysisRepositoryMock = new Mock<IDocumentAnalysisRepository>();
             documentAnalysisRepositoryMock.Setup(e => e.GetAnalysisAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Guid>())).Returns(Task.FromResult(documentAnalysisResult));
             return documentAnalysisRepositoryMock;
         }
