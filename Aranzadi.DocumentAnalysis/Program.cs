@@ -58,7 +58,7 @@ builder.Services.AddSwaggerGen();
 
 ConfigurationServicesApplication.ConfigureServices(builder);
 
-builder.Services.AddApplicationInsightsTelemetry(documentAnalysisOptions.ApplicationInsights.ConnectionString);
+builder.Services.AddApplicationInsightsTelemetry((x) => { x.ConnectionString = documentAnalysisOptions.ApplicationInsights.ConnectionString; });
 
 builder.Services.AddHostedService<QueuedHostedService>();
 
