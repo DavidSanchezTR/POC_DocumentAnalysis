@@ -1,5 +1,6 @@
 ﻿using Aranzadi.DocumentAnalysis.Data.Entities;
 using Aranzadi.DocumentAnalysis.Data.IRepository;
+using Aranzadi.DocumentAnalysis.DTO.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -84,7 +85,7 @@ namespace Aranzadi.DocumentAnalysis.Test
             {
                 Analysis = "Esto es un analisis",
                 DocumentId = Guid.NewGuid(),
-                Status = DocumentAnalysisResult.StatusResult.Pendiente
+                Status = StatusResult.Pendiente
             };
         }
 
