@@ -1,19 +1,11 @@
 using Aranzadi.DocumentAnalysis;
 using Aranzadi.DocumentAnalysis.Configuration;
 using Aranzadi.DocumentAnalysis.Data;
-using Aranzadi.DocumentAnalysis.Data.IRepository;
-using Aranzadi.DocumentAnalysis.Data.Repository;
 using Aranzadi.DocumentAnalysis.Services;
 using Aranzadi.DocumentAnalysis.Util;
 using Azure.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using System.Configuration;
 using System.Security.Cryptography.X509Certificates;
-using ThomsonReuters.BackgroundOperations.Messaging.Models;
-using static Aranzadi.DocumentAnalysis.DocumentAnalysisOptions;
 
 var builder = WebApplication.CreateBuilder(args);
 

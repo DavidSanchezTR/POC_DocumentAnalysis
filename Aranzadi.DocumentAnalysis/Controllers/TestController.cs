@@ -39,9 +39,8 @@ namespace Aranzadi.DocumentAnalysis.Controllers
 
         [HttpPost]
         [Route("SendMessageToServiceBusTest2")]
-        public async void SendMessage2()
+        public async Task SendMessage2()
         {
-
             var requestContent = "";
             this.Request.EnableBuffering();
             using (var reader = new StreamReader(Request.Body, Encoding.UTF8, true, 1024, true))
@@ -84,13 +83,11 @@ namespace Aranzadi.DocumentAnalysis.Controllers
             enviarMensajes();
         }        
 
-        private async void enviarMensajes()
+        private async Task enviarMensajes()
         {
             var conf = new MessagingConfiguration();
             conf.ServicesBusConnectionString = configuration.ServiceBus.ConnectionString;
             conf.ServicesBusCola = configuration.ServiceBus.Queue;
-            conf.URLServicioAnalisisDoc = new Uri("https://localhost:44323/api/FalsoApi");
-            conf.URLOrquestador = new Uri("https://noseusaSepuedeBorrar.com");
             conf.Source = "Fusion";
             conf.Type = "AnalisisDocumentos";
 
@@ -119,8 +116,9 @@ namespace Aranzadi.DocumentAnalysis.Controllers
                 {
                     AccessUrl = new Uri(@"https:\\loquesea_" + referenciaDoc + ".com").ToString(),
                     DocumentName = "elNombreDoc_" + referenciaDoc,
-                    DocumentUniqueRefences = Guid.NewGuid().ToString()
-
+                    DocumentUniqueRefences = Guid.NewGuid().ToString(),
+                    
+                    
                 };
                 l.Add(doc);
 
