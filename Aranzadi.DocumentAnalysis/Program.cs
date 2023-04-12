@@ -39,8 +39,12 @@ var documentAnalysisOptions = ApplicationSettings.GetDocumentAnalysisOptions(bui
 		store.Close();
 
 	}
-	#endregion Configure keyvault
+    documentAnalysisOptions = ApplicationSettings.GetDocumentAnalysisOptions(builder.Configuration);
+
+    #endregion Configure keyvault
 }
+
+
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -48,9 +52,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-ConfigurationServicesApplication.ConfigureServices(builder);
-
 builder.Services.AddApplicationInsightsTelemetry((x) => { x.ConnectionString = documentAnalysisOptions.ApplicationInsights.ConnectionString; });
+
+ConfigurationServicesApplication.ConfigureServices(builder);
 
 builder.Services.AddHostedService<QueuedHostedService>();
 
