@@ -17,7 +17,7 @@ namespace Aranzadi.DocumentAnalysis.Data.Repository
         {
             dbContext = context;
         }
-        public async Task AddAnalysisDataAsync(DocumentAnalysisData data)
+        public async Task<int> AddAnalysisDataAsync(DocumentAnalysisData data)
         {
             try
             {                
@@ -34,17 +34,18 @@ namespace Aranzadi.DocumentAnalysis.Data.Repository
                     TenantId = data.TenantId,
                     UserId = data.UserId,
                     AnalysisDate = data.AnalysisDate,
-                    CreateDate = data.CreateDate,
+                    CreateDate = data.CreateDate
                 };
 
                 dbContext.Add(datos);
 
-                await dbContext.SaveChangesAsync();
+                return await dbContext.SaveChangesAsync();
                 
             }
             catch (Exception ex)
             {
                 ex.Message.ToString();
+                return 0;
             }            
         }
 

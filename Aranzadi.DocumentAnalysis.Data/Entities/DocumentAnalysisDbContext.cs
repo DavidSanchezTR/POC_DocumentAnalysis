@@ -9,10 +9,13 @@ namespace Aranzadi.DocumentAnalysis.Data
 {
     public class DocumentAnalysisDbContext : DbContext
     {
-        public DbSet<DocumentAnalysisData> Analysis => Set<DocumentAnalysisData>();
+        public virtual DbSet<DocumentAnalysisData> Analysis { get; set; }
 
         public DocumentAnalysisDbContext(DbContextOptions<DocumentAnalysisDbContext> options)
             : base(options)
+        {
+        }  
+        public DocumentAnalysisDbContext()
         {
         }        
 
