@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Aranzadi.DocumentAnalysis.Data.Repository;
 using System.Threading;
 using Util.TestingMockAsyncMethods;
+using Aranzadi.DocumentAnalysis.DTO.Enums;
 
 namespace Aranzadi.DocumentAnalysis.Data.Test
 {
@@ -122,8 +123,8 @@ namespace Aranzadi.DocumentAnalysis.Data.Test
                 DocumentName = "name.pdf",
                 AccessUrl = "https://example.es",
                 Analysis = "string analysis example",
-                Status = 1,
-                Source = "source",
+                Status = StatusResult.Pendiente,
+                Source = Source.LaLey,
                 Sha256 = "Hash",
                 TenantId = "1234",
                 UserId = "22",
