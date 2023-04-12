@@ -11,6 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Aranzadi.DocumentAnalysis.DTO\Aranzadi.DocumentAnalysis.DTO.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Model1.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
     </None>

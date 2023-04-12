@@ -20,24 +20,10 @@ namespace Aranzadi.DocumentAnalysis.Data.Repository
         public async Task<int> AddAnalysisDataAsync(DocumentAnalysisData data)
         {
             try
-            {                
-                var datos = new DocumentAnalysisData
-                {
-                    Id = Guid.NewGuid(),
-                    App = data.App,
-                    DocumentName = data.DocumentName,
-                    AccessUrl = data.AccessUrl,
-                    Analysis = data.Analysis,
-                    Status = data.Status,                    
-                    Source = data.Source,
-                    Sha256 = data.Sha256,
-                    TenantId = data.TenantId,
-                    UserId = data.UserId,
-                    AnalysisDate = data.AnalysisDate,
-                    CreateDate = data.CreateDate
-                };
+            {
+                data.Id = Guid.NewGuid();
 
-                dbContext.Add(datos);
+                dbContext.Add(data);
 
                 return await dbContext.SaveChangesAsync();
                 
@@ -54,7 +40,7 @@ namespace Aranzadi.DocumentAnalysis.Data.Repository
             List<DocumentAnalysisResult> items = new List<DocumentAnalysisResult>();
             try
             {
-                var query = dbContext.Analysis.Where(e => e.TenantId == tenantId && e.UserId == userId).Select(a => new DocumentAnalysisResult { Status = (DocumentAnalysisResult.StatusResult)a.Status, DocumentId = a.Id, Analysis = a.Analysis });
+                var query = dbContext.Analysis.Where(e => e.TenantId == tenantId && e.UserId == userId).Select(a => new DocumentAnalysisResult { Status = a.Status, DocumentId = a.Id, Analysis = a.Analysis });
                 items = await query.ToListAsync();
             }
             catch (Exception ex)
@@ -69,7 +55,7 @@ namespace Aranzadi.DocumentAnalysis.Data.Repository
             DocumentAnalysisResult analysis = new DocumentAnalysisResult();
             try
             {
-               var analysisResult = await dbContext.Analysis.Where(e => e.TenantId == TenantId && e.UserId == UserId && e.Id == DocumentId).Select(a => new DocumentAnalysisResult { Status = (DocumentAnalysisResult.StatusResult)a.Status, DocumentId = a.Id, Analysis = a.Analysis }).FirstAsync();
+               var analysisResult = await dbContext.Analysis.Where(e => e.TenantId == TenantId && e.UserId == UserId && e.Id == DocumentId).Select(a => new DocumentAnalysisResult { Status = a.Status, DocumentId = a.Id, Analysis = a.Analysis }).FirstAsync();
 
                 if (analysisResult == null)
                 {

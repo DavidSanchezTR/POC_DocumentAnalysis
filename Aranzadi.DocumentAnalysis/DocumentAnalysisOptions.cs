@@ -9,6 +9,7 @@ public static class ApplicationSettings
         documentAnalysisOptions.SecretsIncludedFromKeyVault = new List<string>()
         {
             "uksouth-iflx-dev-blue-orch-Messaging--Endpoint" //ServiceBus:ConnectionString
+
          };
 
         configuration.Bind(documentAnalysisOptions);
@@ -84,6 +85,13 @@ public class DocumentAnalysisOptions
         public string ContentRootPath { get; set; }
         public IHostEnvironment Environment { get; set; }
     }
+
+    public ApplicationInsightsClass ApplicationInsights { get; set; }
+    public class ApplicationInsightsClass
+    {
+        public string ConnectionString { get; set; }
+    }
+
 }
 
 public class EnvironmentNames

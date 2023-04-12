@@ -18,10 +18,10 @@ namespace Aranzadi.DocumentAnalysis.Configuration
                         Analysis = "Esto es un análisis",
                         AccessUrl = "www.prueba.com",
                         Sha256 = "HasCode",
-                        Status = 1,
+                        Status = DTO.Enums.StatusResult.Pendiente,
                         TenantId = "122",
                         UserId = "22",
-                        Source = "La Ley",
+                        Source = DTO.Enums.Source.LaLey,
                         AnalysisDate = DateTimeOffset.Now,
                         CreateDate = DateTimeOffset.Now,
                 });

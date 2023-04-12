@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Aranzadi.DocumentAnalysis.DTO.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -30,8 +31,8 @@ namespace Aranzadi.DocumentAnalysis.Data.Entities
         public DateTimeOffset AnalysisDate { get; set; }        
         public string? Analysis { get; set; }
         [Required]
-        public string Source { get; set; }
+        public Source Source { get; set; }
         [Required]
-        public int Status { get; set; }
+        public StatusResult Status { get; set; }
     }
 }
