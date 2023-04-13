@@ -1,6 +1,6 @@
 ﻿using Aranzadi.DocumentAnalysis.Data.IRepository;
-using Aranzadi.DocumentAnalysis.Models;
 using System;
+using Aranzadi.DocumentAnalysis.Data.Entities;
 
 public class DocumentAnalysisService : IDocumentAnalysisService
 {
@@ -13,14 +13,27 @@ public class DocumentAnalysisService : IDocumentAnalysisService
         _logger = logger;   
 	}
 
-    public Task<string> GetAnalysisAsync(DocumentAnalysisData data, int LawfirmId)
+    public async Task<string> GetAnalysisAsync(DocumentAnalysisData data, int LawfirmId)
     {
+        //2.Consultar si existe el analysis del documento
+        var resultAnalysis = await _documentAnalysisRepository.GetAnalysisAsync(data.Sha256);
+        if (resultAnalysis != null) {
+            data.Status = resultAnalysis.Status;
+            data.Analysis = resultAnalysis.Analysis;
+            //3.Guardar peticion analisis con resultado en cosmos
+            await _documentAnalysisRepository.UpdateAnalysisDataAsync(data);
+        }
+        else
+        {
+            //3.Guardar peticion analisis pendiente en cosmos
+            await _documentAnalysisRepository.AddAnalysisDataAsync(data);
+        }
         /*TODO
          * 
-            Recuperar la url del documento.
-            Crear petición de análisis al proveedor de análisis.
-            Modificar el registro de CosmosDB con el resultado del análisis.
-            Devolver resultado.                  
+            1.Recuperar la url del documento.            
+            4.Crear petición de análisis al proveedor de análisis.
+            5.Modificar el registro de CosmosDB con el resultado del análisis.
+            6.Devolver resultado.                  
          */
         throw new NotImplementedException();
     }
@@ -56,4 +69,5 @@ public class DocumentAnalysisService : IDocumentAnalysisService
 
         return singleAnalisis;        
     }
+
 }

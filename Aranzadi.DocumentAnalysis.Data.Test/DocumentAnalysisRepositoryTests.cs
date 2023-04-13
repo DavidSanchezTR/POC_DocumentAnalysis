@@ -51,23 +51,67 @@ namespace Aranzadi.DocumentAnalysis.Data.Test
             Assert.AreEqual(result, 0);
         }
 
+
         [TestMethod]
-        public async Task GetAllAnalysisAsync_ValidValues_ReturnsDocumentAnalysisResultList()
+        public async Task UpdateAnalysisDataAsync_ValidValues_Returns1()
+        {            
+            DocumentAnalysisData data = GetDocumentAnalysisData();
+            var lista = new List<DocumentAnalysisData>
+            {
+                data,
+                data
+            };
+
+            var dbSetMock = CreateDbSetMock<DocumentAnalysisData>(lista.AsQueryable());
+
+            Mock<DocumentAnalysisDbContext> mockDocumentAnalysisDbContext = new Mock<DocumentAnalysisDbContext>();
+
+            mockDocumentAnalysisDbContext.Setup(sp => sp.Analysis).Returns(dbSetMock.Object);
+            mockDocumentAnalysisDbContext.Setup(sp => sp.SaveChangesAsync(It.IsAny<CancellationToken>())).Returns(Task.FromResult(1));
+
+            DocumentAnalysisRepository analysisRepository = new DocumentAnalysisRepository(mockDocumentAnalysisDbContext.Object);
+            var result = await analysisRepository.UpdateAnalysisDataAsync(data);
+            Assert.AreEqual(result, 1);
+        }
+
+        [TestMethod]
+        public async Task UpdateAnalysisDataAsync_ValidValues_Returns0()
         {
             DocumentAnalysisData data = GetDocumentAnalysisData();
             var lista = new List<DocumentAnalysisData>
             {
-                GetDocumentAnalysisData()
-            }.AsQueryable();
+                data,
+                data
+            };
 
-            var dbSetMock = CreateDbSetMock<DocumentAnalysisData>(lista);
+            var dbSetMock = CreateDbSetMock<DocumentAnalysisData>(lista.AsQueryable());
+
+            Mock<DocumentAnalysisDbContext> mockDocumentAnalysisDbContext = new Mock<DocumentAnalysisDbContext>();
+
+            mockDocumentAnalysisDbContext.Setup(sp => sp.Analysis).Returns(dbSetMock.Object);
+
+            DocumentAnalysisRepository analysisRepository = new DocumentAnalysisRepository(mockDocumentAnalysisDbContext.Object);
+            var result = await analysisRepository.UpdateAnalysisDataAsync(new DocumentAnalysisData());
+            Assert.AreEqual(result, 0);
+        }
+
+
+        [TestMethod]
+        public async Task GetAllAnalysisAsync_ValidValues_ReturnsDocumentAnalysisResultList()
+        {
+            var lista = new List<DocumentAnalysisData>
+            {
+                GetDocumentAnalysisData()
+            };
+
+            var dbSetMock = CreateDbSetMock<DocumentAnalysisData>(lista.AsQueryable());
 
             Mock<DocumentAnalysisDbContext> mockDocumentAnalysisDbContext = new Mock<DocumentAnalysisDbContext>();  
             
             mockDocumentAnalysisDbContext.Setup(sp => sp.Analysis).Returns(dbSetMock.Object);
 
             DocumentAnalysisRepository analysisRepository = new DocumentAnalysisRepository(mockDocumentAnalysisDbContext.Object);
-            var result = await analysisRepository.GetAllAnalysisAsync("1234","22");
+            var result = await analysisRepository.GetAllAnalysisAsync(lista[0].TenantId, lista[0].UserId);
             Assert.AreEqual(result.Count(), 1);
         }
 
@@ -77,39 +121,32 @@ namespace Aranzadi.DocumentAnalysis.Data.Test
             DocumentAnalysisData data = GetDocumentAnalysisData();
             var lista = new List<DocumentAnalysisData>
             {
-                GetDocumentAnalysisData(),
-                GetDocumentAnalysisData()
-            }.AsQueryable();
+                data,
+                data
+            };
 
-            var dbSetMock = CreateDbSetMock<DocumentAnalysisData>(lista);
+            var dbSetMock = CreateDbSetMock<DocumentAnalysisData>(lista.AsQueryable());
 
             Mock<DocumentAnalysisDbContext> mockDocumentAnalysisDbContext = new Mock<DocumentAnalysisDbContext>();  
             
             mockDocumentAnalysisDbContext.Setup(sp => sp.Analysis).Returns(dbSetMock.Object);
 
             DocumentAnalysisRepository analysisRepository = new DocumentAnalysisRepository(mockDocumentAnalysisDbContext.Object);
-            var result = await analysisRepository.GetAllAnalysisAsync("1234","22");
+            var result = await analysisRepository.GetAllAnalysisAsync(lista[0].TenantId, lista[0].UserId);
             Assert.AreEqual(result.Count(), 2);
         }
 
         [TestMethod]
         public async Task GetAllAnalysisAsync_InvalidValues_ReturnsEmptyFromException()
         {
-            DocumentAnalysisData data = GetDocumentAnalysisData();
-            var lista = new List<DocumentAnalysisData>
-            {
-                GetDocumentAnalysisData()
-            }.AsQueryable();
-
             var dbSetMock = new Mock<DbSet<DocumentAnalysisData>>();
-            //CreateDbSetMock<DocumentAnalysisData>(lista);
 
             Mock<DocumentAnalysisDbContext> mockDocumentAnalysisDbContext = new Mock<DocumentAnalysisDbContext>();  
             
             mockDocumentAnalysisDbContext.Setup(sp => sp.Analysis).Returns(dbSetMock.Object);
 
             DocumentAnalysisRepository analysisRepository = new DocumentAnalysisRepository(mockDocumentAnalysisDbContext.Object);
-            var result = await analysisRepository.GetAllAnalysisAsync("1234","22");
+            var result = await analysisRepository.GetAllAnalysisAsync("","");
             Assert.AreEqual(result.Count(), 0);
         }
 

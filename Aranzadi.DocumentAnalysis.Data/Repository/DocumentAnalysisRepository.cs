@@ -17,6 +17,8 @@ namespace Aranzadi.DocumentAnalysis.Data.Repository
         {
             dbContext = context;
         }
+        #region Insert
+
         public async Task<int> AddAnalysisDataAsync(DocumentAnalysisData data)
         {
             try
@@ -34,7 +36,28 @@ namespace Aranzadi.DocumentAnalysis.Data.Repository
                 return 0;
             }            
         }
+        #endregion
 
+
+        #region Update
+
+        public async Task<int> UpdateAnalysisDataAsync(DocumentAnalysisData data)
+        {
+            var item = await dbContext.Analysis.Where(e => e.Id == data.Id).FirstOrDefaultAsync();
+            
+            if (item != null)
+            {
+                item.Status = data.Status;
+                item.Analysis = data.Analysis;
+            }
+
+            return await dbContext.SaveChangesAsync();
+
+        }
+
+        #endregion
+
+        #region Get
         public async Task<IEnumerable<DocumentAnalysisResult>> GetAllAnalysisAsync(string tenantId, string userId)
         {
             List<DocumentAnalysisResult> items = new List<DocumentAnalysisResult>();
@@ -51,23 +74,26 @@ namespace Aranzadi.DocumentAnalysis.Data.Repository
         }
 
         public async Task<DocumentAnalysisResult> GetAnalysisAsync(string TenantId, string UserId, Guid DocumentId)
-        {
-            DocumentAnalysisResult analysis = new DocumentAnalysisResult();
-            try
-            {
-               var analysisResult = await dbContext.Analysis.Where(e => e.TenantId == TenantId && e.UserId == UserId && e.Id == DocumentId).Select(a => new DocumentAnalysisResult { Status = a.Status, DocumentId = a.Id, Analysis = a.Analysis }).FirstAsync();
+        {            
+            var analysis = await dbContext.Analysis.Where(e => e.TenantId == TenantId && e.UserId == UserId && e.Id == DocumentId).Select(a => new DocumentAnalysisResult { Status = a.Status, DocumentId = a.Id, Analysis = a.Analysis }).FirstOrDefaultAsync();
 
-                if (analysisResult == null)
-                {
-                    throw new NullReferenceException();
-                }
-            }
-            
-            catch (Exception ex)
+            if (analysis == null)
             {
-                ex.Message.ToString();
+                throw new NullReferenceException();
             }
+           
             return analysis;
         }
+
+        public async Task<DocumentAnalysisResult?> GetAnalysisAsync(string sha256)
+        {
+
+            var analysis = await dbContext.Analysis.Where(e => e.Sha256 == sha256 && e.Status == DTO.Enums.StatusResult.Disponible).Select(a => new DocumentAnalysisResult { Status = a.Status, DocumentId = a.Id, Analysis = a.Analysis }).FirstOrDefaultAsync();
+            
+            return analysis;
+        }
+
+        #endregion
+
     }
 }
