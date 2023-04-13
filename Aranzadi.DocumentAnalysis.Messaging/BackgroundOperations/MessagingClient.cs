@@ -82,7 +82,7 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
             ValidateRequest(theRequest);
             try
             {
-                Message<DocumentAnalysisData> message = PrepareMessage(theRequest);
+                Message<DocumentAnalysisRequest> message = PrepareMessage(theRequest);
 
                 await messageSender.Send(this.confi.ServicesBusCola, message);
 
@@ -109,13 +109,13 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
             }
         }
 
-        private Message<DocumentAnalysisData> PrepareMessage(PackageRequest theRequest)
+        private Message<DocumentAnalysisRequest> PrepareMessage(PackageRequest theRequest)
         {
-            Message<DocumentAnalysisData> message;
+            Message<DocumentAnalysisRequest> message;
             var dataChunks = theRequest.Documents.Select(
-                            doc => new MessageDataChunk<DocumentAnalysisData>(doc));
+                            doc => new MessageDataChunk<DocumentAnalysisRequest>(doc));
 
-            message = new Message<DocumentAnalysisData>(
+            message = new Message<DocumentAnalysisRequest>(
                confi.Source, confi.Type, theRequest.Context.Tenant, dataChunks)
             {
                 AdditionalData = theRequest.Context
@@ -123,7 +123,7 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
             return message;
         }
 
-        private static PackageRequestTrack CalculateTrack(Message<DocumentAnalysisData> message)
+        private static PackageRequestTrack CalculateTrack(Message<DocumentAnalysisRequest> message)
         {
             PackageRequestTrack track = new PackageRequestTrack(){
                 TrackingNumber = message.ID
@@ -169,10 +169,10 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
                 {
                     StatusRequest theStatusRequest = new StatusRequest()
                     {
-                        Aplication = context.Aplication,
+                        App = context.App,
                         Tenant = context.Tenant,
-                        Owner = context.Owner,
-                        DocumentReference = docREf
+                        UserDataId = context.Owner,
+                        Hash = docREf,
                     };
                     List<DocumentResponse> doc = new List<DocumentResponse>();
                     Uri theUri = GetUri(theStatusRequest);
@@ -213,10 +213,10 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
             NameValueCollection queryString;
            
             queryString = System.Web.HttpUtility.ParseQueryString(string.Empty);
-            queryString.Add(nameof(re.Aplication), re.Aplication);
-            queryString.Add(nameof(re.Owner), re.Owner);
+            queryString.Add(nameof(re.App), re.App);
+            queryString.Add(nameof(re.UserDataId), re.UserDataId);
             queryString.Add(nameof(re.Tenant), re.Tenant);
-            queryString.Add(nameof(re.DocumentReference), re.DocumentReference);
+            queryString.Add(nameof(re.Hash), re.Hash);
 
             UriBuilder ur = new UriBuilder(confi.URLServicioAnalisisDoc)
             {
@@ -237,9 +237,9 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
                 },
                 onRetry: (ex, ts) =>
                 {
-                    if (!String.IsNullOrEmpty(theStatusRequest.DocumentReference))
+                    if (!String.IsNullOrEmpty(theStatusRequest.Hash))
                     {
-                        Debug.WriteLine(ex, "Repetimos el documento: " + theStatusRequest.DocumentReference);
+                        Debug.WriteLine(ex, "Repetimos el documento: " + theStatusRequest.Hash);
                     }
                     else
                     {

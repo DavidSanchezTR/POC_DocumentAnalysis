@@ -1,26 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Aranzadi.DocumentAnalysis.DTO
 {
     public class AnalysisContext : IEquatable<AnalysisContext>, IValidable
     {
 
-        /// <summary>
-        /// Fusion
-        /// </summary>
-        public string Aplication { get; set; }
+        public string Owner { get; set; }
 
-        /// <summary>
-        /// El Despacho
-        /// </summary>
         public string Tenant { get; set; }
 
-        /// <summary>
-        /// El Usuario
-        /// </summary>
-        public string Owner { get; set; }
+        public string Account { get; set; }
+
+        public string App { get; set; }
 
         public override bool Equals(object obj)
         {
@@ -31,9 +25,10 @@ namespace Aranzadi.DocumentAnalysis.DTO
         {
 
             return !(other is null) &&
-                   CompareStringToUpperInvariant(Aplication, other.Aplication) &&
-                   CompareStringToUpperInvariant(Tenant, other.Tenant) &&
-                   CompareStringToUpperInvariant(Owner, other.Owner);
+                CompareStringToUpperInvariant(Owner, other.Owner) &&
+                CompareStringToUpperInvariant(Tenant, other.Tenant) &&
+                CompareStringToUpperInvariant(Account, other.Account) &&
+                CompareStringToUpperInvariant(App, other.App);
         }
 
         public static bool CompareStringToUpperInvariant(string v, string v1)
@@ -51,14 +46,14 @@ namespace Aranzadi.DocumentAnalysis.DTO
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Aplication?.ToUpperInvariant(), Tenant?.ToUpperInvariant(), Owner?.ToUpperInvariant());
+            return HashCode.Combine(App?.ToUpperInvariant(), Tenant?.ToUpperInvariant(), Owner);
         }
 
         public bool Validate()
         {
             return !string.IsNullOrWhiteSpace(Owner) &&
-                !string.IsNullOrWhiteSpace(Aplication) &&
-                !string.IsNullOrWhiteSpace(Tenant);
+                !string.IsNullOrWhiteSpace(Tenant) &&
+                !string.IsNullOrWhiteSpace(App);
         }
 
     }

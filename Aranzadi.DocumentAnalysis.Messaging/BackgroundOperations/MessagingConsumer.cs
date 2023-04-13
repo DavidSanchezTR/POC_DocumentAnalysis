@@ -18,7 +18,7 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
 
 	{
 		private readonly IMessageReceiver receiver;
-		private Func<AnalysisContext, DocumentAnalysisData, Task<bool>> theAction;
+		private Func<AnalysisContext, DocumentAnalysisRequest, Task<bool>> theAction;
 		private CancellationToken cancellationToken;
 		private readonly MessagingConfiguration confi;
 		private readonly IMessageSender sender;
@@ -31,12 +31,12 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
 			this.sender = sender;
 		}
 
-		public async void StartProcess(Func<AnalysisContext, DocumentAnalysisData, Task<bool>> theAction)
+		public async void StartProcess(Func<AnalysisContext, DocumentAnalysisRequest, Task<bool>> theAction)
 		{
 
 			this.theAction = theAction;
 
-			await receiver.OnReceiveMessage<DocumentAnalysisData>(confi.ServicesBusCola, async (menssage, cancelationToken) =>
+			await receiver.OnReceiveMessage<DocumentAnalysisRequest>(confi.ServicesBusCola, async (menssage, cancelationToken) =>
 			{
 				try
 				{

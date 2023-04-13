@@ -81,14 +81,14 @@ namespace Aranzadi.DocumentAnalysis.Services
         }
 
 
-        private async Task<bool> ProcessMessage(AnalysisContext context, DTO.Request.DocumentAnalysisData request)
+        private async Task<bool> ProcessMessage(AnalysisContext context, DTO.Request.DocumentAnalysisRequest request)
         {
             try
             {             
-                var data = new Data.Entities.DocumentAnalysisData
+                var data = new DocumentAnalysisData
                 {
-                    App = context.Aplication,
-                    TenantId = context.Tenant,
+                    App = context.App,
+                    TenantId = context.Tenant.ToString(),
                     UserId = context.Owner,
                     Analysis = request.Analysis,
                     Status = StatusResult.Pendiente,

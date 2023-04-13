@@ -6,12 +6,13 @@ namespace Aranzadi.DocumentAnalysis.DTO
 {
     public class StatusRequest
     {
-        public string Aplication { get; set; }
+        public string App { get; set; }
 
         public string Tenant { get; set; }
 
-        public string Owner { get; set; }
+        public string UserDataId { get; set; }
 
-        public string DocumentReference { get; set; }
+        public string Hash { get; set; }
+
     }
 }
