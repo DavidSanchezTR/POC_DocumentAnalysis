@@ -6,6 +6,7 @@ namespace Aranzadi.DocumentAnalysis.DTO
 {
     public class AnalysisContext : IEquatable<AnalysisContext>, IValidable
     {
+
         /// <summary>
         /// Fusion
         /// </summary>

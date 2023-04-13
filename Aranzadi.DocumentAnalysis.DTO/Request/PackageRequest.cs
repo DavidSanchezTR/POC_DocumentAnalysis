@@ -13,7 +13,7 @@ namespace Aranzadi.DocumentAnalysis.DTO.Request
 
         public string PackageUniqueRefences { get; set; }
 
-        public IEnumerable<DocumentAnalysisRequest> Documents { get; set; }
+        public IEnumerable<DocumentAnalysisData> Documents { get; set; }
 
         public bool Validate()
         {

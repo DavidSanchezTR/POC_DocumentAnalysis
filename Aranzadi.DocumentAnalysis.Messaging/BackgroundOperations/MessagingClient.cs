@@ -82,7 +82,7 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
             ValidateRequest(theRequest);
             try
             {
-                Message<DocumentAnalysisRequest> message = PrepareMessage(theRequest);
+                Message<DocumentAnalysisData> message = PrepareMessage(theRequest);
 
                 await messageSender.Send(this.confi.ServicesBusCola, message);
 
@@ -109,13 +109,13 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
             }
         }
 
-        private Message<DocumentAnalysisRequest> PrepareMessage(PackageRequest theRequest)
+        private Message<DocumentAnalysisData> PrepareMessage(PackageRequest theRequest)
         {
-            Message<DocumentAnalysisRequest> message;
+            Message<DocumentAnalysisData> message;
             var dataChunks = theRequest.Documents.Select(
-                            doc => new MessageDataChunk<DocumentAnalysisRequest>(doc));
+                            doc => new MessageDataChunk<DocumentAnalysisData>(doc));
 
-            message = new Message<DocumentAnalysisRequest>(
+            message = new Message<DocumentAnalysisData>(
                confi.Source, confi.Type, theRequest.Context.Tenant, dataChunks)
             {
                 AdditionalData = theRequest.Context
@@ -123,7 +123,7 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
             return message;
         }
 
-        private static PackageRequestTrack CalculateTrack(Message<DocumentAnalysisRequest> message)
+        private static PackageRequestTrack CalculateTrack(Message<DocumentAnalysisData> message)
         {
             PackageRequestTrack track = new PackageRequestTrack(){
                 TrackingNumber = message.ID
@@ -131,7 +131,7 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
             var tracDetail = message.DataChunks.Select(chu => new DocumentAnalysisRequestTrack()
             {
                 TrackingNumber = chu.ID,
-                DocumentUniqueRefences = chu.Data.DocumentUniqueRefences
+                DocumentUniqueRefences = chu.Data.Document.Hash
             });
             track.DocumentAnalysysRequestTracks = tracDetail;
             return track;

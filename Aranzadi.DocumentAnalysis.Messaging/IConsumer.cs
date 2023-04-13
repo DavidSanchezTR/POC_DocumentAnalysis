@@ -8,6 +8,6 @@ namespace Aranzadi.DocumentAnalysis.Messaging
 {
     public interface IConsumer
     {
-        void StartProcess(Func<AnalysisContext, DocumentAnalysisRequest, Task<bool>> theAction);
+        void StartProcess(Func<AnalysisContext, DocumentAnalysisData, Task<bool>> theAction);
     }
 }

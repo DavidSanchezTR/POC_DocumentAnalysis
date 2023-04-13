@@ -9,7 +9,6 @@ namespace Aranzadi.DocumentAnalysis.DTO.Enums
         Pendiente = 1,
         EnCurso = 2,
         Disponible = 3,
-        NoConcluyente = 4,
-        Erroneo = 5
+        Erroneo = 4
     }
 }

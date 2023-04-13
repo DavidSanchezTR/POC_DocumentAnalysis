@@ -81,23 +81,23 @@ namespace Aranzadi.DocumentAnalysis.Services
         }
 
 
-        private async Task<bool> ProcessMessage(AnalysisContext context, DocumentAnalysisRequest request)
+        private async Task<bool> ProcessMessage(AnalysisContext context, DTO.Request.DocumentAnalysisData request)
         {
             try
             {             
-                var data = new DocumentAnalysisData
+                var data = new Data.Entities.DocumentAnalysisData
                 {
                     App = context.Aplication,
-                    DocumentName = request.DocumentName,
-                    Analysis = request.Analysis,
-                    AccessUrl = request.AccessUrl,
-                    Sha256 = request.DocumentUniqueRefences,
-                    Status = StatusResult.Pendiente,
                     TenantId = context.Tenant,
                     UserId = context.Owner,
+                    Analysis = request.Analysis,
+                    Status = StatusResult.Pendiente,
                     AnalysisDate = DateTimeOffset.Now,
                     CreateDate = DateTimeOffset.Now,
-                    Source = request.Source
+                    Source = request.Source,
+                    DocumentName = request.Document.Name,
+                    AccessUrl = request.Document.Path,
+                    Sha256 = request.Document.Hash
                 };
                 using (IServiceScope scope = serviceProvider.CreateScope())
                 {
