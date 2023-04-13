@@ -27,7 +27,7 @@ namespace SampleClientApp.Controllers
                 var sender = BackgroundOperationsFactory
                     .MessageFactory.GetSender(new ThomsonReuters.BackgroundOperations.Messaging.Models.ConnectionSettings(backgroundOrchestratorEndpoint), null);
 
-                var chunks = new List<MessageDataChunk<DocumentAnalysisData>>();
+                var chunks = new List<MessageDataChunk<DocumentAnalysisRequest>>();
                 List<KeyValuePair<string, byte[]>> files2Attach = new List<KeyValuePair<string, byte[]>>(); // emailService.GetOutlookMailFilesForAttach(attachmentMode, myOutlookMailModel, ref actionName, false);
                 files2Attach.Add(new KeyValuePair<string, byte[]>("fichero1.pdf", null));
                 files2Attach.Add(new KeyValuePair<string, byte[]>("fichero2.pdf", null));
@@ -48,7 +48,7 @@ namespace SampleClientApp.Controllers
                     string fileName = hash + ext;
                     string tokenUrlAttachment = "https://www.tokenUrl.es/" + guid.ToString();
 
-                    chunks.Add(new MessageDataChunk<DocumentAnalysisData>(new DocumentAnalysisData
+                    chunks.Add(new MessageDataChunk<DocumentAnalysisRequest>(new DocumentAnalysisRequest
                     {
                         EmailId = mailMessageId,
                         Subject = "Subject " + guid.ToString(),
@@ -71,7 +71,7 @@ namespace SampleClientApp.Controllers
                     }));
                 }
 
-                var message = new Message<DocumentAnalysisData>(BackgroundOperationsFactory.MESSAGE_SOURCE_FUSION,
+                var message = new Message<DocumentAnalysisRequest>(BackgroundOperationsFactory.MESSAGE_SOURCE_FUSION,
                     BackgroundOperationsFactory.MESSAGE_TYPE_DOCUMENT_ANALYSIS, UserId.ToString(), chunks);
 
                 message.AdditionalData = Newtonsoft.Json.JsonConvert.SerializeObject(new AuthData
@@ -79,10 +79,9 @@ namespace SampleClientApp.Controllers
                     Account = account,
                     LawFirmID = lawfirmID,
                     UserDataID = UserId,
-
-                    Aplication = "Fusion",
-                    Owner = UserId.ToString(),
-                    Tenant = account
+                    App = "Fusion",
+                    Owner = UserId,
+                    Tenant = lawfirmID.ToString()
                 });
 
                 sender.Send(MessageDestinations.BackgroundOrchestrator, message).Wait();

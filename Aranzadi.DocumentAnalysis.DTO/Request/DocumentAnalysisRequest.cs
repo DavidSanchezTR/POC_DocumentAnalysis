@@ -7,7 +7,7 @@ using Aranzadi.DocumentAnalysis.DTO.Enums;
 namespace Aranzadi.DocumentAnalysis.DTO.Request
 {
 
-    public class DocumentAnalysisData : IValidable
+    public class DocumentAnalysisRequest : IValidable
     {
 
         //Provienen de la clase DocumentAnalysisData de Infolex
@@ -21,7 +21,6 @@ namespace Aranzadi.DocumentAnalysis.DTO.Request
         public DocumentAnalysisFile Document { get; set; }
 
         public UserAnalysis UserAnalysis { get; set; }
-
 
         public string Analysis { get; set; }
 

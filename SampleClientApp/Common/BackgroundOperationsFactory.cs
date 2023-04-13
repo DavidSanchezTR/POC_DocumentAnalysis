@@ -40,19 +40,11 @@ namespace SampleClientApp.Common
 
         public int JobID { get; set; }
 
+        public string App { get; set; }
 
+        public int Owner { get; set; }
 
-        public string Aplication { get; set; }
-
-        /// <summary>
-        /// El Despacho
-        /// </summary>
         public string Tenant { get; set; }
-
-        /// <summary>
-        /// El Usuario
-        /// </summary>
-        public string Owner { get; set; }
 
     }
 
