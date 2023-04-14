@@ -10,13 +10,16 @@ using System.Web.Mvc;
 using ThomsonReuters.BackgroundOperations.Messaging.Models;
 using ThomsonReuters.BackgroundOperations.Messaging;
 using Aranzadi.DocumentAnalysis.DTO.Enums;
+using Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations;
+using Aranzadi.DocumentAnalysis.Messaging;
+using System.Configuration;
 
 namespace SampleClientApp.Controllers
 {
     public class HomeController : Controller
     {
 
-        public ActionResult SendMessage()
+        public ActionResult SendMessageOld()
         {
             // TODO: Enviar mensaje  de analisis de documentos al orquestador
 
@@ -115,6 +118,102 @@ namespace SampleClientApp.Controllers
         {
            return View();
         }
+
+        public ActionResult SendMessage()
+        {
+            // TODO: Enviar mensaje  de analisis de documentos al orquestador
+
+            string backgroundOrchestratorEndpoint = "Endpoint=sb://uksouth-iflx-blue-orch-dev-servicebus.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=OzIgYihRXFO389WSagVM4MidAetFjoy7G72kgQxtOwg=";
+            string Queue = "backgroundorchestrator";
+            int lawfirmID = 100;
+            string account = "DESPACHO";
+            int UserId = 101;
+            string fromEmail = "prueba@gmail.com";
+            try
+            {
+
+                var conf = new MessagingConfiguration();
+                conf.ServicesBusConnectionString = backgroundOrchestratorEndpoint;
+                conf.ServicesBusCola = Queue;
+                conf.Source = BackgroundOperationsFactory.MESSAGE_SOURCE_FUSION;
+                conf.Type = BackgroundOperationsFactory.MESSAGE_TYPE_DOCUMENT_ANALYSIS;
+
+                var factory = new AnalisisDocumentosDefaultFactory(conf);
+                IClient client = factory.GetClient();
+
+                
+
+                
+                
+                
+                PackageRequest theRequest = new PackageRequest();
+                theRequest.Context = new Aranzadi.DocumentAnalysis.DTO.AnalysisContext()
+                {
+                    Account = account,
+                    App = "Fusion",
+                    Owner = UserId.ToString(),
+                    Tenant = lawfirmID.ToString()
+                };
+
+                theRequest.PackageUniqueRefences = "uniqueReferences";
+
+                List<string> listaFicheros = new List<string>();
+                listaFicheros.Add("fichero1.pdf");
+                listaFicheros.Add("fichero2.pdf");
+
+                var documents = new List<DocumentAnalysisRequest>();
+
+                foreach (string fileName in listaFicheros)
+                {
+                    Guid guid = Guid.NewGuid();
+                    string originalFileName = guid.ToString() + "_" + fileName;
+                    string ext = ".pdf";
+                    string mailMessageId = guid.ToString();
+                    string conversationMailMessageId = guid.ToString();
+                    var hash = HashCode.Combine(guid).ToString();
+                    //string fileName = hash + ext;
+                    string tokenUrlAttachment = "https://www.tokenUrl.es/" + guid.ToString();
+
+                    var docAnalysisRequest = new DocumentAnalysisRequest
+                    {
+                        EmailId = mailMessageId,
+                        Subject = "Subject " + guid.ToString(),
+                        ConversationID = conversationMailMessageId,
+                        FromEmail = fromEmail,
+                        Document = new DocumentAnalysisFile
+                        {
+                            Name = originalFileName,
+                            Path = tokenUrlAttachment,
+                            Hash = hash
+                        },
+                        UserAnalysis = new UserAnalysis
+                        {
+                            LawFirmId = lawfirmID,
+                            UserId = UserId
+                        },
+                        Source = Source.LaLey,
+                        Analysis = "Descripcion del analisis"
+
+                    };
+
+                    documents.Add(docAnalysisRequest);
+                }
+
+                theRequest.Documents = documents;
+                client.SendRequestAsync(theRequest);
+
+                ViewBag.Message = "Mensaje enviado";
+
+                return View();
+
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+
+        }
+
 
     }
 }

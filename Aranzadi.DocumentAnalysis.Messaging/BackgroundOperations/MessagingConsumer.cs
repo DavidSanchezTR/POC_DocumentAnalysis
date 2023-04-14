@@ -1,5 +1,6 @@
 ﻿using Aranzadi.DocumentAnalysis.DTO;
 using Aranzadi.DocumentAnalysis.DTO.Request;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -23,13 +24,15 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
 		private readonly MessagingConfiguration confi;
 		private readonly IMessageSender sender;
 
-		public MessagingConsumer(IMessageReceiver receiver, MessagingConfiguration confi, IMessageSender sender)
+        public MessagingConsumer(IMessageReceiver receiver
+			, MessagingConfiguration confi
+			, IMessageSender sender)
 		{
 			this.receiver = receiver;
 
 			this.confi = confi;
 			this.sender = sender;
-		}
+        }
 
 		public async void StartProcess(Func<AnalysisContext, DocumentAnalysisRequest, Task<bool>> theAction)
 		{
@@ -40,6 +43,7 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
 			{
 				try
 				{
+
 					AnalysisContext additionalData = JsonConvert.DeserializeObject<AnalysisContext>(
 						menssage.Message.AdditionalData != null ?
 						menssage.Message.AdditionalData.ToString() : String.Empty);
@@ -51,7 +55,7 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
 				}
 				catch (Exception ex) //In a more complex app, you could set up individually each failure on each chunk
 				{
-					menssage.Message.DataChunks.ForEach(chunk =>
+                    menssage.Message.DataChunks.ForEach(chunk =>
 					{
 						chunk.Success = false;
 						chunk.Detail = ex.Message;
