@@ -10,7 +10,7 @@ namespace Aranzadi.DocumentAnalysis.DTO
 
         public string Tenant { get; set; }
 
-        public string UserDataId { get; set; }
+        public string Owner { get; set; }
 
         public string Hash { get; set; }
 

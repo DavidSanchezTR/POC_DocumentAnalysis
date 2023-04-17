@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
 {
-    public class MessagingConfiguration: IValidable
+    public class MessagingConfiguration : IValidable
     {
         public string ServicesBusConnectionString { get; set; }
         public string ServicesBusCola { get; set; }
@@ -26,12 +26,12 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
 
         public bool Validate()
         {
-            if (string.IsNullOrWhiteSpace(this.ServicesBusCola)||
-                string.IsNullOrWhiteSpace(this.ServicesBusConnectionString)||
-                string.IsNullOrWhiteSpace(this.Source)||
-                string.IsNullOrWhiteSpace(this.Type)// ||
-                // this.URLOrquestador==null||
-                //this.URLServicioAnalisisDoc ==null
+            if (string.IsNullOrWhiteSpace(this.ServicesBusCola) ||
+                string.IsNullOrWhiteSpace(this.ServicesBusConnectionString) ||
+                string.IsNullOrWhiteSpace(this.Source) ||
+                string.IsNullOrWhiteSpace(this.Type) ||
+                this.URLOrquestador == null ||
+                this.URLServicioAnalisisDoc == null
                 )
             {
                 return false;

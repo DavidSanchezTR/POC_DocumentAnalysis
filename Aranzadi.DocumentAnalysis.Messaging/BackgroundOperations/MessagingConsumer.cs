@@ -15,7 +15,7 @@ using ThomsonReuters.BackgroundOperations.Messaging.Models;
 
 namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
 {
-	internal class MessagingConsumer : IConsumer
+	public class MessagingConsumer : IConsumer
 
 	{
 		private readonly IMessageReceiver receiver;
