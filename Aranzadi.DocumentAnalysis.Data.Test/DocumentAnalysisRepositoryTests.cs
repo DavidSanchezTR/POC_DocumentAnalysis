@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Aranzadi.DocumentAnalysis.Data.Repository;
 using System.Threading;
 using Util.TestingMockAsyncMethods;
+using Microsoft.Extensions.Logging;
 
 namespace Aranzadi.DocumentAnalysis.Data.Test
 {
@@ -150,6 +151,46 @@ namespace Aranzadi.DocumentAnalysis.Data.Test
             Assert.AreEqual(result.Count(), 0);
         }
 
+
+        [TestMethod]
+        public async Task GetAnalysisAsync_ValidValues_ReturnsDocumentAnalysis()
+        {
+           // DocumentAnalysisData data = GetDocumentAnalysisData();
+
+            var lista = new List<DocumentAnalysisData>
+            {
+                GetDocumentAnalysisData()
+            };
+
+            var dbSetMock = CreateDbSetMock<DocumentAnalysisData>(lista.AsQueryable());
+
+            Mock<DocumentAnalysisDbContext> mockDocumentAnalysisDbContext = new Mock<DocumentAnalysisDbContext>();
+
+            mockDocumentAnalysisDbContext.Setup(sp => sp.Analysis).Returns(dbSetMock.Object);
+
+            DocumentAnalysisRepository analysisRepository = new DocumentAnalysisRepository(mockDocumentAnalysisDbContext.Object);
+
+            var result = await analysisRepository.GetAnalysisAsync(lista[0].Sha256);
+
+            Assert.AreEqual(result.DocumentId, lista[0].Id);
+            Assert.AreEqual(result.Status, lista[0].Status);
+            Assert.AreEqual(result.Analysis, lista[0].Analysis);
+        }
+
+        [TestMethod]
+        public async Task GetAnalysisAsync_InvalidValues_ReturnsEmptyFromException()
+        {
+            var dbSetMock = new Mock<DbSet<DocumentAnalysisData>>();
+
+            Mock<DocumentAnalysisDbContext> mockDocumentAnalysisDbContext = new Mock<DocumentAnalysisDbContext>();
+
+            mockDocumentAnalysisDbContext.Setup(sp => sp.Analysis).Returns(dbSetMock.Object);
+
+            DocumentAnalysisRepository analysisRepository = new DocumentAnalysisRepository(mockDocumentAnalysisDbContext.Object);
+            var result = await analysisRepository.GetAnalysisAsync("");
+            Assert.AreEqual(result , null);
+        }
+
         private DocumentAnalysisData GetDocumentAnalysisData()
         {
             return new DocumentAnalysisData
@@ -188,5 +229,11 @@ namespace Aranzadi.DocumentAnalysis.Data.Test
 
             return dbSetMock;
         }
+
+      
+
+
+
+
     }
 }

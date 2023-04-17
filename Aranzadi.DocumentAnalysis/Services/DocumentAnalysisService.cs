@@ -58,14 +58,14 @@ public class DocumentAnalysisService : IDocumentAnalysisService
         return listaAnalisis;
     }
 
-    public async Task<Aranzadi.DocumentAnalysis.Data.Entities.DocumentAnalysisResult> GetAnalysisAsync(string tenantId, string userId, Guid documentId)
+    public async Task<Aranzadi.DocumentAnalysis.Data.Entities.DocumentAnalysisResult?> GetAnalysisAsync(string sha256)
     {
-        if (string.IsNullOrEmpty(tenantId) || string.IsNullOrEmpty(userId) || documentId == Guid.Empty)
+        if (string.IsNullOrEmpty(sha256))
         {
             throw new ArgumentNullException();
         }
 
-        var singleAnalisis = await _documentAnalysisRepository.GetAnalysisAsync(tenantId, userId, documentId);
+        var singleAnalisis = await _documentAnalysisRepository.GetAnalysisAsync(sha256);
 
         return singleAnalisis;        
     }

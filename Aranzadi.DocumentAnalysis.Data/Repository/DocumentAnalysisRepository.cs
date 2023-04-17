@@ -1,5 +1,6 @@
 ﻿using Aranzadi.DocumentAnalysis.Data.Entities;
 using Aranzadi.DocumentAnalysis.Data.IRepository;
+using Microsoft.Azure.Cosmos;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -72,25 +73,21 @@ namespace Aranzadi.DocumentAnalysis.Data.Repository
             }
             return items;
         }
-
-        public async Task<DocumentAnalysisResult> GetAnalysisAsync(string TenantId, string UserId, Guid DocumentId)
-        {            
-            var analysis = await dbContext.Analysis.Where(e => e.TenantId == TenantId && e.UserId == UserId && e.Id == DocumentId).Select(a => new DocumentAnalysisResult { Status = a.Status, DocumentId = a.Id, Analysis = a.Analysis }).FirstOrDefaultAsync();
-
-            if (analysis == null)
-            {
-                throw new NullReferenceException();
-            }
-           
-            return analysis;
-        }
+       
 
         public async Task<DocumentAnalysisResult?> GetAnalysisAsync(string sha256)
         {
-
-            var analysis = await dbContext.Analysis.Where(e => e.Sha256 == sha256 && e.Status == DTO.Enums.StatusResult.Disponible).Select(a => new DocumentAnalysisResult { Status = a.Status, DocumentId = a.Id, Analysis = a.Analysis }).FirstOrDefaultAsync();
+            try
+            {
+                var analysis = await dbContext.Analysis.Where(e => e.Sha256 == sha256).Select(a => new DocumentAnalysisResult { Status = a.Status, DocumentId = a.Id, Analysis = a.Analysis }).FirstOrDefaultAsync();
+                return analysis;
+            }
+            catch (Exception ex)
+            {
+                ex.Message.ToString();
+                return null;
+            }
             
-            return analysis;
         }
 
         #endregion

@@ -10,6 +10,6 @@ public interface IDocumentAnalysisService
 
 	Task<IEnumerable<DocumentAnalysisResult>> GetAllAnalysisAsync(string TenantId, string UserId);
 
-	Task<DocumentAnalysisResult> GetAnalysisAsync(string TenantId, string UserId, Guid DocumentId);
+	Task<DocumentAnalysisResult?> GetAnalysisAsync(String Sha256);
 	
 }

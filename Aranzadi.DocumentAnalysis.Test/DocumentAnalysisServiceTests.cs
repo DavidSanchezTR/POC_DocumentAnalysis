@@ -26,7 +26,7 @@ namespace Aranzadi.DocumentAnalysis.Test
 
             var documentAnalysisService = new DocumentAnalysisService(documentAnalysisRepositoryMock.Object, Mock.Of<ILogger<DocumentAnalysisService>>());
 
-            var result = await documentAnalysisService.GetAnalysisAsync("122","22", documentAnalysisResult.DocumentId);
+            var result = await documentAnalysisService.GetAnalysisAsync("Hash");
             Assert.AreEqual(documentAnalysisResult.Analysis,result.Analysis);
             Assert.AreEqual(documentAnalysisResult.DocumentId,result.DocumentId);
             Assert.AreEqual(documentAnalysisResult.Status,result.Status);
@@ -43,7 +43,7 @@ namespace Aranzadi.DocumentAnalysis.Test
 
             var documentAnalysisService = new DocumentAnalysisService(documentAnalysisRepositoryMock.Object, Mock.Of<ILogger<DocumentAnalysisService>>());
 
-            await Assert.ThrowsExceptionAsync<ArgumentNullException>(() => documentAnalysisService.GetAnalysisAsync("", "22", documentAnalysisResult.DocumentId), "Debería haber lanzado una excepción  por parametro vacío");
+            await Assert.ThrowsExceptionAsync<ArgumentNullException>(() => documentAnalysisService.GetAnalysisAsync(""), "Debería haber lanzado una excepción  por parametro vacío");
         }
 
         [TestMethod]
@@ -92,7 +92,7 @@ namespace Aranzadi.DocumentAnalysis.Test
         private Mock<IDocumentAnalysisRepository> GetIDocumentAnalysisRepositoryOKMock(List<DocumentAnalysisResult> documentAnalysisResultList)
         {
             Mock<IDocumentAnalysisRepository> documentAnalysisRepositoryMock = new Mock<IDocumentAnalysisRepository>();
-            documentAnalysisRepositoryMock.Setup(e => e.GetAnalysisAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Guid>())).Returns(Task.FromResult(documentAnalysisResultList[0]));
+            documentAnalysisRepositoryMock.Setup(e => e.GetAnalysisAsync(It.IsAny<string>())).Returns(Task.FromResult(documentAnalysisResultList[0])!);
             documentAnalysisRepositoryMock.Setup(e => e.GetAllAnalysisAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(documentAnalysisResultList.AsEnumerable()));
             return documentAnalysisRepositoryMock;
         }

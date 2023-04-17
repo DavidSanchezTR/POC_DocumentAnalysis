@@ -36,15 +36,15 @@ namespace Aranzadi.DocumentAnalysis.Controllers
         }        
 
         // GET api/<DocumentAnalysisController>/5
-        [HttpGet("GetAnalysis{tenantId}/{userId}/{documentId}")]
-        public async Task<IActionResult> Get(string tenantId, string userId, Guid documentId)
+        [HttpGet("GetAnalysis{Sha256}")]
+        public async Task<IActionResult> Get(string Sha256)
         {
-            if (string.IsNullOrEmpty(tenantId) || string.IsNullOrEmpty(userId) || documentId == Guid.Empty)
+            if (string.IsNullOrEmpty(Sha256))
             {
                 return BadRequest("TenantId and UserId is required");
             }
 
-            var singleAnalisis = await _documentAnalysisService.GetAnalysisAsync(tenantId, userId, documentId);
+            var singleAnalisis = await _documentAnalysisService.GetAnalysisAsync(Sha256);
 
             return Ok(singleAnalisis);
         }
