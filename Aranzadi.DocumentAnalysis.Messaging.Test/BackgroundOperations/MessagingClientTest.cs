@@ -196,30 +196,30 @@ namespace Aranzadi.DocumentAnalysis.Messaging.Test.BackgroundOperations
             return true;
         }
 
-        //[TestMethod()]
-        //public async Task SendRequest_ValidateResponse_PackageTrackOK()
-        //{
+        [TestMethod()]
+        public async Task SendRequest_ValidateResponse_PackageTrackOK()
+        {
 
-        //    PackageRequest paquete = PackageRequestTest.ValidPackage();
-        //    paquete.Documents = new List<DocumentAnalysisRequest>() {
-        //        DocumentAnalysisRequestTest.ValidRequest(),
-        //        DocumentAnalysisRequestTest.ValidRequest(),
-        //    };
+            PackageRequest paquete = PackageRequestTest.ValidPackage();
+            paquete.Documents = new List<DocumentAnalysisRequest>() {
+                DocumentAnalysisRequestTest.ValidRequest(),
+                DocumentAnalysisRequestTest.ValidRequest(),
+            };
 
-        //    this.senderMoq.Setup(
-        //        e => e.Send(
-        //               this.conf.ServicesBusCola,
-        //               It.IsAny<Message<DocumentAnalysisRequest>>(),
-        //               default))
-        //    .Returns(Task.FromResult(() => { }));
+            this.senderMoq.Setup(
+                e => e.Send(
+                       this.conf.ServicesBusCola,
+                       It.IsAny<Message<DocumentAnalysisRequest>>(),
+                       default))
+            .Returns(Task.FromResult(() => { }));
 
-        //    theClient = new MessagingClient(this.senderMoq.Object, this.conf, this.factMoq.Object);
-        //    PackageRequestTrack packageTrack = await theClient.SendRequestAsync(paquete);
-        //    Assert.IsNotNull(packageTrack);
-        //    Assert.IsFalse(string.IsNullOrWhiteSpace(packageTrack.TrackingNumber));
-        //    VerifyPackageTrack(paquete, packageTrack);
-        //    this.senderMoq.VerifyAll();
-        //}
+            theClient = new MessagingClient(this.senderMoq.Object, this.conf, this.factMoq.Object);
+            PackageRequestTrack packageTrack = await theClient.SendRequestAsync(paquete);
+            Assert.IsNotNull(packageTrack);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(packageTrack.TrackingNumber));
+            VerifyPackageTrack(paquete, packageTrack);
+            this.senderMoq.VerifyAll();
+        }
 
         private static void VerifyPackageTrack(PackageRequest paquete, PackageRequestTrack packageTrack)
         {

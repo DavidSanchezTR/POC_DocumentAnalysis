@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -23,7 +24,7 @@ namespace Aranzadi.DocumentAnalysis.Messaging.Test.DTO.Request
             {
                 Name = "Document name",
                 Path = "Document url path",
-                Hash = "Hash"
+                Hash = Guid.NewGuid().ToString()// "Hash"
             };
             re.UserAnalysis = new UserAnalysis()
             {

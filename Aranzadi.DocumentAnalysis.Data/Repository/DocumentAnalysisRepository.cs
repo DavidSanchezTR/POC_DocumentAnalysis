@@ -26,7 +26,7 @@ namespace Aranzadi.DocumentAnalysis.Data.Repository
             {
                 data.Id = Guid.NewGuid();
 
-                dbContext.Add(data);
+                dbContext.Analysis.Add(data);
 
                 return await dbContext.SaveChangesAsync();
                 
