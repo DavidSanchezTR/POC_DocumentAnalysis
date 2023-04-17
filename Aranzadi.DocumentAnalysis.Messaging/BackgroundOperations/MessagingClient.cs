@@ -90,7 +90,6 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
             }
             catch (Exception ex)
             {
-
                 throw new DocumentAnalysisException("Error Enviando mensaje", ex);
             }
 
@@ -171,7 +170,7 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
                     {
                         App = context.App,
                         Tenant = context.Tenant,
-                        UserDataId = context.Owner,
+                        Owner = context.Owner,
                         Hash = docREf,
                     };
                     List<DocumentResponse> doc = new List<DocumentResponse>();
@@ -214,7 +213,7 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
            
             queryString = System.Web.HttpUtility.ParseQueryString(string.Empty);
             queryString.Add(nameof(re.App), re.App);
-            queryString.Add(nameof(re.UserDataId), re.UserDataId);
+            queryString.Add(nameof(re.Owner), re.Owner);
             queryString.Add(nameof(re.Tenant), re.Tenant);
             queryString.Add(nameof(re.Hash), re.Hash);
 

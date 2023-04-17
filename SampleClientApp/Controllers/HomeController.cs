@@ -137,6 +137,8 @@ namespace SampleClientApp.Controllers
                 conf.ServicesBusCola = Queue;
                 conf.Source = BackgroundOperationsFactory.MESSAGE_SOURCE_FUSION;
                 conf.Type = BackgroundOperationsFactory.MESSAGE_TYPE_DOCUMENT_ANALYSIS;
+                conf.URLOrquestador = new Uri("https://urlorquestador.com");
+                conf.URLServicioAnalisisDoc = new Uri("https://urlservicioanalisis.com");
 
                 var factory = new AnalisisDocumentosDefaultFactory(conf);
                 IClient client = factory.GetClient();
