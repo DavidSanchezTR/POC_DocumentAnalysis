@@ -80,7 +80,7 @@ namespace Aranzadi.DocumentAnalysis.Messaging.Test.DTO.Request
             var invalidatedPackage = ValidPackage();
             var l = new List<DocumentAnalysisRequest>();
             var request = DocumentAnalysisRequestTest.ValidRequest();
-            request.Document.Name = "";
+            request.Name = "";
             l.Add(request);
             invalidatedPackage.Documents = l;
             Assert.IsFalse(invalidatedPackage.Validate());

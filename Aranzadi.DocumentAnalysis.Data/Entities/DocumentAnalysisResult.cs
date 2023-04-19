@@ -1,6 +1,7 @@
 ﻿
 
 using Aranzadi.DocumentAnalysis.DTO.Enums;
+using Aranzadi.DocumentAnalysis.DTO.Response;
 
 namespace Aranzadi.DocumentAnalysis.Data.Entities
 {
@@ -12,6 +13,5 @@ namespace Aranzadi.DocumentAnalysis.Data.Entities
 
         public StatusResult Status { get; set; }
 
-        
-    }
+	}
 }

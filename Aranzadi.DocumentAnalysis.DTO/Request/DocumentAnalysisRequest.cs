@@ -10,28 +10,17 @@ namespace Aranzadi.DocumentAnalysis.DTO.Request
     public class DocumentAnalysisRequest : IValidable
     {
 
-        //Provienen de la clase DocumentAnalysisData de Infolex
-        
-        public string EmailId { get; set; }
-
-        public string Subject { get; set; }
-        public string FromEmail { get; set; }
-        public string ConversationID { get; set; }
-
-        public DocumentAnalysisFile Document { get; set; }
-
-        public UserAnalysis UserAnalysis { get; set; }
-
-        public string Analysis { get; set; }
-
-        public Source Source { get; set; }
+		public string Guid { get; set; }
+		public string Name { get; set; }
+		public string Path { get; set; }
+        	
 
         public bool Validate()
         {
-            if (Document == null ||
-                string.IsNullOrWhiteSpace(Document.Hash) ||
-                string.IsNullOrWhiteSpace(Document.Path) ||
-                string.IsNullOrWhiteSpace(Document.Name))
+            if (
+                string.IsNullOrWhiteSpace(Guid) ||
+                string.IsNullOrWhiteSpace(Name) ||
+                string.IsNullOrWhiteSpace(Path))
             {
                 return false;
             }

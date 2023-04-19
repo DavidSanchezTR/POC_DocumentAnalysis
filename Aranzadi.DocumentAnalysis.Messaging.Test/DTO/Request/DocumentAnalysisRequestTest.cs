@@ -8,71 +8,58 @@ using System.Threading.Tasks;
 
 namespace Aranzadi.DocumentAnalysis.Messaging.Test.DTO.Request
 {
-    [TestClass()]
-    public class DocumentAnalysisRequestTest
-    {
-        public static DocumentAnalysisRequest ValidRequest()
-        {
-            var re = new DocumentAnalysisRequest();
-            re.Analysis = "Analysis";
-            re.Subject = "Subject";
-            re.Source = DocumentAnalysis.DTO.Enums.Source.LaLey;
-            re.FromEmail = "mail@mail.com";
-            re.ConversationID = "Conversation Id";
-            re.EmailId = "mail ID";
-            re.Document = new DocumentAnalysisFile()
-            {
-                Name = "Document name",
-                Path = "Document url path",
-                Hash = Guid.NewGuid().ToString()// "Hash"
-            };
-            re.UserAnalysis = new UserAnalysis()
-            {
-                LawFirmId = 100,
-                UserId = 50
-            };
-            Assert.IsTrue(re.Validate(), "Request generica, reutizada en test");
-            return re;
-        }
+	[TestClass()]
+	public class DocumentAnalysisRequestTest
+	{
+		public static DocumentAnalysisRequest ValidRequest()
+		{
+			var re = new DocumentAnalysisRequest();
+			re.Name = "DocumentName.pdf";
+			re.Path = "http://urlToken.com";
+			re.Guid = Guid.NewGuid().ToString();
 
-        [TestMethod()]
-        public void Validate_ValidRequest_OK()
-        {
-            Assert.IsTrue(ValidRequest().Validate());
-        }
+			Assert.IsTrue(re.Validate(), "Request generica, reutizada en test");
+			return re;
+		}
 
-        [TestMethod()]
-        [DataRow(null, DisplayName = "null value")]
-        [DataRow("", DisplayName = "empty value")]
-        [DataRow("   ", DisplayName = "white space value")]
-        public void Validate_DocumentName_Error(string value)
-        {
-            var request = ValidRequest();
-            request.Document.Name = value;
-            Assert.IsFalse(request.Validate());
-        }
+		[TestMethod()]
+		public void Validate_ValidRequest_OK()
+		{
+			Assert.IsTrue(ValidRequest().Validate());
+		}
 
-        [TestMethod()]
-        [DataRow(null, DisplayName = "null value")]
-        [DataRow("", DisplayName = "empty value")]
-        [DataRow("   ", DisplayName = "white space value")]
-        public void Validate_DocumentPath_Error(string value)
-        {
-            var request = ValidRequest();
-            request.Document.Path = value;
-            Assert.IsFalse(request.Validate());
-        }
+		[TestMethod()]
+		[DataRow(null, DisplayName = "null value")]
+		[DataRow("", DisplayName = "empty value")]
+		[DataRow("   ", DisplayName = "white space value")]
+		public void Validate_DocumentName_Error(string value)
+		{
+			var request = ValidRequest();
+			request.Name = value;
+			Assert.IsFalse(request.Validate());
+		}
 
-        [TestMethod()]
-        [DataRow(null, DisplayName = "null value")]
-        [DataRow("", DisplayName = "empty value")]
-        [DataRow("   ", DisplayName = "white space value")]
-        public void Validate_DocumentHash_Error(string value)
-        {
-            var request = ValidRequest();
-            request.Document.Hash = value;
-            Assert.IsFalse(request.Validate());
-        } 
+		[TestMethod()]
+		[DataRow(null, DisplayName = "null value")]
+		[DataRow("", DisplayName = "empty value")]
+		[DataRow("   ", DisplayName = "white space value")]
+		public void Validate_DocumentPath_Error(string value)
+		{
+			var request = ValidRequest();
+			request.Path = value;
+			Assert.IsFalse(request.Validate());
+		}
 
-    }
+		[TestMethod()]
+		[DataRow(null, DisplayName = "null value")]
+		[DataRow("", DisplayName = "empty value")]
+		[DataRow("   ", DisplayName = "white space value")]
+		public void Validate_DocumentHash_Error(string value)
+		{
+			var request = ValidRequest();
+			request.Guid = value;
+			Assert.IsFalse(request.Validate());
+		}
+
+	}
 }

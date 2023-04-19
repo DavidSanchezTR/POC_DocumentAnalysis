@@ -13,6 +13,7 @@ using Aranzadi.DocumentAnalysis.DTO;
 using Aranzadi.DocumentAnalysis.DTO.Response;
 using System.Collections.Specialized;
 using Newtonsoft.Json;
+using Aranzadi.DocumentAnalysis.DTO.Enums;
 
 namespace Aranzadi.DocumentAnalysis.Messaging.Test.BackgroundOperations
 {
@@ -51,7 +52,7 @@ namespace Aranzadi.DocumentAnalysis.Messaging.Test.BackgroundOperations
             PackageRequest request = PackageRequestTest.ValidPackage();
             PackageRequestTrack prt = await client.SendRequestAsync(request);
 
-            Assert.AreEqual(prt.DocumentAnalysysRequestTracks.First().DocumentUniqueRefences, request.Documents.First().Document.Hash);
+            Assert.AreEqual(prt.DocumentAnalysysRequestTracks.First().DocumentUniqueRefences, request.Documents.First().Guid);
 
         }
 
@@ -226,13 +227,13 @@ namespace Aranzadi.DocumentAnalysis.Messaging.Test.BackgroundOperations
             foreach (var doc in paquete.Documents)
             {
                 Assert.AreEqual(1, packageTrack.DocumentAnalysysRequestTracks.
-                    Where((x) => x.DocumentUniqueRefences.Equals(doc.Document.Hash)).
+                    Where((x) => x.DocumentUniqueRefences.Equals(doc.Guid)).
                     Count());
             }
             foreach (var documentTranck in packageTrack.DocumentAnalysysRequestTracks)
             {
                 Assert.AreEqual(1, paquete.Documents.
-                    Where((x) => x.Document.Hash.Equals(documentTranck.DocumentUniqueRefences)).
+                    Where((x) => x.Guid.Equals(documentTranck.DocumentUniqueRefences)).
                     Count());
                 Assert.IsFalse(string.IsNullOrWhiteSpace(documentTranck.TrackingNumber));
             }
@@ -333,7 +334,7 @@ namespace Aranzadi.DocumentAnalysis.Messaging.Test.BackgroundOperations
             await GetAnalysisAsyncDocRefTestHttpRequest(handler);
         }
 
-        private async Task<DocumentResponse> GetAnalysisAsyncDocRefTestHttpRequest(HttpMessageHandlerMoq handler)
+        private async Task<DocumentAnalysisResponse> GetAnalysisAsyncDocRefTestHttpRequest(HttpMessageHandlerMoq handler)
         {
             this.factMoq.Setup<HttpClient>(e => e.CreateClient(MessagingClient.CLIENT_ID))
                 .Returns(new HttpClient(handler));
@@ -389,17 +390,17 @@ namespace Aranzadi.DocumentAnalysis.Messaging.Test.BackgroundOperations
         [TestMethod]
         public async Task GetAnalysisAsync_OneDocumentResponse_Return()
         {
-            var doc = new DocumentResponse()
+            var doc = new DocumentAnalysisResponse()
             {
                 Description = "Des",
                 DocumentName = "DocName",
                 DocumentUniqueRefences = "DocRef",
                 Organo = "Organo",
-                Status = AnalysisStatus.Pending,
+                Status = StatusResult.Pendiente,
                 Type = AnalysisTypes.Demand
             };
 
-            var r = new List<DocumentResponse>() {
+            var r = new List<DocumentAnalysisResponse>() {
                 doc
             };
 
@@ -420,17 +421,17 @@ namespace Aranzadi.DocumentAnalysis.Messaging.Test.BackgroundOperations
         [ExpectedException(typeof(DocumentAnalysisException))]
         public async Task GetAnalysisAsync_MoreThanOneDocumentResponse_Exception()
         {
-            var doc = new DocumentResponse()
+            var doc = new DocumentAnalysisResponse()
             {
                 Description = "Des",
                 DocumentName = "DocName",
                 DocumentUniqueRefences = "DocRef",
                 Organo = "Organo",
-                Status = AnalysisStatus.Pending,
+                Status = StatusResult.Pendiente,
                 Type = AnalysisTypes.Demand
             };
 
-            var r = new List<DocumentResponse>() {
+            var r = new List<DocumentAnalysisResponse>() {
                 doc,
                 doc
             };
@@ -516,25 +517,25 @@ namespace Aranzadi.DocumentAnalysis.Messaging.Test.BackgroundOperations
         public async Task GetAnalysisAsync_ValidNotDocRef_SeveralDocs()
         {
 
-            var doc1 = new DocumentResponse()
+            var doc1 = new DocumentAnalysisResponse()
             {
                 Description = "Des1",
                 DocumentName = "DocName1",
                 DocumentUniqueRefences = "DocRef1",
                 Organo = "Organo2",
-                Status = AnalysisStatus.Pending,
+                Status = StatusResult.Pendiente,
                 Type = AnalysisTypes.Demand
             };
-            var doc2 = new DocumentResponse()
+            var doc2 = new DocumentAnalysisResponse()
             {
                 Description = "Des2",
                 DocumentName = "DocName2",
                 DocumentUniqueRefences = "DocRef2",
                 Organo = "Organo2",
-                Status = AnalysisStatus.Done,
+                Status = StatusResult.Disponible,
                 Type = AnalysisTypes.Undefined
             };
-            var r = new List<DocumentResponse>() { doc1, doc2 };
+            var r = new List<DocumentAnalysisResponse>() { doc1, doc2 };
             var handler = new HttpMessageHandlerMoq(1, (num, request) =>
             {
                 return new HttpResponseMessage()
@@ -544,7 +545,7 @@ namespace Aranzadi.DocumentAnalysis.Messaging.Test.BackgroundOperations
                 };
             });
 
-            IEnumerable<DocumentResponse> result = await GetAnalysisAsyncTestHttpRequest(handler);
+            IEnumerable<DocumentAnalysisResponse> result = await GetAnalysisAsyncTestHttpRequest(handler);
             Assert.AreEqual(2, result.Count());
             Assert.AreEqual(1, result.Where((x) => x.Equals(doc1)).Count());
             Assert.AreEqual(1, result.Where((x) => x.Equals(doc2)).Count());
@@ -559,7 +560,7 @@ namespace Aranzadi.DocumentAnalysis.Messaging.Test.BackgroundOperations
             await theClient.GetAnalysisAsync(this.theContext);
         }
 
-        private async Task<IEnumerable<DocumentResponse>> GetAnalysisAsyncTestHttpRequest(HttpMessageHandlerMoq handler)
+        private async Task<IEnumerable<DocumentAnalysisResponse>> GetAnalysisAsyncTestHttpRequest(HttpMessageHandlerMoq handler)
         {
             this.factMoq.Setup<HttpClient>(e => e.CreateClient(MessagingClient.CLIENT_ID))
                .Returns(new HttpClient(handler));

@@ -90,14 +90,14 @@ namespace Aranzadi.DocumentAnalysis.Services
                     App = context.App,
                     TenantId = context.Tenant.ToString(),
                     UserId = context.Owner,
-                    Analysis = request.Analysis,
+                    Analysis = null,
                     Status = StatusResult.Pendiente,
                     AnalysisDate = DateTimeOffset.Now,
                     CreateDate = DateTimeOffset.Now,
-                    Source = request.Source,
-                    DocumentName = request.Document.Name,
-                    AccessUrl = request.Document.Path,
-                    Sha256 = request.Document.Hash
+                    Source = Source.LaLey,
+                    DocumentName = request.Name,
+                    AccessUrl = request.Path,
+                    Sha256 = "" // Calcular el Hash aqui en el paquete
                 };
                 using (IServiceScope scope = serviceProvider.CreateScope())
                 {

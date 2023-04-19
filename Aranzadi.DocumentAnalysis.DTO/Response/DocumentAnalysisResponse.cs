@@ -2,18 +2,19 @@
 using System.Collections.Generic;
 using System.Text;
 using Aranzadi.DocumentAnalysis.DTO;
+using Aranzadi.DocumentAnalysis.DTO.Enums;
 
 namespace Aranzadi.DocumentAnalysis.DTO.Response
 {
-    public class DocumentResponse : IEquatable<DocumentResponse>
+    public class DocumentAnalysisResponse : IEquatable<DocumentAnalysisResponse>
     {
+		public DocumentAnalysisDataJsonResultOK Result { get; set; }
 
-
-        public string DocumentName { get; set; }
+		public string DocumentName { get; set; }
 
         public string DocumentUniqueRefences { get; set; }
 
-        public AnalysisStatus Status { get; set; }
+        public StatusResult Status { get; set; }
 
         public AnalysisTypes Type { get; set; }
 
@@ -23,9 +24,9 @@ namespace Aranzadi.DocumentAnalysis.DTO.Response
 
         public override bool Equals(object obj)
         {
-            return Equals(obj as DocumentResponse);
+            return Equals(obj as DocumentAnalysisResponse);
         }
-        public bool Equals(DocumentResponse other)
+        public bool Equals(DocumentAnalysisResponse other)
         {
             return !(other is null) &&
                 AnalysisContext.CompareStringToUpperInvariant(DocumentName, other.DocumentName) &&

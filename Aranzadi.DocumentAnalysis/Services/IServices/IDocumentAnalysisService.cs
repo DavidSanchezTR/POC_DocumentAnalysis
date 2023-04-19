@@ -1,4 +1,5 @@
 ﻿using Aranzadi.DocumentAnalysis.Data.Entities;
+using Aranzadi.DocumentAnalysis.DTO.Response;
 using System;
 
 public interface IDocumentAnalysisService
@@ -8,8 +9,8 @@ public interface IDocumentAnalysisService
 
 	Task<byte[]> GetBytesAsync(DocumentAnalysisData data, int LawfirmId);
 
-	Task<IEnumerable<DocumentAnalysisResult>> GetAllAnalysisAsync(string TenantId, string UserId);
+	Task<IEnumerable<DocumentAnalysisResponse>> GetAllAnalysisAsync(string TenantId, string UserId);
 
-	Task<DocumentAnalysisResult?> GetAnalysisAsync(String Sha256);
+	Task<DocumentAnalysisResponse> GetAnalysisAsync(String Sha256);
 	
 }

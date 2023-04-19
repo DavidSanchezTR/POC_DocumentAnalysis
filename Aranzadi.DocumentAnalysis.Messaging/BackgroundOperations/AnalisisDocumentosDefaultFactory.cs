@@ -7,6 +7,8 @@ using ThomsonReuters.BackgroundOperations.Messaging;
 using ThomsonReuters.BackgroundOperations.Messaging.Models.Status;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using log4net;
 
 namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
 {
@@ -42,20 +44,25 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
 
         
         private MessagingConfiguration confi;
+		private readonly ILog logger;
 
-        public AnalisisDocumentosDefaultFactory(MessagingConfiguration confi)
+		public AnalisisDocumentosDefaultFactory(MessagingConfiguration confi)
         {
             this.confi = confi;
         }
-             
 
-        public IClient GetClient()
+		public AnalisisDocumentosDefaultFactory(MessagingConfiguration confi, ILog logger) : this (confi)
+		{
+			this.logger = logger;
+		}
+
+		public IClient GetClient()
         {
             ConfigureFactory();
 
             var sender = messageFactory.GetSender(new ConnectionSettings(confi.ServicesBusConnectionString), null);
 
-            return new MessagingClient(sender, confi, httpClientFactory);
+            return new MessagingClient(sender, confi, httpClientFactory, logger);
         }
 
         public IConsumer GetConsumer()

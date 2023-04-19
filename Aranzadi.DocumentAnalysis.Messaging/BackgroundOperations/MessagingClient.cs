@@ -17,6 +17,8 @@ using Newtonsoft.Json;
 using Polly;
 using System.Diagnostics;
 using Polly.Retry;
+using Microsoft.Extensions.Logging;
+using log4net;
 
 namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
 {
@@ -30,8 +32,8 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
         private readonly MessagingConfiguration confi;
 
         private readonly IHttpClientFactory httpCliFact;
-
-        internal static readonly string CLIENT_ID = "SAD";
+		private readonly ILog logger;
+		internal static readonly string CLIENT_ID = "SAD";
 
         /// <summary>
         /// In the unit test, we don't want to wait some minutes, so we decrease the Max_time_polly_Retry to 1 second,       
@@ -57,7 +59,12 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
             this.httpCliFact = cli;
         }
 
-        private static void ValidateConstructorParameters(IMessageSender messageSender, MessagingConfiguration confi, IHttpClientFactory cli)
+		internal MessagingClient(IMessageSender messageSender, MessagingConfiguration confi, IHttpClientFactory cli, ILog logger) : this(messageSender, confi, cli)
+		{
+			this.logger = logger;
+		}
+
+		private static void ValidateConstructorParameters(IMessageSender messageSender, MessagingConfiguration confi, IHttpClientFactory cli)
         {
             if (messageSender == null)
             {
@@ -80,7 +87,11 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
         public async Task<PackageRequestTrack> SendRequestAsync(PackageRequest theRequest)
         {
             ValidateRequest(theRequest);
-            try
+
+			logger?.Debug($"Sending message to {confi.ServicesBusCola} with uid {theRequest.PackageUniqueRefences}");
+			logger?.Info($"Sending message to {confi.ServicesBusCola} with uid {theRequest.PackageUniqueRefences}");
+
+			try
             {
                 Message<DocumentAnalysisRequest> message = PrepareMessage(theRequest);
 
@@ -90,7 +101,8 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
             }
             catch (Exception ex)
             {
-                throw new DocumentAnalysisException("Error Enviando mensaje", ex);
+				logger?.Error("Error while sending", ex);
+				throw new DocumentAnalysisException("Error Enviando mensaje", ex);
             }
 
         }
@@ -130,13 +142,13 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
             var tracDetail = message.DataChunks.Select(chu => new DocumentAnalysisRequestTrack()
             {
                 TrackingNumber = chu.ID,
-                DocumentUniqueRefences = chu.Data.Document.Hash
+                DocumentUniqueRefences = chu.Data.Guid
             });
             track.DocumentAnalysysRequestTracks = tracDetail;
             return track;
         }
 
-        public async Task<DocumentResponse> GetAnalysisAsync(AnalysisContext context, string documentId)
+        public async Task<DocumentAnalysisResponse> GetAnalysisAsync(AnalysisContext context, string documentId)
         {
             if (string.IsNullOrWhiteSpace(documentId))
             {
@@ -152,15 +164,15 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
         }       
               
 
-        public async Task<IEnumerable<DocumentResponse>> GetAnalysisAsync(AnalysisContext context)
+        public async Task<IEnumerable<DocumentAnalysisResponse>> GetAnalysisAsync(AnalysisContext context)
         {            
 
             return await RequestStatusList(context,string.Empty);
         }
 
-        private async Task<List<DocumentResponse>> RequestStatusList(AnalysisContext context, string docREf)
+        private async Task<List<DocumentAnalysisResponse>> RequestStatusList(AnalysisContext context, string docREf)
         {
-            ValidateGetAlalysisContext(context);            
+            ValidateGetAnalysisContext(context);            
            
             using (var httpCli = this.httpCliFact.CreateClient(CLIENT_ID))
             {
@@ -173,7 +185,7 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
                         Owner = context.Owner,
                         Hash = docREf,
                     };
-                    List<DocumentResponse> doc = new List<DocumentResponse>();
+                    List<DocumentAnalysisResponse> doc = new List<DocumentAnalysisResponse>();
                     Uri theUri = GetUri(theStatusRequest);
                     AsyncRetryPolicy policy = GetRetryPolicy(theStatusRequest);
                     string jsonDocAnalisis = await policy.ExecuteAsync(async () =>
@@ -183,7 +195,7 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
 
                     if (!string.IsNullOrEmpty(jsonDocAnalisis))
                     {
-                        doc = JsonConvert.DeserializeObject<List<DocumentResponse>>(
+                        doc = JsonConvert.DeserializeObject<List<DocumentAnalysisResponse>>(
                                        jsonDocAnalisis ?? String.Empty);
                     }
                     return doc;
@@ -195,7 +207,7 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
             }
         }
 
-        private static void ValidateGetAlalysisContext(AnalysisContext context)
+        private static void ValidateGetAnalysisContext(AnalysisContext context)
         {
             if (context == null)
             {

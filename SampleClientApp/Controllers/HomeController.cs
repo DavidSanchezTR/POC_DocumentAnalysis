@@ -13,6 +13,10 @@ using Aranzadi.DocumentAnalysis.DTO.Enums;
 using Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations;
 using Aranzadi.DocumentAnalysis.Messaging;
 using System.Configuration;
+using Aranzadi.DocumentAnalysis.DTO;
+using Microsoft.Extensions.Logging;
+using log4net;
+using log4net.Repository.Hierarchy;
 
 namespace SampleClientApp.Controllers
 {
@@ -47,31 +51,16 @@ namespace SampleClientApp.Controllers
                     string ext = ".pdf";
                     string mailMessageId = guid.ToString();
                     string conversationMailMessageId = guid.ToString();
-                    var hash = HashCode.Combine(guid).ToString();
-                    string fileName = hash + ext;
+                    //var hash = HashCode.Combine(guid).ToString();
+                    string fileName = guid.ToString() + ext;
                     string tokenUrlAttachment = "https://www.tokenUrl.es/" + guid.ToString();
 
                     chunks.Add(new MessageDataChunk<DocumentAnalysisRequest>(new DocumentAnalysisRequest
                     {
-                        EmailId = mailMessageId,
-                        Subject = "Subject " + guid.ToString(),
-                        ConversationID = conversationMailMessageId,
-                        FromEmail = fromEmail,
-                        Document = new DocumentAnalysisFile
-                        {
-                            Name = originalFileName,
-                            Path = tokenUrlAttachment,
-                            Hash = hash
-                        },
-                        UserAnalysis = new UserAnalysis
-                        {
-                            LawFirmId = lawfirmID,
-                            UserId = UserId
-                        },                        
-                        Source = Source.LaLey,
-                        Analysis = "Descripcion del analisis"
-                        
-                    }));
+						Name = originalFileName,
+						Path = tokenUrlAttachment,
+                        Guid = guid.ToString()
+					}));
                 }
 
                 var message = new Message<DocumentAnalysisRequest>(BackgroundOperationsFactory.MESSAGE_SOURCE_FUSION,
@@ -94,7 +83,7 @@ namespace SampleClientApp.Controllers
                 return View();
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }
@@ -121,9 +110,13 @@ namespace SampleClientApp.Controllers
 
         public ActionResult SendMessage()
         {
-            // TODO: Enviar mensaje  de analisis de documentos al orquestador
 
-            string backgroundOrchestratorEndpoint = "Endpoint=sb://uksouth-iflx-blue-orch-dev-servicebus.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=OzIgYihRXFO389WSagVM4MidAetFjoy7G72kgQxtOwg=";
+			log4net.Config.XmlConfigurator.Configure();
+
+
+			// TODO: Enviar mensaje  de analisis de documentos al orquestador
+
+			string backgroundOrchestratorEndpoint = "Endpoint=sb://uksouth-iflx-blue-orch-dev-servicebus.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=OzIgYihRXFO389WSagVM4MidAetFjoy7G72kgQxtOwg=";
             string Queue = "backgroundorchestrator";
             int lawfirmID = 100;
             string account = "DESPACHO";
@@ -140,16 +133,21 @@ namespace SampleClientApp.Controllers
                 conf.URLOrquestador = new Uri("https://urlorquestador.com");
                 conf.URLServicioAnalisisDoc = new Uri("https://urlservicioanalisis.com");
 
-                var factory = new AnalisisDocumentosDefaultFactory(conf);
+
+				LogManager.GetLogger("InfolexWebSessionLog");
+				ILog logger = LogManager.GetLogger("loggerTest");
+
+
+				var factory = new AnalisisDocumentosDefaultFactory(conf, logger);
                 IClient client = factory.GetClient();
 
-                
+				
 
-                
-                
-                
-                PackageRequest theRequest = new PackageRequest();
-                theRequest.Context = new Aranzadi.DocumentAnalysis.DTO.AnalysisContext()
+
+
+
+				PackageRequest theRequest = new PackageRequest();
+                theRequest.Context = new AnalysisContext()
                 {
                     Account = account,
                     App = "Fusion",
@@ -168,8 +166,7 @@ namespace SampleClientApp.Controllers
                 foreach (string fileName in listaFicheros)
                 {
                     Guid guid = Guid.NewGuid();
-                    string originalFileName = guid.ToString() + "_" + fileName;
-                    string ext = ".pdf";
+                    string originalFileName = guid.ToString() + "_" + fileName;                    
                     string mailMessageId = guid.ToString();
                     string conversationMailMessageId = guid.ToString();
                     var hash = HashCode.Combine(guid).ToString();
@@ -178,24 +175,9 @@ namespace SampleClientApp.Controllers
 
                     var docAnalysisRequest = new DocumentAnalysisRequest
                     {
-                        EmailId = mailMessageId,
-                        Subject = "Subject " + guid.ToString(),
-                        ConversationID = conversationMailMessageId,
-                        FromEmail = fromEmail,
-                        Document = new DocumentAnalysisFile
-                        {
-                            Name = originalFileName,
-                            Path = tokenUrlAttachment,
-                            Hash = hash
-                        },
-                        UserAnalysis = new UserAnalysis
-                        {
-                            LawFirmId = lawfirmID,
-                            UserId = UserId
-                        },
-                        Source = Source.LaLey,
-                        Analysis = "Descripcion del analisis"
-
+						Name = originalFileName,
+						Path = tokenUrlAttachment,
+                        Guid = guid.ToString()
                     };
 
                     documents.Add(docAnalysisRequest);
@@ -209,7 +191,7 @@ namespace SampleClientApp.Controllers
                 return View();
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }

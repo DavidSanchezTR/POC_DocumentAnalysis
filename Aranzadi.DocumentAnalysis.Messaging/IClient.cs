@@ -8,9 +8,9 @@ namespace Aranzadi.DocumentAnalysis.Messaging
 {
     public interface IClient
     {
-        Task<DocumentResponse> GetAnalysisAsync(AnalysisContext context, string documentUniqueIdentifier);
+        Task<DocumentAnalysisResponse> GetAnalysisAsync(AnalysisContext context, string documentUniqueIdentifier);
 
-        Task<IEnumerable<DocumentResponse>> GetAnalysisAsync(AnalysisContext context);
+        Task<IEnumerable<DocumentAnalysisResponse>> GetAnalysisAsync(AnalysisContext context);
 
         Task<PackageRequestTrack> SendRequestAsync(PackageRequest theRequest);
     }
