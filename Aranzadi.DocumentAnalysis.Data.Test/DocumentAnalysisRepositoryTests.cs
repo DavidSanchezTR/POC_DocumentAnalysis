@@ -153,14 +153,12 @@ namespace Aranzadi.DocumentAnalysis.Data.Test
 
 
         [TestMethod]
-        public async Task GetAnalysisAsync_ValidValues_ReturnsDocumentAnalysis()
+        public async Task GetAnalysisAsync_ValidValues_ReturnsDocumentAnalysisResultOK()
         {
-           // DocumentAnalysisData data = GetDocumentAnalysisData();
-
-            var lista = new List<DocumentAnalysisData>
-            {
-                GetDocumentAnalysisData()
-            };
+             var lista = new List<DocumentAnalysisData>
+             {
+              GetDocumentAnalysisData(DTO.Enums.StatusResult.Disponible)
+             };
 
             var dbSetMock = CreateDbSetMock<DocumentAnalysisData>(lista.AsQueryable());
 
@@ -169,18 +167,40 @@ namespace Aranzadi.DocumentAnalysis.Data.Test
             mockDocumentAnalysisDbContext.Setup(sp => sp.Analysis).Returns(dbSetMock.Object);
 
             DocumentAnalysisRepository analysisRepository = new DocumentAnalysisRepository(mockDocumentAnalysisDbContext.Object);
-
             var result = await analysisRepository.GetAnalysisAsync(lista[0].Sha256);
-
-            Assert.AreEqual(result.DocumentId, lista[0].Id);
-            Assert.AreEqual(result.Status, lista[0].Status);
-            Assert.AreEqual(result.Analysis, lista[0].Analysis);
+            Assert.AreEqual(result?.DocumentId, lista[0].Id);
+            Assert.AreEqual(result?.Status, lista[0].Status);
+            Assert.AreEqual(result?.Analysis, lista[0].Analysis);
         }
 
         [TestMethod]
-        public async Task GetAnalysisAsync_InvalidValues_ReturnsEmptyFromException()
+        public async Task GetAnalysisAsync_PendingStatus_ReturnsDocumentAnalysisResultEmpty()
         {
-            var dbSetMock = new Mock<DbSet<DocumentAnalysisData>>();
+            var lista = new List<DocumentAnalysisData>
+            {
+                GetDocumentAnalysisData()
+            };
+            var dbSetMock = CreateDbSetMock<DocumentAnalysisData>(lista.AsQueryable());
+
+            Mock<DocumentAnalysisDbContext> mockDocumentAnalysisDbContext = new Mock<DocumentAnalysisDbContext>();
+
+            mockDocumentAnalysisDbContext.Setup(sp => sp.Analysis).Returns(dbSetMock.Object);
+
+            DocumentAnalysisRepository analysisRepository = new DocumentAnalysisRepository(mockDocumentAnalysisDbContext.Object);
+            var result = await analysisRepository.GetAnalysisAsync(lista[0].Sha256);
+            Assert.IsNull(result);
+        }
+
+        [TestMethod]
+       
+        public async Task GetAnalysisAsync_InvalidSha256_ReturnsDocumentAnalysisResultEmpty()
+        {
+            var lista = new List<DocumentAnalysisData>
+             {
+              GetDocumentAnalysisData(DTO.Enums.StatusResult.Disponible)
+             };
+
+            var dbSetMock = CreateDbSetMock<DocumentAnalysisData>(lista.AsQueryable());
 
             Mock<DocumentAnalysisDbContext> mockDocumentAnalysisDbContext = new Mock<DocumentAnalysisDbContext>();
 
@@ -188,10 +208,11 @@ namespace Aranzadi.DocumentAnalysis.Data.Test
 
             DocumentAnalysisRepository analysisRepository = new DocumentAnalysisRepository(mockDocumentAnalysisDbContext.Object);
             var result = await analysisRepository.GetAnalysisAsync("");
-            Assert.AreEqual(result , null);
+            Assert.IsNull(result);
         }
 
-        private DocumentAnalysisData GetDocumentAnalysisData()
+        private DocumentAnalysisData GetDocumentAnalysisData(
+            DTO.Enums.StatusResult status = DTO.Enums.StatusResult.Pendiente)
         {
             return new DocumentAnalysisData
             {
@@ -200,7 +221,7 @@ namespace Aranzadi.DocumentAnalysis.Data.Test
                 DocumentName = "name.pdf",
                 AccessUrl = "https://example.es",
                 Analysis = "string analysis example",
-                Status = DTO.Enums.StatusResult.Pendiente,// 1,
+                Status = status,// 1,
                 Source = DTO.Enums.Source.LaLey, // "source",
                 Sha256 = "Hash",
                 TenantId = "1234",

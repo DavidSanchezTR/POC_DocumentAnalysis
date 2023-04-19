@@ -77,16 +77,9 @@ namespace Aranzadi.DocumentAnalysis.Data.Repository
 
         public async Task<DocumentAnalysisResult?> GetAnalysisAsync(string sha256)
         {
-            try
-            {
-                var analysis = await dbContext.Analysis.Where(e => e.Sha256 == sha256).Select(a => new DocumentAnalysisResult { Status = a.Status, DocumentId = a.Id, Analysis = a.Analysis }).FirstOrDefaultAsync();
-                return analysis;
-            }
-            catch (Exception ex)
-            {
-                ex.Message.ToString();
-                return null;
-            }
+           var analysis = await dbContext.Analysis.Where(e => e.Sha256 == sha256 && e.Status == DTO.Enums.StatusResult.Disponible).Select(a => new DocumentAnalysisResult { Status = a.Status, DocumentId = a.Id, Analysis = a.Analysis }).FirstOrDefaultAsync();
+           return analysis;
+           
             
         }
 
