@@ -73,15 +73,20 @@ namespace Aranzadi.DocumentAnalysis.Data.Repository
             }
             return items;
         }
-       
 
-        public async Task<DocumentAnalysisResult?> GetAnalysisAsync(string sha256)
-        {
-           var analysis = await dbContext.Analysis.Where(e => e.Sha256 == sha256 && e.Status == DTO.Enums.StatusResult.Disponible).Select(a => new DocumentAnalysisResult { Status = a.Status, DocumentId = a.Id, Analysis = a.Analysis }).FirstOrDefaultAsync();
-           return analysis;
-           
-            
-        }
+		public async Task<DocumentAnalysisResult?> GetAnalysisAsync(string tenantId, string userId, Guid documentId)
+		{
+            try
+            {
+				var analysis = await dbContext.Analysis.Where(e => e.TenantId == tenantId && e.UserId == userId && e.Id == documentId).Select(a => new DocumentAnalysisResult { Status = a.Status, DocumentId = a.Id, Analysis = a.Analysis }).FirstOrDefaultAsync();
+				return analysis;
+			}
+            catch (Exception ex)
+            {
+                throw;
+            }
+			
+		}
 
         #endregion
 

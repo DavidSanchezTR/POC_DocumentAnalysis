@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Aranzadi.DocumentAnalysis.DTO.Response
+namespace Aranzadi.DocumentAnalysis.DTO.Enums
 {
     [Flags]
     public enum AnalysisTypes

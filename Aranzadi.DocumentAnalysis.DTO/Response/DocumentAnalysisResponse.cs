@@ -8,13 +8,13 @@ namespace Aranzadi.DocumentAnalysis.DTO.Response
 {
     public class DocumentAnalysisResponse : IEquatable<DocumentAnalysisResponse>
     {
-		public DocumentAnalysisDataJsonResultOK Result { get; set; }
+		public DocumentAnalysisDataResultContent Result { get; set; }
 
 		public string DocumentName { get; set; }
 
         public string DocumentUniqueRefences { get; set; }
 
-        public StatusResult Status { get; set; }
+        public AnalysisStatus Status { get; set; }
 
         public AnalysisTypes Type { get; set; }
 

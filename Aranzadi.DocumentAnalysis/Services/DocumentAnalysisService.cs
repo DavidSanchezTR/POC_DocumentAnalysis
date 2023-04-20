@@ -21,7 +21,7 @@ public class DocumentAnalysisService : IDocumentAnalysisService
 	public async Task<string> GetAnalysisAsync(DocumentAnalysisData data, int LawfirmId)
 	{
 		//2.Consultar si existe el analysis del documento
-		var resultAnalysis = await _documentAnalysisRepository.GetAnalysisAsync(data.Sha256);
+		var resultAnalysis = await _documentAnalysisRepository.GetAnalysisAsync(data.TenantId, data.UserId, data.Id);
 		if (resultAnalysis != null)
 		{
 			data.Status = resultAnalysis.Status;
@@ -67,15 +67,15 @@ public class DocumentAnalysisService : IDocumentAnalysisService
 		{
 			var documentAnalysisResponse = new DocumentAnalysisResponse();
 			documentAnalysisResponse.DocumentUniqueRefences = singleAnalisis.DocumentId.ToString();
-			documentAnalysisResponse.Status = singleAnalisis?.Status ?? StatusResult.Desconocido;
+			documentAnalysisResponse.Status = singleAnalisis?.Status ?? AnalysisStatus.Unknown;
 
 			if (string.IsNullOrWhiteSpace(singleAnalisis?.Analysis))
 			{
-				documentAnalysisResponse.Result = new DocumentAnalysisDataJsonResultOK();
+				documentAnalysisResponse.Result = new DocumentAnalysisDataResultContent();
 			}
 			else
 			{
-				documentAnalysisResponse.Result = JsonConvert.DeserializeObject<DocumentAnalysisDataJsonResultOK>(singleAnalisis.Analysis);
+				documentAnalysisResponse.Result = JsonConvert.DeserializeObject<DocumentAnalysisDataResultContent>(singleAnalisis.Analysis);
 			}
 			listDocumentAnalysisResponse.Add(documentAnalysisResponse);
 		}
@@ -83,54 +83,34 @@ public class DocumentAnalysisService : IDocumentAnalysisService
 		return listDocumentAnalysisResponse;
 	}
 
-	public async Task<DocumentAnalysisResponse?> GetAnalysisAsync(string sha256)
+	public async Task<DocumentAnalysisResponse> GetAnalysisAsync(string tenantId, string userId, Guid documentId)
 	{
-		if (string.IsNullOrEmpty(sha256))
+		if (string.IsNullOrEmpty(tenantId) || string.IsNullOrEmpty(userId) || documentId == Guid.Empty)
 		{
 			throw new ArgumentNullException();
 		}
 
-		var singleAnalisis = await _documentAnalysisRepository.GetAnalysisAsync(sha256);
-
-		
+		var singleAnalisis = await _documentAnalysisRepository.GetAnalysisAsync(tenantId, userId, documentId);
 
 		if (singleAnalisis == null)
 		{
-			throw new NullReferenceException($"Analysis not found with sha256 {sha256}");
+			throw new NullReferenceException($"Analysis not found with tenand {tenantId}, user {userId}, guid {documentId.ToString()}");
 		}
 		else
 		{
-			//TODO:
-			singleAnalisis.Analysis = GetSampleResponse();
-
-
-
 			var documentAnalysisResponse = new DocumentAnalysisResponse();
 			documentAnalysisResponse.DocumentUniqueRefences = singleAnalisis.DocumentId.ToString();
-			documentAnalysisResponse.Status = singleAnalisis?.Status ?? StatusResult.Desconocido;
+			documentAnalysisResponse.Status = singleAnalisis?.Status ?? AnalysisStatus.Unknown;
 
 			if (string.IsNullOrWhiteSpace(singleAnalisis?.Analysis))
 			{
-				documentAnalysisResponse.Result = new DocumentAnalysisDataJsonResultOK();
+				documentAnalysisResponse.Result = new DocumentAnalysisDataResultContent();
 			}
 			else
 			{
-				documentAnalysisResponse.Result = JsonConvert.DeserializeObject<DocumentAnalysisDataJsonResultOK>(singleAnalisis.Analysis);
+				documentAnalysisResponse.Result = JsonConvert.DeserializeObject<DocumentAnalysisDataResultContent>(singleAnalisis.Analysis);
 			}
 			return documentAnalysisResponse;
 		}
-
 	}
-
-
-
-
-	public string GetSampleResponse()
-	{
-		string response = "";
-
-
-		return response;
-	}
-
 }

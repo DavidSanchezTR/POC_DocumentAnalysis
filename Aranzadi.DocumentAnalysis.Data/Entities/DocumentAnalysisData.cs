@@ -33,6 +33,6 @@ namespace Aranzadi.DocumentAnalysis.Data.Entities
         [Required]
         public Source Source { get; set; }
         [Required]
-        public StatusResult Status { get; set; }
+        public AnalysisStatus Status { get; set; }
     }
 }

@@ -396,7 +396,7 @@ namespace Aranzadi.DocumentAnalysis.Messaging.Test.BackgroundOperations
                 DocumentName = "DocName",
                 DocumentUniqueRefences = "DocRef",
                 Organo = "Organo",
-                Status = StatusResult.Pendiente,
+                Status = AnalysisStatus.Pending,
                 Type = AnalysisTypes.Demand
             };
 
@@ -427,7 +427,7 @@ namespace Aranzadi.DocumentAnalysis.Messaging.Test.BackgroundOperations
                 DocumentName = "DocName",
                 DocumentUniqueRefences = "DocRef",
                 Organo = "Organo",
-                Status = StatusResult.Pendiente,
+                Status = AnalysisStatus.Pending,
                 Type = AnalysisTypes.Demand
             };
 
@@ -523,7 +523,7 @@ namespace Aranzadi.DocumentAnalysis.Messaging.Test.BackgroundOperations
                 DocumentName = "DocName1",
                 DocumentUniqueRefences = "DocRef1",
                 Organo = "Organo2",
-                Status = StatusResult.Pendiente,
+                Status = AnalysisStatus.Pending,
                 Type = AnalysisTypes.Demand
             };
             var doc2 = new DocumentAnalysisResponse()
@@ -532,7 +532,7 @@ namespace Aranzadi.DocumentAnalysis.Messaging.Test.BackgroundOperations
                 DocumentName = "DocName2",
                 DocumentUniqueRefences = "DocRef2",
                 Organo = "Organo2",
-                Status = StatusResult.Disponible,
+                Status = AnalysisStatus.Done,
                 Type = AnalysisTypes.Undefined
             };
             var r = new List<DocumentAnalysisResponse>() { doc1, doc2 };

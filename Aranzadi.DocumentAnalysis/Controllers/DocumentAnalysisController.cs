@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Cosmos.Linq;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -36,15 +37,15 @@ namespace Aranzadi.DocumentAnalysis.Controllers
         }        
 
         // GET api/<DocumentAnalysisController>/5
-        [HttpGet("GetAnalysis{Sha256}")]
-        public async Task<IActionResult> Get(string Sha256)
+        [HttpGet("GetAnalysis/{tenantId}/{userId}/{guid}")]
+        public async Task<IActionResult> Get(string tenantId, string userId, Guid guid)
         {
-            if (string.IsNullOrEmpty(Sha256))
+            if (string.IsNullOrEmpty(tenantId) || string.IsNullOrEmpty(userId))
             {
-                return BadRequest("TenantId and UserId is required");
+                return BadRequest("TenantId, UserId and guid is required");
             }
 
-            var singleAnalisis = await _documentAnalysisService.GetAnalysisAsync(Sha256);
+            var singleAnalisis = await _documentAnalysisService.GetAnalysisAsync(tenantId, userId, guid);
 
             return Ok(singleAnalisis);
         }

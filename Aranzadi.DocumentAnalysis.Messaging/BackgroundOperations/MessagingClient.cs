@@ -88,7 +88,6 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
         {
             ValidateRequest(theRequest);
 
-			logger?.Debug($"Sending message to {confi.ServicesBusCola} with uid {theRequest.PackageUniqueRefences}");
 			logger?.Info($"Sending message to {confi.ServicesBusCola} with uid {theRequest.PackageUniqueRefences}");
 
 			try
