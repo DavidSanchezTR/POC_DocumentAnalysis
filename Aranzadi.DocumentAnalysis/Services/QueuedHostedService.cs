@@ -90,6 +90,7 @@ namespace Aranzadi.DocumentAnalysis.Services
 			{
 				var data = new DocumentAnalysisData
 				{
+					Id = new Guid(request.Guid),
 					App = context.App,
 					TenantId = context.Tenant.ToString(),
 					UserId = context.Owner,
@@ -108,7 +109,32 @@ namespace Aranzadi.DocumentAnalysis.Services
 						scope.ServiceProvider.GetRequiredService<IDocumentAnalysisRepository>();
 
 
-					
+					//TODO: Rellenar la respuesta del analysis aqui en modo de pruebas y marcar como Done
+					string json = JsonConvert.SerializeObject(Get_DocumentAnalysisDataResultContent());
+					data.Analysis = json;
+					data.Status = AnalysisStatus.Done;
+
+					//TODO: Obtener el codigo Hash del fichero. EN PRUEBAS
+					try
+					{
+						using (SHA256 crypto = SHA256.Create())
+						{
+							var req = System.Net.WebRequest.Create(data.AccessUrl);
+							Stream stream = req.GetResponse().GetResponseStream();
+							//using (var fileStream = new FileStream(req.GetResponse().GetResponseStream(), FileMode.Open, FileAccess.Read))
+							{
+								var hash = crypto.ComputeHash(stream);
+								var hashString = Convert.ToBase64String(hash);
+
+								data.Sha256 = hashString;
+							}
+						}
+					}
+					catch (Exception ex)
+					{
+					}
+					////////////////////
+
 
 
 					await documentAnalysisRepository.AddAnalysisDataAsync(data);
