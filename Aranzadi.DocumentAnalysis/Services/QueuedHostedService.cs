@@ -108,13 +108,7 @@ namespace Aranzadi.DocumentAnalysis.Services
 					IDocumentAnalysisRepository documentAnalysisRepository =
 						scope.ServiceProvider.GetRequiredService<IDocumentAnalysisRepository>();
 
-
-					//TODO: Rellenar la respuesta del analysis aqui en modo de pruebas y marcar como Done
-					string json = JsonConvert.SerializeObject(Get_DocumentAnalysisDataResultContent());
-					data.Analysis = json;
-					data.Status = AnalysisStatus.Done;
-
-					//TODO: Obtener el codigo Hash del fichero. EN PRUEBAS
+					// Obtener el codigo Hash del fichero. EN PRUEBAS
 					try
 					{
 						using (SHA256 crypto = SHA256.Create())
@@ -132,12 +126,41 @@ namespace Aranzadi.DocumentAnalysis.Services
 					}
 					catch (Exception ex)
 					{
+						telemetryClient.TrackException(ex);
+						telemetryClient.Flush();
+						throw;
 					}
 					////////////////////
 
+					// Consultar si existe el analysis del documento por Hash y si está finalizado y disponible
+					var resultAnalysis = await documentAnalysisRepository.GetAnalysisDoneAsync(data.Sha256);
+					if (resultAnalysis != null)
+					{
+						data.Status = resultAnalysis.Status;
+						data.Analysis = resultAnalysis.Analysis;
+					}
+					else
+					{
+						
+						//TODO: Rellenar la respuesta del analysis aqui en modo de pruebas y marcar como Done
+						string json = JsonConvert.SerializeObject(Get_DocumentAnalysisDataResultContent());
+						data.Analysis = json;
+						data.Status = AnalysisStatus.Done;
+						////////
 
 
+						
+						
+					}
 					await documentAnalysisRepository.AddAnalysisDataAsync(data);
+
+					/*TODO
+					 *        
+						Crear petición de análisis al proveedor de análisis.
+						Modificar el registro de CosmosDB con el resultado del análisis.
+						Devolver resultado.                  
+					 */
+
 				}
 
 				await Task.Delay(0);

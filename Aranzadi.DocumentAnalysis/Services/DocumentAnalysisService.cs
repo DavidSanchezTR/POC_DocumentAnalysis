@@ -18,40 +18,6 @@ public class DocumentAnalysisService : IDocumentAnalysisService
 		_logger = logger;
 	}
 
-	public async Task<string> GetAnalysisAsync(DocumentAnalysisData data, int LawfirmId)
-	{
-		//2.Consultar si existe el analysis del documento
-		var resultAnalysis = await _documentAnalysisRepository.GetAnalysisAsync(data.TenantId, data.UserId, data.Id);
-		if (resultAnalysis != null)
-		{
-			data.Status = resultAnalysis.Status;
-			data.Analysis = resultAnalysis.Analysis;
-			//3.Guardar peticion analisis con resultado en cosmos
-			await _documentAnalysisRepository.UpdateAnalysisDataAsync(data);
-		}
-		else
-		{
-			//3.Guardar peticion analisis pendiente en cosmos
-			await _documentAnalysisRepository.AddAnalysisDataAsync(data);
-		}
-		/*TODO
-         * 
-            1.Recuperar la url del documento.            
-            4.Crear petición de análisis al proveedor de análisis.
-            5.Modificar el registro de CosmosDB con el resultado del análisis.
-            6.Devolver resultado.                  
-         */
-		throw new NotImplementedException();
-	}
-
-	public Task<byte[]> GetBytesAsync(DocumentAnalysisData data, int LawfirmId)
-	{
-		/*
-            Leer documento.
-         */
-		throw new NotImplementedException();
-	}
-
 	public async Task<IEnumerable<DocumentAnalysisResponse>> GetAllAnalysisAsync(string tenantId, string userId)
 	{
 		if (string.IsNullOrEmpty(tenantId) || string.IsNullOrEmpty(userId))

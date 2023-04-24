@@ -10,6 +10,7 @@ namespace Aranzadi.DocumentAnalysis.DTO.Enums
 		Pending = 1,
 		Done = 2,
 		DoneWithErrors = 3,
-        Error = 4
+        Error = 4,
+		NotFound = 5
 	}
 }
