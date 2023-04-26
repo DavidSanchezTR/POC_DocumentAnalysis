@@ -18,17 +18,16 @@ public class DocumentAnalysisService : IDocumentAnalysisService
 		_logger = logger;
 	}
 
-	public async Task<IEnumerable<DocumentAnalysisResponse>> GetAllAnalysisAsync(string tenantId, string userId)
+	public async Task<IEnumerable<DocumentAnalysisResponse>> GetAnalysisAsync(string tenantId, string userId, string documentId = null)
 	{
 		if (string.IsNullOrEmpty(tenantId) || string.IsNullOrEmpty(userId))
 		{
 			throw new ArgumentNullException();
 		}
 
-		var listaAnalisis = await _documentAnalysisRepository.GetAllAnalysisAsync(tenantId, userId);
+		var listaAnalisis = await _documentAnalysisRepository.GetAnalysisAsync(tenantId, userId, documentId);
 
 		var listDocumentAnalysisResponse = new List<DocumentAnalysisResponse>();
-
 		foreach (var singleAnalisis in listaAnalisis)
 		{
 			var documentAnalysisResponse = new DocumentAnalysisResponse();
@@ -47,36 +46,6 @@ public class DocumentAnalysisService : IDocumentAnalysisService
 		}
 
 		return listDocumentAnalysisResponse;
-	}
 
-	public async Task<DocumentAnalysisResponse> GetAnalysisAsync(string tenantId, string userId, Guid documentId)
-	{
-		if (string.IsNullOrEmpty(tenantId) || string.IsNullOrEmpty(userId) || documentId == Guid.Empty)
-		{
-			throw new ArgumentNullException();
-		}
-
-		var singleAnalisis = await _documentAnalysisRepository.GetAnalysisAsync(tenantId, userId, documentId);
-
-		if (singleAnalisis == null)
-		{
-			throw new NullReferenceException($"Analysis not found with tenand {tenantId}, user {userId}, guid {documentId.ToString()}");
-		}
-		else
-		{
-			var documentAnalysisResponse = new DocumentAnalysisResponse();
-			documentAnalysisResponse.DocumentUniqueRefences = singleAnalisis.DocumentId.ToString();
-			documentAnalysisResponse.Status = singleAnalisis?.Status ?? AnalysisStatus.Unknown;
-
-			if (string.IsNullOrWhiteSpace(singleAnalisis?.Analysis))
-			{
-				documentAnalysisResponse.Result = new DocumentAnalysisDataResultContent();
-			}
-			else
-			{
-				documentAnalysisResponse.Result = JsonConvert.DeserializeObject<DocumentAnalysisDataResultContent>(singleAnalisis.Analysis);
-			}
-			return documentAnalysisResponse;
-		}
 	}
 }

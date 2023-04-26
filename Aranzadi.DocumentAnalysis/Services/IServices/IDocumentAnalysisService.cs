@@ -4,9 +4,6 @@ using System;
 
 public interface IDocumentAnalysisService
 {
+	Task<IEnumerable<DocumentAnalysisResponse>> GetAnalysisAsync(string TenantId, string UserId, string DocumentId = null);
 
-	Task<IEnumerable<DocumentAnalysisResponse>> GetAllAnalysisAsync(string TenantId, string UserId);
-
-	Task<DocumentAnalysisResponse> GetAnalysisAsync(string TenantId, string UserId, Guid Guid);
-	
 }

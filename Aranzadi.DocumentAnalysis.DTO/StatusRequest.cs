@@ -12,7 +12,7 @@ namespace Aranzadi.DocumentAnalysis.DTO
 
         public string Owner { get; set; }
 
-        public string Hash { get; set; }
+        public string DocumentId { get; set; }
 
     }
 }

@@ -17,6 +17,9 @@ using Aranzadi.DocumentAnalysis.DTO;
 using Microsoft.Extensions.Logging;
 using log4net;
 using log4net.Repository.Hierarchy;
+using Aranzadi.DocumentAnalysis.DTO.Response;
+using System.Net.Http;
+using System.Net.Sockets;
 
 namespace SampleClientApp.Controllers
 {
@@ -41,6 +44,11 @@ namespace SampleClientApp.Controllers
 
         public ActionResult SendMessage()
         {
+
+
+            Metodo();
+
+
 
 			log4net.Config.XmlConfigurator.Configure();
 
@@ -127,5 +135,50 @@ namespace SampleClientApp.Controllers
         }
 
 
-    }
+		private void Metodo()
+		{
+			try
+			{
+				var conf = new MessagingConfiguration();
+				conf.ServicesBusConnectionString = "Endpoint=sb://uksouth-iflx-blue-orch-dev-servicebus.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=OzIgYihRXFO389WSagVM4MidAetFjoy7G72kgQxtOwg=";
+				conf.ServicesBusCola = "documentanalysis";
+				conf.Source = "Fusion";
+				conf.Type = "DocumentAnalysis";
+				conf.URLOrquestador = new Uri("https://urlorquestador.com");
+				conf.URLServicioAnalisisDoc = new Uri("https://localhost:7075");
+				var factory = new AnalisisDocumentosDefaultFactory(conf);
+				IClient client = factory.GetClient();
+
+				var response = client.GetAnalysisAsync(new AnalysisContext()
+				{
+					Account = "4131",
+					App = "Fusion",
+					Owner = "98",
+					Tenant = "4131"
+				});
+                var fin = response.Result;
+			}
+			catch (Exception ex)
+			{
+				throw;
+			}
+
+
+			//this.factMoq.Setup<HttpClient>(e => e.CreateClient(MessagingClient.CLIENT_ID))
+			//   .Returns(new HttpClient(handler));
+
+			//theClient = new MessagingClient(this.senderMoq.Object, this.conf, this.factMoq.Object);
+			//try
+			//{
+			//	return await theClient.GetAnalysisAsync(this.theContext);
+			//}
+			//finally
+			//{
+			//	this.factMoq.VerifyAll();
+			//	handler.Verify();
+			//}
+		}
+
+
+	}
 }

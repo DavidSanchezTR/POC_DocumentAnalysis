@@ -19,6 +19,8 @@ using System.Diagnostics;
 using Polly.Retry;
 using Microsoft.Extensions.Logging;
 using log4net;
+using Microsoft.Azure.Amqp.Framing;
+using Azure;
 
 namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
 {
@@ -43,14 +45,16 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
 
         internal static int N_TIMES_POLLY_RETRY = 5;
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="messageSender"></param>
-        /// <param name="confi"></param>
-        /// <param name="cli"></param>
-        /// <exception cref="ArgumentNullException">If some of the parameters is null</exception>
-        internal MessagingClient(IMessageSender messageSender, MessagingConfiguration confi, IHttpClientFactory cli)
+		internal static string GetAnalysisEndPoint = "api/DocumentAnalysis/GetAnalysis";
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="messageSender"></param>
+		/// <param name="confi"></param>
+		/// <param name="cli"></param>
+		/// <exception cref="ArgumentNullException">If some of the parameters is null</exception>
+		internal MessagingClient(IMessageSender messageSender, MessagingConfiguration confi, IHttpClientFactory cli)
         {
             ValidateConstructorParameters(messageSender, confi, cli);
 
@@ -152,24 +156,22 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
             if (string.IsNullOrWhiteSpace(documentId))
             {
                 throw new ArgumentNullException(nameof(documentId));
-            }            
-            var list = await RequestStatusList(context, documentId);
-            if (list.Count>1)
-            {
-                throw new DocumentAnalysisException("There are more than one documento with id: " + documentId);
             }
-            return list.FirstOrDefault();
 
+			var list = await RequestStatusList(context, documentId);
+			if (list.Count() > 1)
+			{
+				throw new DocumentAnalysisException("There are more than one documento with id: " + documentId);
+			}
+			return list.FirstOrDefault();
         }       
               
-
         public async Task<IEnumerable<DocumentAnalysisResponse>> GetAnalysisAsync(AnalysisContext context)
-        {            
-
-            return await RequestStatusList(context,string.Empty);
+        {
+			return await RequestStatusList(context,string.Empty);
         }
 
-        private async Task<List<DocumentAnalysisResponse>> RequestStatusList(AnalysisContext context, string docREf)
+        private async Task<IEnumerable<DocumentAnalysisResponse>> RequestStatusList(AnalysisContext context, string documentId)
         {
             ValidateGetAnalysisContext(context);            
            
@@ -182,23 +184,38 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
                         App = context.App,
                         Tenant = context.Tenant,
                         Owner = context.Owner,
-                        Hash = docREf,
+                        DocumentId = documentId
                     };
-                    List<DocumentAnalysisResponse> doc = new List<DocumentAnalysisResponse>();
-                    Uri theUri = GetUri(theStatusRequest);
-                    AsyncRetryPolicy policy = GetRetryPolicy(theStatusRequest);
-                    string jsonDocAnalisis = await policy.ExecuteAsync(async () =>
-                    {
-                        return await httpCli.GetStringAsync(theUri);
-                    });
 
-                    if (!string.IsNullOrEmpty(jsonDocAnalisis))
+
+
+                    Uri theUri = GetUri(GetAnalysisEndPoint, theStatusRequest);
+
+                    var resp = httpCli.GetAsync(theUri);
+					var res = resp.Result;
+					var resultado = res.Content.ReadAsStringAsync().Result;
+					var listadoServicioDocumentAnalysisResponse = JsonConvert.DeserializeObject<IEnumerable<DocumentAnalysisResponse>>(resultado);
+                    if (listadoServicioDocumentAnalysisResponse == null)
                     {
-                        doc = JsonConvert.DeserializeObject<List<DocumentAnalysisResponse>>(
-                                       jsonDocAnalisis ?? String.Empty);
-                    }
-                    return doc;
-                }
+						listadoServicioDocumentAnalysisResponse = new List<DocumentAnalysisResponse>();
+					}
+
+                    return listadoServicioDocumentAnalysisResponse;
+
+					//IEnumerable<DocumentAnalysisResponse> doc = new List<DocumentAnalysisResponse>();
+					//AsyncRetryPolicy policy = GetRetryPolicy();
+					//               var jsonDocAnalisis = await policy.ExecuteAsync(async () =>
+					//               {
+					//                   return await httpCli.GetAsync(theUri);
+					//               });
+
+					//               if (jsonDocAnalisis != null)
+					//               {
+					//	var resultado2 = jsonDocAnalisis.Content.ReadAsStringAsync().Result;
+					//	doc = JsonConvert.DeserializeObject<IEnumerable<DocumentAnalysisResponse>>(resultado2);
+					//               }
+					//               return doc;
+				}
                 catch (Exception ex)
                 {
                     throw new DocumentAnalysisException("Error recuperando Status", ex);
@@ -218,24 +235,23 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
             }
         }
 
-        private Uri GetUri(StatusRequest re)
+        private Uri GetUri(string relativePath, StatusRequest re)
         {
-            NameValueCollection queryString;
-           
-            queryString = System.Web.HttpUtility.ParseQueryString(string.Empty);
-            queryString.Add(nameof(re.App), re.App);
-            queryString.Add(nameof(re.Owner), re.Owner);
-            queryString.Add(nameof(re.Tenant), re.Tenant);
-            queryString.Add(nameof(re.Hash), re.Hash);
+            UriBuilder ur = new UriBuilder(confi.URLServicioAnalisisDoc);
+            ur.Path = relativePath;
 
-            UriBuilder ur = new UriBuilder(confi.URLServicioAnalisisDoc)
-            {
-                Query = queryString.ToString()
-            };
-            return ur.Uri;
+			NameValueCollection queryString;
+			queryString = System.Web.HttpUtility.ParseQueryString(string.Empty);
+			queryString.Add(nameof(re.App), re.App);
+			queryString.Add(nameof(re.Owner), re.Owner);
+			queryString.Add(nameof(re.Tenant), re.Tenant);
+			queryString.Add(nameof(re.DocumentId), re.DocumentId);
+
+            ur.Query = queryString.ToString();
+			return ur.Uri;
         }
 
-        private Polly.Retry.AsyncRetryPolicy GetRetryPolicy(StatusRequest theStatusRequest)
+        private Polly.Retry.AsyncRetryPolicy GetRetryPolicy()
         {
             if (N_TIMES_POLLY_RETRY < 0)
                 throw new DocumentAnalysisException("BAD POLLY Configuration, Nº Time Polly Retry: " + N_TIMES_POLLY_RETRY);
@@ -247,14 +263,14 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
                 },
                 onRetry: (ex, ts) =>
                 {
-                    if (!String.IsNullOrEmpty(theStatusRequest.Hash))
-                    {
-                        Debug.WriteLine(ex, "Repetimos el documento: " + theStatusRequest.Hash);
-                    }
-                    else
-                    {
-                        Debug.WriteLine(ex, "Repetimos sin documento: ");
-                    }
+                    //if (!String.IsNullOrEmpty(theStatusRequest.Hash))
+                    //{
+                    //    Debug.WriteLine(ex, "Repetimos el documento: " + theStatusRequest.Hash);
+                    //}
+                    //else
+                    //{
+                    //    Debug.WriteLine(ex, "Repetimos sin documento: ");
+                    //}
                 });
             return policy;
         }

@@ -23,32 +23,32 @@ namespace Aranzadi.DocumentAnalysis.Controllers
             _documentAnalysisOptions = documentAnalysisOptions;
         }
 
-        [HttpGet("GetAllAnalysis{tenantId}/{userId}")]
-        public async Task<IActionResult> Obtener(string tenantId, string userId)
+        [HttpGet()]
+		[Route("GetAnalysis")]
+		public async Task<IActionResult> Get(string Tenant, string Owner, string? DocumentId = null)
         {
-            if(string.IsNullOrEmpty(tenantId) || string.IsNullOrEmpty(userId))
+            if (string.IsNullOrEmpty(Tenant) || string.IsNullOrEmpty(Owner))
             {
                 return BadRequest("TenantId and UserId is required");
-            }            
-
-            var allAnalisis = await _documentAnalysisService.GetAllAnalysisAsync(tenantId, userId);
-
-            return Ok(allAnalisis);
-        }        
-
-        // GET api/<DocumentAnalysisController>/5
-        [HttpGet("GetAnalysis/{tenantId}/{userId}/{guid}")]
-        public async Task<IActionResult> Get(string tenantId, string userId, Guid guid)
-        {
-            if (string.IsNullOrEmpty(tenantId) || string.IsNullOrEmpty(userId))
-            {
-                return BadRequest("TenantId, UserId and guid is required");
             }
 
-            var singleAnalisis = await _documentAnalysisService.GetAnalysisAsync(tenantId, userId, guid);
+            var listAnalisis = await _documentAnalysisService.GetAnalysisAsync(Tenant, Owner, DocumentId);
 
-            return Ok(singleAnalisis);
+            return Ok(listAnalisis);
         }
+
+        //[HttpGet("GetAnalysis/{tenantId}/{userId}/")]
+        //public async Task<IActionResult> Get(string tenantId, string userId)
+        //{
+        //	if (string.IsNullOrEmpty(tenantId) || string.IsNullOrEmpty(userId))
+        //	{
+        //		return BadRequest("TenantId and UserId is required");
+        //	}
+
+        //	var listAnalisis = await _documentAnalysisService.GetAnalysisAsync(tenantId, userId);
+
+        //	return Ok(listAnalisis);
+        //}
 
         // GET: api/<DocumentAnalysisController>
         [HttpGet]
