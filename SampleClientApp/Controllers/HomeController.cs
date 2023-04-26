@@ -44,12 +44,6 @@ namespace SampleClientApp.Controllers
 
         public ActionResult SendMessage()
         {
-
-
-            Metodo();
-
-
-
 			log4net.Config.XmlConfigurator.Configure();
 
 
@@ -163,20 +157,6 @@ namespace SampleClientApp.Controllers
 				throw;
 			}
 
-
-			//this.factMoq.Setup<HttpClient>(e => e.CreateClient(MessagingClient.CLIENT_ID))
-			//   .Returns(new HttpClient(handler));
-
-			//theClient = new MessagingClient(this.senderMoq.Object, this.conf, this.factMoq.Object);
-			//try
-			//{
-			//	return await theClient.GetAnalysisAsync(this.theContext);
-			//}
-			//finally
-			//{
-			//	this.factMoq.VerifyAll();
-			//	handler.Verify();
-			//}
 		}
 
 
