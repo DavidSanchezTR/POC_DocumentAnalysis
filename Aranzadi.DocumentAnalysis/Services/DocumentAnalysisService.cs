@@ -18,7 +18,7 @@ public class DocumentAnalysisService : IDocumentAnalysisService
 		_logger = logger;
 	}
 
-	public async Task<IEnumerable<DocumentAnalysisResponse>> GetAnalysisAsync(string tenantId, string userId, string documentId = null)
+	public async Task<IEnumerable<DocumentAnalysisResponse>> GetAnalysisAsync(string tenantId, string userId, string? documentId = null)
 	{
 		if (string.IsNullOrEmpty(tenantId) || string.IsNullOrEmpty(userId))
 		{

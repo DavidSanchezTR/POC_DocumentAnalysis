@@ -14,7 +14,7 @@ namespace Aranzadi.DocumentAnalysis.Data.IRepository
 
         Task<int> UpdateAnalysisDataAsync(DocumentAnalysisData data);
 
-		Task<IEnumerable<DocumentAnalysisResult>> GetAnalysisAsync(string TenantId, string UserId, string documentId);
+		Task<IEnumerable<DocumentAnalysisResult>> GetAnalysisAsync(string tenantId, string userId, string? documentId = null);
 
 		Task<DocumentAnalysisResult?> GetAnalysisDoneAsync(string sha256);
 

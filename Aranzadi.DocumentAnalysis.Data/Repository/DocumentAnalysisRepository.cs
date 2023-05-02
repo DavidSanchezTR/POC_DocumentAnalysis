@@ -64,7 +64,7 @@ namespace Aranzadi.DocumentAnalysis.Data.Repository
 			return analysis;
 		}
 
-		public async Task<IEnumerable<DocumentAnalysisResult>> GetAnalysisAsync(string tenantId, string userId, string documentId = null)
+		public async Task<IEnumerable<DocumentAnalysisResult>> GetAnalysisAsync(string tenantId, string userId, string? documentId = null)
 		{
 			List<DocumentAnalysisResult> items = new List<DocumentAnalysisResult>();
 			try
