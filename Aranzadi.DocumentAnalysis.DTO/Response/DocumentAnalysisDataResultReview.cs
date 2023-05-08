@@ -6,9 +6,9 @@ namespace Aranzadi.DocumentAnalysis.DTO.Response
 {
     public class DocumentAnalysisDataResultReview
     {
-        public string Review { get; set; }
+        public string review { get; set; }
 
-        public string[] Cause { get; set; }
+        public string[] cause { get; set; }
 
     }
 }

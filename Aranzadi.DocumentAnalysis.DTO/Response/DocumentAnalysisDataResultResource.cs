@@ -6,7 +6,7 @@ namespace Aranzadi.DocumentAnalysis.DTO.Response
 {
     public class DocumentAnalysisDataResultResource
     {
-        public string Resource { get; set; }
-        public string Deadline { get; set; }
+        public string recurso { get; set; }
+        public string plazo { get; set; }
     }
 }

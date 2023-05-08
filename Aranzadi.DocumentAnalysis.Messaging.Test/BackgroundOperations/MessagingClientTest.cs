@@ -38,8 +38,6 @@ namespace Aranzadi.DocumentAnalysis.Messaging.Test.BackgroundOperations
             this.conf = MessagingConfigurationTest.GetValidConfiguration();
             this.factMoq = new Mock<IHttpClientFactory>();
             this.theContext = AnalysisContextTests.ValidContext();
-
-            MessagingClient.MAX_TIME_POLLY_RETRY = 1;
         }
 
         [TestMethod()]
@@ -349,46 +347,6 @@ namespace Aranzadi.DocumentAnalysis.Messaging.Test.BackgroundOperations
                 this.factMoq.VerifyAll();
                 handler.Verify();
             }
-        }
-
-        //TODO: Revisar ya que este codigo se ha comentado porque no he conseguido hacerlo funcionar
-        [TestMethod()]
-        [Ignore]
-        public async Task GetAnalysisAsync_RepeatNTimesAndErr_OK()
-        {
-
-            var handler = new HttpMessageHandlerMoq(MessagingClient.N_TIMES_POLLY_RETRY + 1, (num, request) =>
-            {
-                var status = System.Net.HttpStatusCode.InternalServerError;
-                if (num == MessagingClient.N_TIMES_POLLY_RETRY + 1)
-                {
-                    status = System.Net.HttpStatusCode.OK;
-                }
-                return new HttpResponseMessage()
-                {
-                    StatusCode = status
-                };
-            });
-            await GetAnalysisAsyncDocRefTestHttpRequest(handler);
-        }
-
-
-        //TODO: Revisar ya que este codigo se ha comentado porque no he conseguido hacerlo funcionar
-        [TestMethod()]
-        [Ignore]
-        [ExpectedException(typeof(DocumentAnalysisException))]
-        public async Task GetAnalysisAsync_RepeatNTimesAndErr_Exception()
-        {
-
-            var handler = new HttpMessageHandlerMoq(MessagingClient.N_TIMES_POLLY_RETRY + 1,
-                (num, request) =>
-                {
-                    return new HttpResponseMessage()
-                    {
-                        StatusCode = System.Net.HttpStatusCode.InternalServerError,
-                    };
-                });
-            await GetAnalysisAsyncDocRefTestHttpRequest(handler);
         }
 
 

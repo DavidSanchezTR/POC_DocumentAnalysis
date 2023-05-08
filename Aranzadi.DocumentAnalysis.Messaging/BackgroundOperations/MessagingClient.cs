@@ -35,14 +35,6 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
 		private readonly ILog logger;
 		internal static readonly string CLIENT_ID = "SAD";
 
-        /// <summary>
-        /// In the unit test, we don't want to wait some minutes, so we decrease the Max_time_polly_Retry to 1 second,       
-        ///  
-        /// </summary>
-        internal static int MAX_TIME_POLLY_RETRY = 60;
-
-        internal static int N_TIMES_POLLY_RETRY = 5;
-
 		internal static string GetAnalysisEndPoint = "api/DocumentAnalysis/GetAnalysis";
 
 		/// <summary>

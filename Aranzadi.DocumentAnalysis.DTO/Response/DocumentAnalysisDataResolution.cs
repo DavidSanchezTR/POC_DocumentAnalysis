@@ -8,22 +8,22 @@ namespace Aranzadi.DocumentAnalysis.DTO.Response
     public class DocumentAnalysisDataResolution
     {
         [JsonProperty("tipo resolucion")]
-        public string ResolutionType { get; set; }
+        public string tiporesolucion { get; set; }
         [JsonProperty("subtipo resolucion")]
-        public string SubTypeResolution { get; set; }
+        public string subtiporesolucion { get; set; }
         [JsonProperty("numero resolucion")]
-        public string ResolutionNumber { get; set; }
+        public string numeroresolucion { get; set; }
         [JsonProperty("fecha resolucion")]
-        public string ResolutionDate { get; set; }
+        public string fecharesolucion { get; set; }
         [JsonProperty("fecha notificacion")]
-        public string NotificationDate { get; set; }
-        public string Landmark { get; set; }
-        public string LandmarkOrigin { get; set; }
-        public string Amount { get; set; }
+        public string fechanotificacion { get; set; }
+        public string hito { get; set; }
+        public string hito_origin { get; set; }
+        public string cuantia { get; set; }
         [JsonProperty("resumen escrito")]
-        public string WrittenSummary { get; set; }
-        public DocumentAnalysisDataResultRequirement[] Requirements { get; set; }
-        public DocumentAnalysisDataResultResource[] Resource { get; set; }
+        public string resumenescrito { get; set; }
+        public DocumentAnalysisDataResultRequirement[] requerimientos { get; set; }
+        public DocumentAnalysisDataResultResource[] recurso { get; set; }
 
     }
 }

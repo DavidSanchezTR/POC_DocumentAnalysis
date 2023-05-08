@@ -20,7 +20,6 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
     {
         private readonly IMessageReceiver receiver;
         private Func<AnalysisContext, DocumentAnalysisRequest, Task<bool>> theAction;
-        private CancellationToken cancellationToken;
         private readonly MessagingConfiguration confi;
         private readonly IMessageSender sender;
 

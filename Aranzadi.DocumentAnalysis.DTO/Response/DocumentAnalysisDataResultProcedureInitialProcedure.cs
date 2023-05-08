@@ -7,8 +7,8 @@ namespace Aranzadi.DocumentAnalysis.DTO.Response
 {
     public class DocumentAnalysisDataResultProcedureInitialProcedure
     {
-        public string Court { get; set; }
+        public string juzgado { get; set; }
         [JsonProperty("numero autos")]
-        public string CourtOrders { get; set; }
+        public string numeroautos { get; set; }
     }
 }
