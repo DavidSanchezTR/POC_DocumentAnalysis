@@ -5,16 +5,16 @@ using System.Text;
 
 namespace Aranzadi.DocumentAnalysis.DTO.Response
 {
-	public class DocumentAnalysisDataResultProcedureParts
-	{
-		public string nombre { get; set; }
-		public string naturaleza { get; set; }
-		[JsonProperty("tipo parte")]
-		public string tipoparte { get; set; }
-		[JsonProperty("tipo parte recurso")]
-		public string tipoparterecurso { get; set; }
-		public string procurador { get; set; }
-		public string letrados { get; set; }
+    public class DocumentAnalysisDataResultProcedureParts
+    {
+        public string Name { get; set; }
+        public string Nature { get; set; }
+        [JsonProperty("tipo parte")]
+        public string PartType { get; set; }
+        [JsonProperty("tipo parte recurso")]
+        public string ResourcePartType { get; set; }
+        public string Procurator { get; set; }
+        public string Lawyers { get; set; }
 
-	}
+    }
 }

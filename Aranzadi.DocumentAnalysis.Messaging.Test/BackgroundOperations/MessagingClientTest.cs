@@ -56,8 +56,6 @@ namespace Aranzadi.DocumentAnalysis.Messaging.Test.BackgroundOperations
 
         }
 
-        /////////////////////
-        ///
         [TestMethod()]
         [ExpectedException(typeof(ArgumentNullException))]
         public void MessagingClient_TodoNull_Exception()

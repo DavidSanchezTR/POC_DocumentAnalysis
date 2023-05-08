@@ -8,9 +8,9 @@ namespace Aranzadi.DocumentAnalysis.DTO.Response
 {
     public class DocumentAnalysisResponse : IEquatable<DocumentAnalysisResponse>
     {
-		public DocumentAnalysisDataResultContent Result { get; set; }
+        public DocumentAnalysisDataResultContent Content { get; set; }
 
-		public string DocumentName { get; set; }
+        public string DocumentName { get; set; }
 
         public string DocumentUniqueRefences { get; set; }
 

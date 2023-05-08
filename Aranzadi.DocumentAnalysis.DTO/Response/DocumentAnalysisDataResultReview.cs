@@ -4,11 +4,11 @@ using System.Text;
 
 namespace Aranzadi.DocumentAnalysis.DTO.Response
 {
-	public class DocumentAnalysisDataResultReview
-	{
-		public string review { get; set; }
+    public class DocumentAnalysisDataResultReview
+    {
+        public string Review { get; set; }
 
-		public string[] cause { get; set; }
+        public string[] Cause { get; set; }
 
-	}
+    }
 }
