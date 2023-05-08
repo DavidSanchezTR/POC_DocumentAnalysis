@@ -7,14 +7,14 @@ namespace Aranzadi.DocumentAnalysis.DTO.Response
 {
     public class DocumentAnalysisDataResultProcedureParts
     {
-        public string nombre { get; set; }
-        public string naturaleza { get; set; }
+        public string Nombre { get; set; }
+        public string Naturaleza { get; set; }
         [JsonProperty("tipo parte")]
-        public string tipoparte { get; set; }
+        public string TipoParte { get; set; }
         [JsonProperty("tipo parte recurso")]
-        public string tipoparterecurso { get; set; }
-        public string procurador { get; set; }
-        public string letrados { get; set; }
+        public string TipoParteRecurso { get; set; }
+        public string Procurador { get; set; }
+        public string Letrados { get; set; }
 
     }
 }

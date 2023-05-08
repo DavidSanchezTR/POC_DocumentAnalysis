@@ -10,13 +10,13 @@ namespace Aranzadi.DocumentAnalysis.DTO.Response
         [JsonProperty("N.I.G.")]
         public string NIG { get; set; }
         [JsonProperty("tipo procedimiento")]
-        public string tipoprocedimiento { get; set; }
+        public string TipoProcedimiento { get; set; }
         [JsonProperty("subtipo procedimiento")]
-        public string subtipoprocedimiento { get; set; }
+        public string SubtipoProcedimiento { get; set; }
         [JsonProperty("numero autos")]
-        public string numeroautos { get; set; }
-        public DocumentAnalysisDataResultProcedureParts[] partes { get; set; }
+        public string NumeroAutos { get; set; }
+        public DocumentAnalysisDataResultProcedureParts[] Partes { get; set; }
         [JsonProperty("procedimiento inicial")]
-        public DocumentAnalysisDataResultProcedureInitialProcedure procedimientoinicial { get; set; }
+        public DocumentAnalysisDataResultProcedureInitialProcedure ProcedimientoInicial { get; set; }
     }
 }
