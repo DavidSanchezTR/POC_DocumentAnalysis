@@ -93,70 +93,70 @@ namespace Aranzadi.DocumentAnalysis.Test
 
         private DocumentAnalysisDataResultContent Get_DocumentAnalysisDataResultContent()
         {
-			DocumentAnalysisDataResultContent content = new DocumentAnalysisDataResultContent();
-			content.juzgado = new DocumentAnalysisDataResultJudgement()
-			{
-				ciudad = "ciudad sample",
-				jurisdiccion = "jurisdiccion sample",
-				nombre = "nombre sample",
-				numero = "numero sample",
-				tipotribunal = "tribunal sample"
-			};
-			content.review = new DocumentAnalysisDataResultReview()
-			{
-				cause = new string[] { "cause 1", "cause 2" },
-				review = "review sample"
-			};
-			content.procedimiento = new DocumentAnalysisDataResultProcedure()
-			{
-				NIG = "NIG sample",
-				numeroautos = "numero autos sample",
-				tipoprocedimiento = "procedimiento sample",
-				subtipoprocedimiento = "subprocedimiento sample",
-			};
+            DocumentAnalysisDataResultContent content = new DocumentAnalysisDataResultContent();
+            content.Juzgado = new DocumentAnalysisDataResultJudgement()
+            {
+                Ciudad = "ciudad sample",
+                Jurisdiccion = "jurisdiccion sample",
+                Nombre = "nombre sample",
+                Numero = "numero sample",
+                TipoTribunal = "tribunal sample"
+            };
+            content.Review = new DocumentAnalysisDataResultReview()
+            {
+                Cause = new string[] { "cause 1", "cause 2" },
+                Review = "review sample"
+            };
+            content.Procedimiento = new DocumentAnalysisDataResultProcedure()
+            {
+                NIG = "NIG sample",
+                NumeroAutos = "numero autos sample",
+                TipoProcedimiento = "procedimiento sample",
+                SubtipoProcedimiento = "subprocedimiento sample",
+            };
 
-			var lista = new List<DocumentAnalysisDataResultProcedureParts>
-		{
-			new DocumentAnalysisDataResultProcedureParts()
-			{
-				letrados = "letrado sample",
-				naturaleza = "naturaleza sample",
-				nombre = "nombre sample",
-				procurador = "procurador sample",
-				tipoparte = "tipo parte sample",
-				tipoparterecurso = "tipo parte recurso sample"
+            var lista = new List<DocumentAnalysisDataResultProcedureParts>
+        {
+            new DocumentAnalysisDataResultProcedureParts()
+            {
+                Letrados = "letrado sample",
+                Naturaleza = "naturaleza sample",
+                Nombre = "nombre sample",
+                Procurador = "procurador sample",
+                TipoParte = "tipo parte sample",
+                TipoParteRecurso = "tipo parte recurso sample"
 
-			},
-			new DocumentAnalysisDataResultProcedureParts()
-			{
-				letrados = "letrado sample 2",
-				naturaleza = "naturaleza sample 2",
-				nombre = "nombre sample 2",
-				procurador = "procurador sample 2",
-				tipoparte = "tipo parte sample 2",
-				tipoparterecurso = "tipo parte recurso sample 2"
+            },
+            new DocumentAnalysisDataResultProcedureParts()
+            {
+                Letrados = "letrado sample 2",
+                Naturaleza = "naturaleza sample 2",
+                Nombre = "nombre sample 2",
+                Procurador = "procurador sample 2",
+                TipoParte = "tipo parte sample 2",
+                TipoParteRecurso = "tipo parte recurso sample 2"
 
-			}
-		};
-			content.procedimiento.partes = lista.ToArray();
-			content.procedimiento.procedimientoinicial = new DocumentAnalysisDataResultProcedureInitialProcedure()
-			{
-				juzgado = "juzgado sample",
-				numeroautos = "numero autos"
-			};
+            }
+        };
+            content.Procedimiento.Partes = lista.ToArray();
+            content.Procedimiento.ProcedimientoInicial = new DocumentAnalysisDataResultProcedureInitialProcedure()
+            {
+                Juzgado = "juzgado sample",
+                NumeroAutos = "numero autos"
+            };
 
-			content.resolucion = new DocumentAnalysisDataResolution()
-			{
-				cuantia = "",
-				fechanotificacion = DateTime.Today.AddDays(-100).ToString(),
-				fecharesolucion = DateTime.Today.ToString(),
-				hito = "hito sample",
-				numeroresolucion = "num resolucion sample",
-				resumenescrito = "resumen",
+            content.Resolucion = new DocumentAnalysisDataResolution()
+            {
+                Cuantia = "",
+                FechaNotificacion = DateTime.Today.AddDays(-100).ToString(),
+                FechaResolucion = DateTime.Today.ToString(),
+                Hito = "hito sample",
+                NumeroResolucion = "num resolucion sample",
+                ResumenEscrito = "resumen",
 
-			};
-			return content;
-		}
+            };
+            return content;
+        }
 
 		private Mock<IDocumentAnalysisRepository> GetIDocumentAnalysisRepositoryOKMock(List<DocumentAnalysisResult> documentAnalysisResultList)
         {

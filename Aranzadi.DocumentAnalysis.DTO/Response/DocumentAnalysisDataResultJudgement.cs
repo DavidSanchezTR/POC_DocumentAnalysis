@@ -5,15 +5,15 @@ using System.Text;
 
 namespace Aranzadi.DocumentAnalysis.DTO.Response
 {
-	public class DocumentAnalysisDataResultJudgement
-	{
-		public string nombre { get; set; }
-		public string jurisdiccion { get; set; }
+    public class DocumentAnalysisDataResultJudgement
+    {
+        public string Nombre { get; set; }
+        public string Jurisdiccion { get; set; }
 
-		[JsonProperty("tipo tribunal")]
-		public string tipotribunal { get; set; }
-		public string ciudad { get; set; }
-		public string numero { get; set; }
+        [JsonProperty("tipo tribunal")]
+        public string TipoTribunal { get; set; }
+        public string Ciudad { get; set; }
+        public string Numero { get; set; }
 
-	}
+    }
 }

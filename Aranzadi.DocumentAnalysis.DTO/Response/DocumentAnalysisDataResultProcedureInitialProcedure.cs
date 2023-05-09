@@ -5,10 +5,10 @@ using System.Text;
 
 namespace Aranzadi.DocumentAnalysis.DTO.Response
 {
-	public class DocumentAnalysisDataResultProcedureInitialProcedure
-	{
-		public string juzgado { get; set; }
-		[JsonProperty("numero autos")]
-		public string numeroautos { get; set; }
-	}
+    public class DocumentAnalysisDataResultProcedureInitialProcedure
+    {
+        public string Juzgado { get; set; }
+        [JsonProperty("numero autos")]
+        public string NumeroAutos { get; set; }
+    }
 }

@@ -1,22 +1,23 @@
-﻿using Newtonsoft.Json;
+﻿
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Aranzadi.DocumentAnalysis.DTO.Response
 {
-	public class DocumentAnalysisDataResultRequirement
-	{
-		public string requerimiento { get; set; }
-		public string sintesis { get; set; }
-		[JsonProperty("fecha requerimiento")]
-		public string fecharequerimiento { get; set; }
-		[JsonProperty("tipo fecha")]
-		public string tipofecha { get; set; }
-		public string plazo { get; set; }
-		public string parte { get; set; }
-		[JsonProperty("tipo requerimiento")]
-		public string tiporequerimiento { get; set; }
-		public string sala { get; set; }
-	}
+    public class DocumentAnalysisDataResultRequirement
+    {
+        public string Requerimiento { get; set; }
+        public string Sintesis { get; set; }
+        [JsonProperty("fecha requerimiento")]
+        public string FechaRequerimiento { get; set; }
+        [JsonProperty("tipo fecha")]
+        public string TipoFecha { get; set; }
+        public string Plazo { get; set; }
+        public string Parte { get; set; }
+        [JsonProperty("tipo requerimiento")]
+        public string TipoRequerimiento { get; set; }
+        public string Sala { get; set; }
+    }
 }

@@ -24,9 +24,7 @@ using Azure;
 
 namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
 {
-    /// <summary>
-    /// 
-    /// </summary>
+
     internal class MessagingClient : IClient
     {
 
@@ -36,14 +34,6 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
         private readonly IHttpClientFactory httpCliFact;
 		private readonly ILog logger;
 		internal static readonly string CLIENT_ID = "SAD";
-
-        /// <summary>
-        /// In the unit test, we don't want to wait some minutes, so we decrease the Max_time_polly_Retry to 1 second,       
-        ///  
-        /// </summary>
-        internal static int MAX_TIME_POLLY_RETRY = 60;
-
-        internal static int N_TIMES_POLLY_RETRY = 5;
 
 		internal static string GetAnalysisEndPoint = "api/DocumentAnalysis/GetAnalysis";
 
@@ -202,19 +192,6 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
 
                     return listadoServicioDocumentAnalysisResponse;
 
-					//IEnumerable<DocumentAnalysisResponse> doc = new List<DocumentAnalysisResponse>();
-					//AsyncRetryPolicy policy = GetRetryPolicy();
-					//               var jsonDocAnalisis = await policy.ExecuteAsync(async () =>
-					//               {
-					//                   return await httpCli.GetAsync(theUri);
-					//               });
-
-					//               if (jsonDocAnalisis != null)
-					//               {
-					//	var resultado2 = jsonDocAnalisis.Content.ReadAsStringAsync().Result;
-					//	doc = JsonConvert.DeserializeObject<IEnumerable<DocumentAnalysisResponse>>(resultado2);
-					//               }
-					//               return doc;
 				}
                 catch (Exception ex)
                 {
@@ -249,30 +226,6 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
 
             ur.Query = queryString.ToString();
 			return ur.Uri;
-        }
-
-        private Polly.Retry.AsyncRetryPolicy GetRetryPolicy()
-        {
-            if (N_TIMES_POLLY_RETRY < 0)
-                throw new DocumentAnalysisException("BAD POLLY Configuration, Nº Time Polly Retry: " + N_TIMES_POLLY_RETRY);
-
-            var policy = Policy.Handle<HttpRequestException>().WaitAndRetryAsync(
-                retryCount: N_TIMES_POLLY_RETRY,
-                sleepDurationProvider: (attemptNum) => {                
-                    return TimeSpan.FromSeconds(Math.Min(Math.Pow(2, attemptNum), MAX_TIME_POLLY_RETRY));
-                },
-                onRetry: (ex, ts) =>
-                {
-                    //if (!String.IsNullOrEmpty(theStatusRequest.Hash))
-                    //{
-                    //    Debug.WriteLine(ex, "Repetimos el documento: " + theStatusRequest.Hash);
-                    //}
-                    //else
-                    //{
-                    //    Debug.WriteLine(ex, "Repetimos sin documento: ");
-                    //}
-                });
-            return policy;
         }
 
 

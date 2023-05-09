@@ -4,13 +4,13 @@ using System.Text;
 
 namespace Aranzadi.DocumentAnalysis.DTO.Response
 {
-	public class DocumentAnalysisDataResultContent
-	{
-		public DocumentAnalysisDataResultJudgement juzgado { get; set; }
-		public DocumentAnalysisDataResultProcedure procedimiento { get; set; }
-		public DocumentAnalysisDataResolution resolucion { get; set; }
-		public DocumentAnalysisDataResultReview review { get; set; }
-		public string ocr { get; set; }
+    public class DocumentAnalysisDataResultContent
+    {
+        public DocumentAnalysisDataResultJudgement Juzgado { get; set; }
+        public DocumentAnalysisDataResultProcedure Procedimiento { get; set; }
+        public DocumentAnalysisDataResolution Resolucion { get; set; }
+        public DocumentAnalysisDataResultReview Review { get; set; }
+        public string Ocr { get; set; }
 
-	}
+    }
 }
