@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Cosmos.Linq;
+using Newtonsoft.Json;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -33,8 +34,9 @@ namespace Aranzadi.DocumentAnalysis.Controllers
             }
 
             var listAnalisis = await _documentAnalysisService.GetAnalysisAsync(Tenant, Owner, DocumentId);
+            
+			return Ok(JsonConvert.SerializeObject(listAnalisis));
 
-            return Ok(listAnalisis);
         }
 
         //[HttpGet("GetAnalysis/{tenantId}/{userId}/")]
