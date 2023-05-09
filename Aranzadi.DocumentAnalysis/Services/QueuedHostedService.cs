@@ -143,7 +143,7 @@ namespace Aranzadi.DocumentAnalysis.Services
 					{
 						
 						//TODO: Rellenar la respuesta del analysis aqui en modo de pruebas y marcar como Done
-						string json = JsonConvert.SerializeObject(Get_DocumentAnalysisDataResultContent());
+						string json = JsonConvert.SerializeObject(Get_DocumentAnalysisDataResultContent(data));
 						data.Analysis = json;
 						data.Status = AnalysisStatus.Done;
 						////////
@@ -175,21 +175,21 @@ namespace Aranzadi.DocumentAnalysis.Services
 		}
 
 
-		private DocumentAnalysisDataResultContent Get_DocumentAnalysisDataResultContent()
+		private DocumentAnalysisDataResultContent Get_DocumentAnalysisDataResultContent(DocumentAnalysisData data)
 		{
 			DocumentAnalysisDataResultContent content = new DocumentAnalysisDataResultContent();
 			content.Juzgado = new DocumentAnalysisDataResultJudgement()
 			{
 				Ciudad = "ciudad sample",
 				Jurisdiccion = "jurisdiccion sample",
-				Nombre = "nombre sample",
+				Nombre = "nombre sample " + data.DocumentName,
 				Numero = "numero sample",
 				TipoTribunal = "tribunal sample"
 			};
 			content.Review = new DocumentAnalysisDataResultReview()
 			{
 				Cause = new string[] { "cause 1", "cause 2" },
-				Review = "review sample"
+				Review = "review sample " + data.DocumentName
 			};
 			content.Procedimiento = new DocumentAnalysisDataResultProcedure()
 			{
@@ -205,7 +205,7 @@ namespace Aranzadi.DocumentAnalysis.Services
 			{
 				Letrados = "letrado sample",
 				Naturaleza = "naturaleza sample",
-				Nombre = "nombre sample",
+				Nombre = "nombre sample " + data.DocumentName,
 				Procurador = "procurador sample",
 				TipoParte = "tipo parte sample",
 				TipoParteRecurso = "tipo parte recurso sample"
@@ -225,20 +225,50 @@ namespace Aranzadi.DocumentAnalysis.Services
 			content.Procedimiento.Partes = lista.ToArray();
 			content.Procedimiento.ProcedimientoInicial = new DocumentAnalysisDataResultProcedureInitialProcedure()
 			{
-				Juzgado = "juzgado sample",
+				Juzgado = "juzgado sample " + data.DocumentName,
 				NumeroAutos = "numero autos"
 			};
+
+			var requerimientos = new List<DocumentAnalysisDataResultRequirement>();
+			requerimientos.Add(new DocumentAnalysisDataResultRequirement()
+			{
+				FechaRequerimiento = DateTime.Today.AddDays(5).ToString(),
+				Plazo = "5",
+				Requerimiento = "requerimiento sample 1 " + data.DocumentName,
+
+			});
+			requerimientos.Add(new DocumentAnalysisDataResultRequirement()
+			{
+				FechaRequerimiento = DateTime.Today.AddDays(10).ToString(),
+				Plazo = "10",
+				Requerimiento = "requerimiento sample 2 " + data.DocumentName,
+
+			});
+
+			var recursos = new List<DocumentAnalysisDataResultResource>();
+			recursos.Add(new DocumentAnalysisDataResultResource()
+			{				
+				Plazo = "6",
+				Recurso = "Recurso sample 1 " + data.DocumentName,
+			});
+			recursos.Add(new DocumentAnalysisDataResultResource()
+			{
+				Plazo = "20",
+				Recurso = "Recurso sample 2 " + data.DocumentName,
+			});
 
 			content.Resolucion = new DocumentAnalysisDataResolution()
 			{
 				Cuantia = "",
 				FechaNotificacion = DateTime.Today.AddDays(-100).ToString(),
 				FechaResolucion = DateTime.Today.ToString(),
-				Hito = "hito sample",
+				Hito = "hito sample " + data.DocumentName,
 				NumeroResolucion = "num resolucion sample",
 				ResumenEscrito = "resumen",
-
+				Requerimientos = requerimientos.ToArray(),
+				Recurso = recursos.ToArray(),
 			};
+
 			return content;
 		}
 
