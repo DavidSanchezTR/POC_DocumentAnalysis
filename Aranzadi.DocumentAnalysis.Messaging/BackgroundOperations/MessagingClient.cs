@@ -165,7 +165,7 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
         {
             ValidateGetAnalysisContext(context);            
            
-            using (var httpCli = this.httpCliFact.CreateClient(CLIENT_ID))
+            using (HttpClient httpCli = this.httpCliFact.CreateClient(CLIENT_ID))
             {
                 try
                 {
@@ -177,18 +177,15 @@ namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
                         DocumentId = documentId
                     };
 
-
-
-                    Uri theUri = GetUri(GetAnalysisEndPoint, theStatusRequest);
-
-                    var resp = httpCli.GetAsync(theUri);
-					var res = resp.Result;
-					var resultado = res.Content.ReadAsStringAsync().Result;
-					var listadoServicioDocumentAnalysisResponse = JsonConvert.DeserializeObject<IEnumerable<DocumentAnalysisResponse>>(resultado);
+					Uri theUri = GetUri(GetAnalysisEndPoint, theStatusRequest);
+                    HttpResponseMessage resp = await httpCli.GetAsync(theUri);
+                    var res = resp.Content;
+                    var resultado = await res.ReadAsStringAsync();
+                    var listadoServicioDocumentAnalysisResponse = JsonConvert.DeserializeObject<IEnumerable<DocumentAnalysisResponse>>(resultado);
                     if (listadoServicioDocumentAnalysisResponse == null)
                     {
-						listadoServicioDocumentAnalysisResponse = new List<DocumentAnalysisResponse>();
-					}
+                        listadoServicioDocumentAnalysisResponse = new List<DocumentAnalysisResponse>();
+                    }
 
                     return listadoServicioDocumentAnalysisResponse;
 
