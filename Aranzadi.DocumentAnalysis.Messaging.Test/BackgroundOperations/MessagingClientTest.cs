@@ -323,7 +323,7 @@ namespace Aranzadi.DocumentAnalysis.Messaging.Test.BackgroundOperations
 					Query = queryString.ToString()
 				};
 
-				Assert.AreEqual(theUriBuilder, request!.RequestUri);
+				Assert.AreEqual(theUriBuilder.Uri, request!.RequestUri);
                 return new HttpResponseMessage()
                 {
                     StatusCode = System.Net.HttpStatusCode.OK,
@@ -467,7 +467,7 @@ namespace Aranzadi.DocumentAnalysis.Messaging.Test.BackgroundOperations
 					Query = queryString.ToString()
 				};
 
-				Assert.AreEqual(theUriBuilder, request!.RequestUri);
+				Assert.AreEqual(theUriBuilder.Uri, request!.RequestUri);
                 return new HttpResponseMessage()
                 {
                     StatusCode = System.Net.HttpStatusCode.OK,
