@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using Aranzadi.DocumentAnalysis.Messaging.Model;
+using Aranzadi.DocumentAnalysis.Messaging.Model.Request;
+using Aranzadi.DocumentAnalysis.Messaging.Model.Response;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Aranzadi.DocumentAnalysis.DTO;
-using Aranzadi.DocumentAnalysis.DTO.Request;
-using Aranzadi.DocumentAnalysis.DTO.Response;
 
 namespace Aranzadi.DocumentAnalysis.Messaging
 {

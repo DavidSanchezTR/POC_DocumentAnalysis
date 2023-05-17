@@ -1,13 +1,8 @@
-﻿using Aranzadi.DocumentAnalysis.DTO.Request;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Aranzadi.DocumentAnalysis.Messaging.Model.Request;
 
 namespace Aranzadi.DocumentAnalysis.Messaging.Test.DTO.Request
 {
-    [TestClass()]
+	[TestClass()]
     public class PackageRequestTest
     {
 

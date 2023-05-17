@@ -1,5 +1,5 @@
-﻿using Aranzadi.DocumentAnalysis.DTO;
-using Aranzadi.DocumentAnalysis.DTO.Request;
+﻿using Aranzadi.DocumentAnalysis.Messaging.Model;
+using Aranzadi.DocumentAnalysis.Messaging.Model.Request;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;

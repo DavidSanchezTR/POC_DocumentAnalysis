@@ -1,9 +1,8 @@
 ﻿using Aranzadi.DocumentAnalysis.Data.Entities;
 using Aranzadi.DocumentAnalysis.Data.IRepository;
-using Aranzadi.DocumentAnalysis.DTO.Enums;
-using Aranzadi.DocumentAnalysis.DTO.Response;
+using Aranzadi.DocumentAnalysis.Messaging.Model.Enums;
+using Aranzadi.DocumentAnalysis.Messaging.Model.Response;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualBasic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json;
@@ -14,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Aranzadi.DocumentAnalysis.Test
 {
-    [TestClass]
+	[TestClass]
     public class DocumentAnalysisServiceTests
     {  
         

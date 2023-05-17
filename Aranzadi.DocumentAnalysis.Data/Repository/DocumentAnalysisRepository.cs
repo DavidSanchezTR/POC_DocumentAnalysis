@@ -1,5 +1,6 @@
 ﻿using Aranzadi.DocumentAnalysis.Data.Entities;
 using Aranzadi.DocumentAnalysis.Data.IRepository;
+using Aranzadi.DocumentAnalysis.Messaging.Model.Enums;
 using Microsoft.Azure.Cosmos;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -60,7 +61,7 @@ namespace Aranzadi.DocumentAnalysis.Data.Repository
 
 		public async Task<DocumentAnalysisResult?> GetAnalysisDoneAsync(string sha256)
 		{
-			var analysis = await dbContext.Analysis.Where(e => e.Sha256 == sha256 && e.Status == DTO.Enums.AnalysisStatus.Done).Select(a => new DocumentAnalysisResult { Status = a.Status, DocumentId = a.Id, Analysis = a.Analysis }).FirstOrDefaultAsync();
+			var analysis = await dbContext.Analysis.Where(e => e.Sha256 == sha256 && e.Status == AnalysisStatus.Done).Select(a => new DocumentAnalysisResult { Status = a.Status, DocumentId = a.Id, Analysis = a.Analysis }).FirstOrDefaultAsync();
 			return analysis;
 		}
 

@@ -8,9 +8,6 @@ using ThomsonReuters.BackgroundOperations.Messaging;
 using ThomsonReuters.BackgroundOperations.Messaging.Models;
 using System.Linq;
 using System.Transactions;
-using Aranzadi.DocumentAnalysis.DTO.Request;
-using Aranzadi.DocumentAnalysis.DTO.Response;
-using Aranzadi.DocumentAnalysis.DTO;
 using Microsoft.Extensions.Azure;
 using System.Collections.Specialized;
 using Newtonsoft.Json;
@@ -21,6 +18,9 @@ using Microsoft.Extensions.Logging;
 using log4net;
 using Microsoft.Azure.Amqp.Framing;
 using Azure;
+using Aranzadi.DocumentAnalysis.Messaging.Model.Request;
+using Aranzadi.DocumentAnalysis.Messaging.Model.Response;
+using Aranzadi.DocumentAnalysis.Messaging.Model;
 
 namespace Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations
 {

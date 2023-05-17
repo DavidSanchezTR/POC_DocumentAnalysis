@@ -345,10 +345,6 @@
     <Content Include="Views\Home\SendMessage.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Aranzadi.DocumentAnalysis.DTO\Aranzadi.DocumentAnalysis.DTO.csproj">
-      <Project>{4f8be899-ccc8-4c4c-a523-349a7c835eaa}</Project>
-      <Name>Aranzadi.DocumentAnalysis.DTO</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Aranzadi.DocumentAnalysis.Messaging\Aranzadi.DocumentAnalysis.Messaging.csproj">
       <Project>{523c3022-6bae-4a07-8715-3a3c1c601500}</Project>
       <Name>Aranzadi.DocumentAnalysis.Messaging</Name>

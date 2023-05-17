@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Aranzadi.DocumentAnalysis.DTO\Aranzadi.DocumentAnalysis.DTO.csproj" />
+    <ProjectReference Include="..\Aranzadi.DocumentAnalysis.Messaging\Aranzadi.DocumentAnalysis.Messaging.csproj" />
   </ItemGroup>
 
   <ItemGroup>

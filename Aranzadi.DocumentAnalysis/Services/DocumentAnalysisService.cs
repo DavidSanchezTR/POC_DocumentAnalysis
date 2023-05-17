@@ -1,11 +1,7 @@
 ﻿using Aranzadi.DocumentAnalysis.Data.IRepository;
-using System;
-using Aranzadi.DocumentAnalysis.Data.Entities;
-using Aranzadi.DocumentAnalysis.DTO.Response;
-using System.Reflection.Metadata.Ecma335;
-using Aranzadi.DocumentAnalysis.DTO.Enums;
+using Aranzadi.DocumentAnalysis.Messaging.Model.Enums;
+using Aranzadi.DocumentAnalysis.Messaging.Model.Response;
 using Newtonsoft.Json;
-using Microsoft.VisualBasic;
 
 public class DocumentAnalysisService : IDocumentAnalysisService
 {

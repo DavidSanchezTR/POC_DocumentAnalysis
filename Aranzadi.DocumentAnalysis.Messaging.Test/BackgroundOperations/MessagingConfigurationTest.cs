@@ -1,15 +1,8 @@
-﻿using Aranzadi.DocumentAnalysis.DTO;
-using Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations;
-using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations;
 
 namespace Aranzadi.DocumentAnalysis.Messaging.Test.BackgroundOperations
 {
-    [TestClass()]
+	[TestClass()]
     public class MessagingConfigurationTest
     {        
 
