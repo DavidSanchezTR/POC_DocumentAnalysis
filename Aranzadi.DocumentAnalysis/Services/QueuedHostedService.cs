@@ -1,23 +1,14 @@
-﻿
-using Aranzadi.DocumentAnalysis.Data;
-using Aranzadi.DocumentAnalysis.Data.Entities;
+﻿using Aranzadi.DocumentAnalysis.Data.Entities;
 using Aranzadi.DocumentAnalysis.Data.IRepository;
-using Aranzadi.DocumentAnalysis.Data.Repository;
-using Aranzadi.DocumentAnalysis.DTO;
-using Aranzadi.DocumentAnalysis.DTO.Enums;
-using Aranzadi.DocumentAnalysis.DTO.Request;
-using Aranzadi.DocumentAnalysis.DTO.Response;
 using Aranzadi.DocumentAnalysis.Messaging;
 using Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations;
+using Aranzadi.DocumentAnalysis.Messaging.Model;
+using Aranzadi.DocumentAnalysis.Messaging.Model.Enums;
+using Aranzadi.DocumentAnalysis.Messaging.Model.Request;
+using Aranzadi.DocumentAnalysis.Messaging.Model.Response;
 using Microsoft.ApplicationInsights;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Abstractions;
 using Newtonsoft.Json;
-using System;
-using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
-using ThomsonReuters.BackgroundOperations.Messaging.Models;
 
 namespace Aranzadi.DocumentAnalysis.Services
 {
@@ -84,7 +75,7 @@ namespace Aranzadi.DocumentAnalysis.Services
 		}
 
 
-		private async Task<bool> ProcessMessage(AnalysisContext context, DTO.Request.DocumentAnalysisRequest request)
+		private async Task<bool> ProcessMessage(AnalysisContext context, DocumentAnalysisRequest request)
 		{
 			try
 			{

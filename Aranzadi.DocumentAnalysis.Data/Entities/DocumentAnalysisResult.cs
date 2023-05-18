@@ -1,7 +1,5 @@
 ﻿
-
-using Aranzadi.DocumentAnalysis.DTO.Enums;
-using Aranzadi.DocumentAnalysis.DTO.Response;
+using Aranzadi.DocumentAnalysis.Messaging.Model.Enums;
 
 namespace Aranzadi.DocumentAnalysis.Data.Entities
 {

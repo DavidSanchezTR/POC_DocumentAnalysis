@@ -1,6 +1,5 @@
-﻿using Aranzadi.DocumentAnalysis.DTO;
-using Aranzadi.DocumentAnalysis.DTO.Request;
-
+﻿using Aranzadi.DocumentAnalysis.Messaging.Model;
+using Aranzadi.DocumentAnalysis.Messaging.Model.Request;
 using System;
 using System.Threading.Tasks;
 

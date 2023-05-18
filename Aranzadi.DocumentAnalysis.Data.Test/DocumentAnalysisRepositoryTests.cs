@@ -12,6 +12,7 @@ using Aranzadi.DocumentAnalysis.Data.Repository;
 using System.Threading;
 using Util.TestingMockAsyncMethods;
 using Microsoft.Extensions.Logging;
+using Aranzadi.DocumentAnalysis.Messaging.Model.Enums;
 
 namespace Aranzadi.DocumentAnalysis.Data.Test
 {
@@ -157,7 +158,7 @@ namespace Aranzadi.DocumentAnalysis.Data.Test
         {
              var lista = new List<DocumentAnalysisData>
              {
-              GetDocumentAnalysisData(DTO.Enums.AnalysisStatus.Done)
+              GetDocumentAnalysisData(AnalysisStatus.Done)
              };
 
             var dbSetMock = CreateDbSetMock<DocumentAnalysisData>(lista.AsQueryable());
@@ -179,7 +180,7 @@ namespace Aranzadi.DocumentAnalysis.Data.Test
         {
             var lista = new List<DocumentAnalysisData>
              {
-              GetDocumentAnalysisData(DTO.Enums.AnalysisStatus.Done)
+              GetDocumentAnalysisData(AnalysisStatus.Done)
              };
 
             var dbSetMock = CreateDbSetMock<DocumentAnalysisData>(lista.AsQueryable());
@@ -198,7 +199,7 @@ namespace Aranzadi.DocumentAnalysis.Data.Test
 		{
 			var lista = new List<DocumentAnalysisData>
 			 {
-			  GetDocumentAnalysisData(DTO.Enums.AnalysisStatus.Done)
+			  GetDocumentAnalysisData(AnalysisStatus.Done)
 			 };
 
 			var dbSetMock = CreateDbSetMock<DocumentAnalysisData>(lista.AsQueryable());
@@ -233,7 +234,7 @@ namespace Aranzadi.DocumentAnalysis.Data.Test
 		}
 
 		private DocumentAnalysisData GetDocumentAnalysisData(
-            DTO.Enums.AnalysisStatus status = DTO.Enums.AnalysisStatus.Pending)
+            AnalysisStatus status = AnalysisStatus.Pending)
         {
             return new DocumentAnalysisData
             {
@@ -243,7 +244,7 @@ namespace Aranzadi.DocumentAnalysis.Data.Test
                 AccessUrl = "https://example.es",
                 Analysis = "string analysis example",
                 Status = status,// 1,
-                Source = DTO.Enums.Source.LaLey, // "source",
+                Source = Source.LaLey, // "source",
                 Sha256 = "Hash",
                 TenantId = "1234",
                 UserId = "22",

@@ -1,4 +1,4 @@
-﻿using Aranzadi.DocumentAnalysis.DTO;
+﻿using Aranzadi.DocumentAnalysis.Messaging.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;

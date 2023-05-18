@@ -7,11 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Aranzadi.DocumentAnalysis.Messaging" Version="0.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Cosmos" Version="7.0.4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Aranzadi.DocumentAnalysis.DTO\Aranzadi.DocumentAnalysis.DTO.csproj" />
   </ItemGroup>
 
   <ItemGroup>

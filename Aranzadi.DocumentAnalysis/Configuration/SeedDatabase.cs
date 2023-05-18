@@ -1,5 +1,6 @@
 ﻿using Aranzadi.DocumentAnalysis.Data;
 using Aranzadi.DocumentAnalysis.Data.Entities;
+using Aranzadi.DocumentAnalysis.Messaging.Model.Enums;
 
 namespace Aranzadi.DocumentAnalysis.Configuration
 {
@@ -18,10 +19,10 @@ namespace Aranzadi.DocumentAnalysis.Configuration
                         Analysis = "Esto es un análisis",
                         AccessUrl = "www.prueba.com",
                         Sha256 = "HasCode",
-                        Status = DTO.Enums.AnalysisStatus.Pending,
+                        Status = AnalysisStatus.Pending,
                         TenantId = "122",
                         UserId = "22",
-                        Source = DTO.Enums.Source.LaLey,
+                        Source = Source.LaLey,
                         AnalysisDate = DateTimeOffset.Now,
                         CreateDate = DateTimeOffset.Now,
                 });

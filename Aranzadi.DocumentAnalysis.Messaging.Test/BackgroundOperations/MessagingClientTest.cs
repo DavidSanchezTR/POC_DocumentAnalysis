@@ -1,23 +1,18 @@
-﻿using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations;
-using ThomsonReuters.BackgroundOperations.Messaging;
-using Aranzadi.DocumentAnalysis.DTO.Request;
+﻿using Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations;
+using Aranzadi.DocumentAnalysis.Messaging.Model;
+using Aranzadi.DocumentAnalysis.Messaging.Model.Enums;
+using Aranzadi.DocumentAnalysis.Messaging.Model.Request;
+using Aranzadi.DocumentAnalysis.Messaging.Model.Response;
 using Aranzadi.DocumentAnalysis.Messaging.Test.DTO.Request;
-using ThomsonReuters.BackgroundOperations.Messaging.Models;
-using Aranzadi.DocumentAnalysis.DTO;
-using Aranzadi.DocumentAnalysis.DTO.Response;
-using System.Collections.Specialized;
+using Moq;
 using Newtonsoft.Json;
-using Aranzadi.DocumentAnalysis.DTO.Enums;
+using System.Collections.Specialized;
+using ThomsonReuters.BackgroundOperations.Messaging;
+using ThomsonReuters.BackgroundOperations.Messaging.Models;
 
 namespace Aranzadi.DocumentAnalysis.Messaging.Test.BackgroundOperations
 {
-    [TestClass()]
+	[TestClass()]
     public class MessagingClientTest
     {
 

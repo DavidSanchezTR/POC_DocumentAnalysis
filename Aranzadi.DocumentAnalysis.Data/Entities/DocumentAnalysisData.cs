@@ -1,15 +1,9 @@
-﻿using Aranzadi.DocumentAnalysis.DTO.Enums;
-using System;
-using System.Collections.Generic;
+﻿using Aranzadi.DocumentAnalysis.Messaging.Model.Enums;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Aranzadi.DocumentAnalysis.Data.Entities
 {
-    public class DocumentAnalysisData
+	public class DocumentAnalysisData
     {
         [Key]        
         public Guid Id { get; set; }

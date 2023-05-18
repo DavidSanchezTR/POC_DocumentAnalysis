@@ -1,29 +1,16 @@
-﻿using Aranzadi.DocumentAnalysis.DTO.Request;
-using Microsoft.AspNetCore.Mvc;
+﻿using Aranzadi.DocumentAnalysis.Messaging;
+using Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations;
+using Aranzadi.DocumentAnalysis.Messaging.Model;
+using Aranzadi.DocumentAnalysis.Messaging.Model.Request;
+using log4net;
 using SampleClientApp.Common;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Web;
 using System.Web.Mvc;
-using ThomsonReuters.BackgroundOperations.Messaging.Models;
-using ThomsonReuters.BackgroundOperations.Messaging;
-using Aranzadi.DocumentAnalysis.DTO.Enums;
-using Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations;
-using Aranzadi.DocumentAnalysis.Messaging;
-using System.Configuration;
-using Aranzadi.DocumentAnalysis.DTO;
-using Microsoft.Extensions.Logging;
-using log4net;
-using log4net.Repository.Hierarchy;
-using Aranzadi.DocumentAnalysis.DTO.Response;
-using System.Net.Http;
-using System.Net.Sockets;
 
 namespace SampleClientApp.Controllers
 {
-    public class HomeController : Controller
+	public class HomeController : Controller
     {        
         public ActionResult Index()
         {

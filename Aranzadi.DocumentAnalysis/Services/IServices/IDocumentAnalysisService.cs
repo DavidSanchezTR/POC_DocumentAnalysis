@@ -1,6 +1,4 @@
-﻿using Aranzadi.DocumentAnalysis.Data.Entities;
-using Aranzadi.DocumentAnalysis.DTO.Response;
-using System;
+﻿using Aranzadi.DocumentAnalysis.Messaging.Model.Response;
 
 public interface IDocumentAnalysisService
 {
