@@ -11,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+builder.Configuration.AddEnvironmentVariables();
 
 
 var documentAnalysisOptions = ApplicationSettings.GetDocumentAnalysisOptions(builder.Configuration);
@@ -24,7 +25,7 @@ var documentAnalysisOptions = ApplicationSettings.GetDocumentAnalysisOptions(bui
 	using var store = new X509Store(StoreName.My, storeLocation);
 	store.Open(OpenFlags.ReadOnly);
 	string thumbprint = documentAnalysisOptions.KeyVault.CertificateThumbprint;
-	if (!string.IsNullOrEmpty(thumbprint))
+    if (!string.IsNullOrEmpty(thumbprint))
 	{
 		var certs = store.Certificates
 			.Find(X509FindType.FindByThumbprint, thumbprint, false);
