@@ -8,8 +8,9 @@ public static class ApplicationSettings
 
         documentAnalysisOptions.SecretsIncludedFromKeyVault = new List<string>()
         {
-            "uksouth-iflx-dev-blue-orch-Messaging--Endpoint" //ServiceBus:ConnectionString
-
+            //Comentar o descomentar para que escuche en la cola blue o green
+            //"uksouth-iflx-dev-blue-orch-Messaging--Endpoint", //ServiceBus:ConnectionString en entorno dev blue
+			"uksouth-iflx-dev-green-orch-Messaging--Endpoint" //ServiceBus:ConnectionString en entorno dev green
          };
 
         configuration.Bind(documentAnalysisOptions);
@@ -28,7 +29,12 @@ public static class ApplicationSettings
                                                                               ? configuration.GetValue<string>(secretName)
                                                                               : documentAnalysisOptions.ServiceBus.ConnectionString;
                         break;
-                    default:
+					case "uksouth-iflx-dev-green-orch-Messaging--Endpoint":
+						documentAnalysisOptions.ServiceBus.ConnectionString = keyNames.ContainsKey(secretName)
+																			  ? configuration.GetValue<string>(secretName)
+																			  : documentAnalysisOptions.ServiceBus.ConnectionString;
+						break;
+					default:
                         break;
                 }
             }
