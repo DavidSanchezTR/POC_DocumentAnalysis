@@ -169,95 +169,95 @@ namespace Aranzadi.DocumentAnalysis.Services
 		private DocumentAnalysisDataResultContent Get_DocumentAnalysisDataResultContent(DocumentAnalysisData data)
 		{
 			DocumentAnalysisDataResultContent content = new DocumentAnalysisDataResultContent();
-			content.Juzgado = new DocumentAnalysisDataResultJudgement()
+			content.Court = new DocumentAnalysisDataResultCourt()
 			{
-				Ciudad = "ciudad sample",
-				Jurisdiccion = "jurisdiccion sample",
-				Nombre = "nombre sample " + data.DocumentName,
-				Numero = "numero sample",
-				TipoTribunal = "tribunal sample"
+				City = "ciudad sample",
+				Jurisdiction = "jurisdiccion sample",
+				Name = "nombre sample " + data.DocumentName,
+				Number = "numero sample",
+				CourtType = "tribunal sample"
 			};
 			content.Review = new DocumentAnalysisDataResultReview()
 			{
 				Cause = new string[] { "cause 1", "cause 2" },
 				Review = "review sample " + data.DocumentName
 			};
-			content.Procedimiento = new DocumentAnalysisDataResultProcedure()
+			content.Proceeding = new DocumentAnalysisDataResultProceeding()
 			{
 				NIG = "NIG sample",
-				NumeroAutos = "numero autos sample",
-				TipoProcedimiento = "procedimiento sample",
-				SubtipoProcedimiento = "subprocedimiento sample",
+				MilestonesNumber = "numero autos sample",
+				ProceedingType = "procedimiento sample",
+				ProceedingSubtype = "subprocedimiento sample",
 			};
 
-			var lista = new List<DocumentAnalysisDataResultProcedureParts>
+			var lista = new List<DocumentAnalysisDataResultProceedingParts>
 		{
-			new DocumentAnalysisDataResultProcedureParts()
+			new DocumentAnalysisDataResultProceedingParts()
 			{
-				Letrados = "letrado sample",
-				Naturaleza = "naturaleza sample",
-				Nombre = "nombre sample " + data.DocumentName,
-				Procurador = "procurador sample",
-				TipoParte = "tipo parte sample",
-				TipoParteRecurso = "tipo parte recurso sample"
+				Lawyers = "letrado sample",
+				Source = "naturaleza sample",
+				Name = "nombre sample " + data.DocumentName,
+				Attorney = "procurador sample",
+				PartType = "tipo parte sample",
+				AppealPartType = "tipo parte recurso sample"
 
 			},
-			new DocumentAnalysisDataResultProcedureParts()
+			new DocumentAnalysisDataResultProceedingParts()
 			{
-                Letrados = "letrado sample 2",
-                Naturaleza = "naturaleza sample 2",
-                Nombre = "nombre sample 2",
-                Procurador = "procurador sample 2",
-                TipoParte = "tipo parte sample 2",
-                TipoParteRecurso = "tipo parte recurso sample 2"
+				Lawyers = "letrado sample 2",
+				Source = "naturaleza sample 2",
+                Name = "nombre sample 2",
+                Attorney = "procurador sample 2",
+				PartType = "tipo parte sample 2",
+				AppealPartType = "tipo parte recurso sample 2"
 
             }
 		};
-			content.Procedimiento.Partes = lista.ToArray();
-			content.Procedimiento.ProcedimientoInicial = new DocumentAnalysisDataResultProcedureInitialProcedure()
+			content.Proceeding.Parts = lista.ToArray();
+			content.Proceeding.InitialProceeding = new DocumentAnalysisDataResultProceedingInitialProceeding()
 			{
-				Juzgado = "juzgado sample " + data.DocumentName,
-				NumeroAutos = "numero autos"
+				Court = "juzgado sample " + data.DocumentName,
+				MilestonesNumber = "numero autos"
 			};
 
-			var requerimientos = new List<DocumentAnalysisDataResultRequirement>();
-			requerimientos.Add(new DocumentAnalysisDataResultRequirement()
+			var requerimientos = new List<DocumentAnalysisDataResultNotification>();
+			requerimientos.Add(new DocumentAnalysisDataResultNotification()
 			{
-				FechaRequerimiento = DateTime.Today.AddDays(5).ToString(),
-				Plazo = "5",
-				Requerimiento = "requerimiento sample 1 " + data.DocumentName,
+				NotificationDate = DateTime.Today.AddDays(5).ToString(),
+				Term = "5",
+				Notification = "requerimiento sample 1 " + data.DocumentName,
 
 			});
-			requerimientos.Add(new DocumentAnalysisDataResultRequirement()
+			requerimientos.Add(new DocumentAnalysisDataResultNotification()
 			{
-				FechaRequerimiento = DateTime.Today.AddDays(10).ToString(),
-				Plazo = "10",
-				Requerimiento = "requerimiento sample 2 " + data.DocumentName,
+				NotificationDate = DateTime.Today.AddDays(10).ToString(),
+				Term = "10",
+				Notification = "requerimiento sample 2 " + data.DocumentName,
 
 			});
 
-			var recursos = new List<DocumentAnalysisDataResultResource>();
-			recursos.Add(new DocumentAnalysisDataResultResource()
+			var recursos = new List<DocumentAnalysisDataResultAppeal>();
+			recursos.Add(new DocumentAnalysisDataResultAppeal()
 			{				
-				Plazo = "6",
-				Recurso = "Recurso sample 1 " + data.DocumentName,
+				Term = "6",
+				Appeal = "Recurso sample 1 " + data.DocumentName,
 			});
-			recursos.Add(new DocumentAnalysisDataResultResource()
+			recursos.Add(new DocumentAnalysisDataResultAppeal()
 			{
-				Plazo = "20",
-				Recurso = "Recurso sample 2 " + data.DocumentName,
+				Term = "20",
+				Appeal = "Recurso sample 2 " + data.DocumentName,
 			});
 
-			content.Resolucion = new DocumentAnalysisDataResolution()
+			content.CourtDecision = new DocumentAnalysisDataCourtDecision()
 			{
-				Cuantia = "",
-				FechaNotificacion = DateTime.Today.AddDays(-100).ToString(),
-				FechaResolucion = DateTime.Today.ToString(),
-				Hito = "hito sample " + data.DocumentName,
-				NumeroResolucion = "num resolucion sample",
-				ResumenEscrito = "resumen",
-				Requerimientos = requerimientos.ToArray(),
-				Recurso = recursos.ToArray(),
+				Amount = "",
+				CommunicationDate = DateTime.Today.AddDays(-100).ToString(),
+				CourtDecisionDate = DateTime.Today.ToString(),
+				Milestone = "hito sample " + data.DocumentName,
+				CourtDecisionNumber = "num resolucion sample",
+				WrittenSummary = "resumen",
+				Notifications = requerimientos.ToArray(),
+				Appeal = recursos.ToArray(),
 			};
 
 			return content;
