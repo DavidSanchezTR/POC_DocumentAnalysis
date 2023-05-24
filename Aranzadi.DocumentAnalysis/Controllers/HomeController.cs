@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -17,9 +18,11 @@ namespace Aranzadi.DocumentAnalysis.Controllers
         [HttpGet]
 		public IActionResult Get()
 		{
+			var vDocumentAnalysisMessagingPackage = Assembly.GetAssembly(typeof(Aranzadi.DocumentAnalysis.Messaging.BackgroundOperations.MessagingConfiguration))?.GetName().Version?.ToString();
 			string scrubbedEndpoint = Regex.Replace(documentAnalysisOptions.ServiceBus.ConnectionString, @"SharedAccessKey=.*", "SharedAccessKey=[Oculto]");
 			string queueName = documentAnalysisOptions.ServiceBus.Queue;
-			var message = $"El servicio de análisis de documentos está activo y escuchando en la cola {queueName} del serviceBus {scrubbedEndpoint}";
+			var message = $"El servicio de análisis de documentos está activo y escuchando en la cola {queueName} del serviceBus {scrubbedEndpoint}. " +
+				$"DocumentAnalysis.Messaging (versión {vDocumentAnalysisMessagingPackage})";
 			
 			return Content(message);
 		}
