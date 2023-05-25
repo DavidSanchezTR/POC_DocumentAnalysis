@@ -123,16 +123,19 @@ namespace Aranzadi.DocumentAnalysis.Services
 					}
 					////////////////////
 
-					// Consultar si existe el analysis del documento por Hash y si está finalizado y disponible
-					var resultAnalysis = await documentAnalysisRepository.GetAnalysisDoneAsync(data.Sha256);
+					DocumentAnalysisResult? resultAnalysis = null;
+					if (configuration.CheckIfExistsHashFileInCosmos)
+					{
+						resultAnalysis = await documentAnalysisRepository.GetAnalysisDoneAsync(data.Sha256);
+					}
+
 					if (resultAnalysis != null)
 					{
 						data.Status = resultAnalysis.Status;
 						data.Analysis = resultAnalysis.Analysis;
 					}
 					else
-					{
-						
+					{                        
 						//TODO: Rellenar la respuesta del analysis aqui en modo de pruebas y marcar como Done
 						string json = JsonConvert.SerializeObject(Get_DocumentAnalysisDataResultContent(data));
 						data.Analysis = json;
@@ -223,14 +226,14 @@ namespace Aranzadi.DocumentAnalysis.Services
 			var requerimientos = new List<DocumentAnalysisDataResultNotification>();
 			requerimientos.Add(new DocumentAnalysisDataResultNotification()
 			{
-				NotificationDate = DateTime.Today.AddDays(5).ToString(),
+				NotificationDate = DateTime.UtcNow.AddDays(5).ToString("O"),
 				Term = "5",
 				Notification = "requerimiento sample 1 " + data.DocumentName,
 
 			});
 			requerimientos.Add(new DocumentAnalysisDataResultNotification()
 			{
-				NotificationDate = DateTime.Today.AddDays(10).ToString(),
+				NotificationDate = DateTime.UtcNow.AddDays(10).ToString("O"),
 				Term = "10",
 				Notification = "requerimiento sample 2 " + data.DocumentName,
 
@@ -251,8 +254,8 @@ namespace Aranzadi.DocumentAnalysis.Services
 			content.CourtDecision = new DocumentAnalysisDataCourtDecision()
 			{
 				Amount = "",
-				CommunicationDate = DateTime.Today.AddDays(-100).ToString(),
-				CourtDecisionDate = DateTime.Today.ToString(),
+				CommunicationDate = DateTime.UtcNow.AddDays(-100).ToString("O"),
+				CourtDecisionDate = DateTime.UtcNow.ToString("O"),
 				Milestone = "hito sample " + data.DocumentName,
 				CourtDecisionNumber = "num resolucion sample",
 				WrittenSummary = "resumen",
