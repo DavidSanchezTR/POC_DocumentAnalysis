@@ -149,8 +149,8 @@ namespace Aranzadi.DocumentAnalysis.Test
 			content.CourtDecision = new DocumentAnalysisDataCourtDecision()
 			{
 				Amount = "",
-				CommunicationDate = DateTime.Today.AddDays(-100).ToString(),
-				CourtDecisionDate = DateTime.Today.ToString(),
+				CommunicationDate = DateTime.Now.AddDays(-100).ToString("O"),
+				CourtDecisionDate = DateTime.Now.ToString("O"),
 				Milestone = "hito sample",
 				CourtDecisionNumber = "num resolucion sample",
 				WrittenSummary = "resumen",

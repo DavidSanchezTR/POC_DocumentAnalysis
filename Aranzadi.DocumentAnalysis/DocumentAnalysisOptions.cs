@@ -98,6 +98,8 @@ public class DocumentAnalysisOptions
         public string ConnectionString { get; set; }
     }
 
+    public bool CheckIfExistsHashFileInCosmos { get; set; }
+
 }
 
 public class EnvironmentNames
