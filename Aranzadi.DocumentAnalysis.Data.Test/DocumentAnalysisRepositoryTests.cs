@@ -156,9 +156,11 @@ namespace Aranzadi.DocumentAnalysis.Data.Test
         [TestMethod]
         public async Task GetAnalysisAsync_ValidValues_ReturnsDocumentAnalysisResultOK()
         {
-             var lista = new List<DocumentAnalysisData>
+            var data = GetDocumentAnalysisData(AnalysisStatus.Done);
+            var lista = new List<DocumentAnalysisData>
              {
-              GetDocumentAnalysisData(AnalysisStatus.Done)
+                 data,
+                 data
              };
 
             var dbSetMock = CreateDbSetMock<DocumentAnalysisData>(lista.AsQueryable());
@@ -169,6 +171,7 @@ namespace Aranzadi.DocumentAnalysis.Data.Test
 
             DocumentAnalysisRepository analysisRepository = new DocumentAnalysisRepository(mockDocumentAnalysisDbContext.Object);
             var result = await analysisRepository.GetAnalysisAsync(lista[0].TenantId, lista[0].UserId, lista[0].Id.ToString());
+            Assert.AreEqual(result.Count(), 1);
             Assert.AreEqual(result.First().DocumentId, lista[0].Id);
             Assert.AreEqual(result.First().Status, lista[0].Status);
             Assert.AreEqual(result.First().Analysis, lista[0].Analysis);
@@ -194,7 +197,26 @@ namespace Aranzadi.DocumentAnalysis.Data.Test
 			Assert.AreEqual(result.Count(), 0);
 		}
 
-		[TestMethod]
+        [TestMethod]
+        public async Task GetAnalysisAsync_InvalidDocumentId_ReturnsDocumentAnalysisResultEmpty()
+        {
+            var lista = new List<DocumentAnalysisData>
+             {
+              GetDocumentAnalysisData(AnalysisStatus.Done)
+             };
+
+            var dbSetMock = CreateDbSetMock<DocumentAnalysisData>(lista.AsQueryable());
+
+            Mock<DocumentAnalysisDbContext> mockDocumentAnalysisDbContext = new Mock<DocumentAnalysisDbContext>();
+
+            mockDocumentAnalysisDbContext.Setup(sp => sp.Analysis).Returns(dbSetMock.Object);
+
+            DocumentAnalysisRepository analysisRepository = new DocumentAnalysisRepository(mockDocumentAnalysisDbContext.Object);
+            var result = await analysisRepository.GetAnalysisAsync(lista[0].TenantId, lista[0].UserId, "");
+            Assert.AreEqual(result.Count(), 0);
+        }
+
+        [TestMethod]
 		public async Task GetAnalysisDoneAsync_ValidValues_ReturnsDocumentAnalysisResultOK()
 		{
 			var lista = new List<DocumentAnalysisData>

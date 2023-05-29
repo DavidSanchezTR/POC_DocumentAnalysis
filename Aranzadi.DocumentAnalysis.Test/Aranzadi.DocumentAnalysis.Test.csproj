@@ -19,4 +19,10 @@
     <ProjectReference Include="..\Aranzadi.DocumentAnalysis\Aranzadi.DocumentAnalysis.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Resources\Test.pdf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
