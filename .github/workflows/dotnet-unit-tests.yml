@@ -23,7 +23,7 @@ on:
 
 env:
   configuration: 'Release'
-  solution_path: 'Aranzadi.DocumentAnalysis.sln'
+  solution_path: 'Aranzadi.DocumentAnalysis/Aranzadi.DocumentAnalysis.csproj'
   nuget_feed_name: 'SWF_Burgos_Spain_Artifacts_feed'
   nuget_feed_source: 'https://pkgs.dev.azure.com/TR-Legal-OnlineServices/_packaging/SWF_Burgos_Spain_Artifacts_feed/nuget/v3/index.json'
   password_ado: ${{ secrets.PASSWORD_ADO }}
@@ -44,7 +44,7 @@ jobs:
     strategy:
       matrix:
         nuget_version: [5.x]
-        dotnet_version: [4.7.x, 6.x]
+        dotnet_version: [6.x]
 
     steps:
     - name: Checkout Repository
