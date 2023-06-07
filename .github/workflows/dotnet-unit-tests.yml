@@ -79,7 +79,6 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         gist_name: unit_tests.md
         gist_badge_label: "Unit-Tests: %Counters_passed%/%Counters_total%"
-        gist_token: ${{ secrets.GIST_TKV }}
         set_check_status_from_test_outcome: true
 
     - name: DotNet Unit Test DocumentAnalysis.Data
@@ -92,5 +91,4 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         gist_name: unit_tests_data.md
         gist_badge_label: "Unit-Tests-Data: %Counters_passed%/%Counters_total%"
-        gist_token: ${{ secrets.GIST_TKV }}
         set_check_status_from_test_outcome: true
