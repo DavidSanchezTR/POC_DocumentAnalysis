@@ -26,7 +26,7 @@ jobs:
 
     env:
       configuration: 'Release'
-      solution_path: 'Aranzadi.DocumentAnalysis.Messaging.sln'
+      solution_path: 'Aranzadi.DocumentAnalysis.sln'
       nuget_feed_name: 'SWF_Burgos_Spain_Artifacts_feed'
       nuget_feed_source: 'https://pkgs.dev.azure.com/TR-Legal-OnlineServices/_packaging/SWF_Burgos_Spain_Artifacts_feed/nuget/v3/index.json'
       password_ado: ${{ secrets.PASSWORD_ADO }}
