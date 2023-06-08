@@ -57,7 +57,7 @@ jobs:
       run: dotnet restore ${{ env.solution_path }} --verbosity normal 
 
     - name: Compile Solution
-      run: dotnet.exe publish ${{ env.solution_path }} --configuration ${{ env.configuration }} -c Dev -f net6.0
+      run: dotnet.exe publish ${{ env.solution_path }} -c Dev -f net6.0
 
     - name: "📂 Create Artifacts"
       uses: actions/upload-artifact@v3
