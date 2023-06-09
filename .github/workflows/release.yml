@@ -135,14 +135,14 @@ jobs:
     name: Deploy QA
     needs: 
         - release
-    runs-on: self-hosted
+    runs-on: windows-latest
     environment:
       name: QA
       url: https://uksouth-iflx-shar-documentanalysis-qa-app.azurewebsites.net
     env:
       AZURE_WEBAPP_NAME: uksouth-iflx-shar-documentanalysis-qa-app    # set this to your application's name
       AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root     
-    #   artifact-package-zip-directory-path: "Upload/"
+      artifact-package-zip-directory-path: ${{github.workspace}}
 
     steps:  
     #  Get WebApp/FunctionApp publish profile
@@ -150,4 +150,4 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: das-app
-        # path: ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}
+        path: ${{github.workspace}}
