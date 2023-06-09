@@ -59,12 +59,15 @@ jobs:
     - name: Compile Solution
       run: dotnet.exe publish ${{ env.solution_path }} -c Dev -f net6.0
 
+    - name: Run comand
+      run: dir ${{ github.workspace }} -recurse
+
     - name: "📂 Create Artifacts Build"
       uses: actions/upload-artifact@v3
       with:
         name: build
         # path: Aranzadi.DocumentAnalysis\bin\Dev\net6.0\publish\
-        path: _tmp/build
+        path: _tmp
 
   release:
 
@@ -82,6 +85,9 @@ jobs:
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
+
+    - name: Run comand
+      run: dir ${{ github.workspace }} -recurse
 
     - name: "📂 Download Build Artifacts"
       uses: actions/download-artifact@v3
@@ -111,7 +117,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: das-app
-        path: _tmp/release
+        path: _tmp
 
     # - name: Upload Artifacts
     #   uses: actions/upload-release-asset@v1
