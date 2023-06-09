@@ -66,8 +66,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: build
-        # path: Aranzadi.DocumentAnalysis\bin\Dev\net6.0\publish\
-        path: _tmp
+        path: Aranzadi.DocumentAnalysis\bin\Dev\net6.0\publish
 
   release:
 
@@ -93,7 +92,7 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: build
-        # path: build
+        path: Aranzadi.DocumentAnalysis\bin\Dev\net6.0\publish
 
     - name: Bump Version and Push Tag
       id: tag_version
@@ -117,9 +116,9 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: das-app
-        path: _tmp
+        path: ${{github.workspace}}
 
-    # - name: Upload Artifacts
+    # - name: "📂 Create Artifacts Release"
     #   uses: actions/upload-release-asset@v1
     #   env:
     #     GITHUB_TOKEN: ${{ github.token }}
@@ -152,4 +151,3 @@ jobs:
       with:
         name: das-app
         # path: ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}
-        path: ${{github.workspace}}\_tmp\release
