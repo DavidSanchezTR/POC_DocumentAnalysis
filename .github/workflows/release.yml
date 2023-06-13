@@ -15,6 +15,12 @@ env:
   nuget_feed_source: 'https://pkgs.dev.azure.com/TR-Legal-OnlineServices/_packaging/SWF_Burgos_Spain_Artifacts_feed/nuget/v3/index.json'
   password_ado: ${{ secrets.PASSWORD_ADO }}
   nuget_config: './Nuget.Config'
+  AZURE_WEBAPP_NAME: uksouth-iflx-blue-documentanalysis-dev-app    # set this to your application's name
+  AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root
+  AZURE_WEBAPP_PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+  dotnet_version: '6.0'
+  nuget_version: '5.4.0'    
+  artifact-package-zip-directory-path: ${{github.workspace}}
 
 jobs:
 #   test:
@@ -29,10 +35,10 @@ jobs:
 
   build:
 
-    strategy:
-      matrix:
-        configuration: [Release]
-        dotnet-version: [ '6.x' ]
+    # strategy:
+    #   matrix:
+    #     configuration: [Release]
+    #     dotnet-version: [ '6.x' ]
 
     runs-on: windows-latest
     # needs: [test]
@@ -43,12 +49,12 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: ${{ matrix.dotnet_version }}
+        dotnet-version: ${{ env.dotnet_version }}
 
     - name: Setup NuGet
       uses: NuGet/setup-nuget@v1
       with:
-        nuget-version: ${{ matrix.nuget_version }}
+        nuget-version: ${{ env.nuget_version }}
 
     - name: Auth Nuget TR
       run: dotnet nuget add source ${{ env.nuget_feed_source }} --name ${{ env.nuget_feed_name }} --username 'david.sanchezfuentes@thomsonreuters.com' --password ${{ env.password_ado }} --store-password-in-clear-text --configfile ${{ env.nuget_config }}
@@ -70,9 +76,9 @@ jobs:
 
   release:
 
-    environment:
-      name: Production
-      url: https://github.com/${{ github.repository }}/releases/tag/${{ steps.tag_version.outputs.new_tag }}
+    # environment:
+    #   name: Production
+    #   url: https://github.com/${{ github.repository }}/releases/tag/${{ steps.tag_version.outputs.new_tag }}
     name: Semantic Release
     needs:
       - build
@@ -116,33 +122,19 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: das-app
-        path: ${{github.workspace}}
-
-    # - name: "📂 Create Artifacts Release"
-    #   uses: actions/upload-release-asset@v1
-    #   env:
-    #     GITHUB_TOKEN: ${{ github.token }}
-    #   with:
-    #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-    #     asset_path: build.zip
-    #     asset_name: DAS.zip
-    #     asset_content_type: application/zip    
+        path: ${{github.workspace}}   
 
     - name: Run comando
       run: dir ${{ github.workspace }} -recurse
 
-  deployQA:
-    name: Deploy QA
+  deployDEV:
+    name: Deploy DEV
     needs: 
         - release
     runs-on: windows-latest
     environment:
-      name: QA
-      url: https://uksouth-iflx-shar-documentanalysis-qa-app.azurewebsites.net
-    env:
-      AZURE_WEBAPP_NAME: uksouth-iflx-shar-documentanalysis-qa-app    # set this to your application's name
-      AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root     
-      artifact-package-zip-directory-path: ${{github.workspace}}
+      name: DEV
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:  
     #  Get WebApp/FunctionApp publish profile
@@ -151,3 +143,36 @@ jobs:
       with:
         name: das-app
         path: ${{github.workspace}}
+
+    - name: Deploy to Azure Web App
+      id: deploy-to-webapp
+      uses: azure/webapps-deploy@v2      
+      with:
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        publish-profile: ${{ env.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+  # deployQA:
+  #   name: Deploy QA
+  #   needs: 
+  #       - release
+  #   runs-on: windows-latest
+  #   environment:
+  #     name: QA
+  #     url: https://uksouth-iflx-shar-documentanalysis-qa-app.azurewebsites.net
+
+  #   steps:  
+  #   #  Get WebApp/FunctionApp publish profile
+  #   - name: Download Release Artifacts
+  #     uses: actions/download-artifact@v2
+  #     with:
+  #       name: das-app
+  #       path: ${{github.workspace}}
+
+  #   - name: Deploy to Azure Web App
+  #     id: deploy-to-webapp
+  #     uses: azure/webapps-deploy@v2
+  #     with:
+  #       app-name: ${{ env.AZURE_WEBAPP_NAME }}
+  #       publish-profile: ${{ env.AZURE_WEBAPP_PUBLISH_PROFILE }}
+  #       package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
