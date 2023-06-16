@@ -114,13 +114,16 @@ jobs:
       with:
         args: zip -qq -r build.zip . -i ${{github.workspace}}/build
 
+    - name: Run comando
+      run: ls ${{ github.workspace }}/build
+
     - name: upload windows artifact
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{github.workspace}}/build/build.zip
+        asset_path: build.zip
         asset_name: DAS.zip
         asset_content_type: application/zip
 
@@ -140,6 +143,34 @@ jobs:
 
     - name: Run comando
       run: ls * ${{ github.workspace }}
+
+  # deployMockQA:
+  #   name: Deploy Mock Environment
+  #   needs: [release]
+  #   runs-on: self-hosted
+  #   environment:
+  #     name: QA
+  #     url: https://uksouth-iflx-mock-das-qa-app.azurewebsites.net/
+  #   env:           
+  #     AZURE_WEBAPP_NAME: uksouth-iflx-mock-das-qa-app    # set this to your application's name
+  #     AZURE_RESOURCE_GROUP: uksouth-iflx-blue-qa-rg    # set this to your resource group name
+  #     AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root     
+  #     artifact-package-zip-directory-path: "Upload/"
+
+  #   steps:  
+  #   #  Get WebApp/FunctionApp publish profile
+  #   - name: Clean artifact-package-directory
+  #     run: Remove-Item ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }} -Recurse -Force
+
+  #   - name: Download Release Artifacts
+  #     uses: actions/download-artifact@v2
+  #     with:
+  #       name: build_v
+  #       path: ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}
+        
+  #   - uses: azure/login@v1
+  #     with:
+  #       creds: ${{ secrets.AZURE_CREDENTIALS }}
 
   # deployDEV:
   #   name: Deploy DEV
