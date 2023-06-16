@@ -28,8 +28,6 @@ env:
   nuget_feed_source: 'https://pkgs.dev.azure.com/TR-Legal-OnlineServices/_packaging/SWF_Burgos_Spain_Artifacts_feed/nuget/v3/index.json'
   password_ado: ${{ secrets.PASSWORD_ADO }}
   nuget_config: './Nuget.Config'
-  nuget_version: '5.4.0'
-  dotnet_version: '6.0'
   
 jobs:
   build:
@@ -38,15 +36,12 @@ jobs:
     runs-on: windows-latest
 
     permissions:
-      contents: read
-      issues: read
-      checks: write
-      pull-requests: write
+       write-all
 
-    # strategy:
-    #   matrix:
-    #     nuget_version: [5.x]
-    #     dotnet_version: [6.x]
+    strategy:
+      matrix:
+        nuget_version: [5.x]
+        dotnet_version: [6.x]
 
     steps:
     - name: Checkout Repository
@@ -55,12 +50,12 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: ${{ env.dotnet_version }}
+        dotnet-version: ${{ matrix.dotnet_version }}
 
     - name: Setup NuGet
       uses: NuGet/setup-nuget@v1
       with:
-        nuget-version: ${{ env.nuget_version }}
+        nuget-version: ${{ matrix.nuget_version }}
 
     - name: Auth Nuget TR
       run: dotnet nuget add source ${{ env.nuget_feed_source }} --name ${{ env.nuget_feed_name }} --username 'david.sanchezfuentes@thomsonreuters.com' --password ${{ env.password_ado }} --store-password-in-clear-text --configfile ${{ env.nuget_config }}

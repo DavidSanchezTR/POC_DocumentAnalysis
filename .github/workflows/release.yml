@@ -15,33 +15,21 @@ env:
   nuget_feed_source: 'https://pkgs.dev.azure.com/TR-Legal-OnlineServices/_packaging/SWF_Burgos_Spain_Artifacts_feed/nuget/v3/index.json'
   password_ado: ${{ secrets.PASSWORD_ADO }}
   nuget_config: './Nuget.Config'
-  AZURE_WEBAPP_NAME: uksouth-iflx-blue-documentanalysis-dev-app    # set this to your application's name
-  AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root
-  AZURE_WEBAPP_PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-  dotnet_version: '6.0'
-  nuget_version: '5.4.0'    
-  artifact-package-zip-directory-path: ${{github.workspace}}
 
 jobs:
-#   test:
-#     name: Dotnet-Unit-Tests
-#     uses: DavidSanchezTR/POC_DocumentAnalysis/.github/workflows/dotnet-unit-tests.yml@main    
+  test:
+    name: Dotnet-Unit-Tests
+    uses: DavidSanchezTR/POC_DocumentAnalysis/.github/workflows/dotnet-unit-tests.yml@main    
     
-#     permissions:
-#         contents: read
-#         issues: read
-#         checks: write
-#         pull-requests: write
-
   build:
 
-    # strategy:
-    #   matrix:
-    #     configuration: [Release]
-    #     dotnet-version: [ '6.x' ]
+    strategy:
+      matrix:
+        dotnet_version: [6.x]
+        nuget_version: [5.x]
 
     runs-on: windows-latest
-    # needs: [test]
+    needs: [test]
     steps:
     - name: "☁️ Checkout Repository"
       uses: actions/checkout@v3
@@ -49,12 +37,12 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: ${{ env.dotnet_version }}
+        dotnet-version: ${{ matrix.dotnet_version }}
 
     - name: Setup NuGet
       uses: NuGet/setup-nuget@v1
       with:
-        nuget-version: ${{ env.nuget_version }}
+        nuget-version: ${{ matrix.nuget_version }}
 
     - name: Auth Nuget TR
       run: dotnet nuget add source ${{ env.nuget_feed_source }} --name ${{ env.nuget_feed_name }} --username 'david.sanchezfuentes@thomsonreuters.com' --password ${{ env.password_ado }} --store-password-in-clear-text --configfile ${{ env.nuget_config }}
@@ -72,7 +60,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: build
-        path: Aranzadi.DocumentAnalysis\bin\Dev\net6.0\publish
+        path: Aranzadi.DocumentAnalysis/bin/Dev/net6.0/publish
 
   release:
 
@@ -98,7 +86,7 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: build
-        path: Aranzadi.DocumentAnalysis\bin\Dev\net6.0\publish
+        path: ${{ github.workspace }}/build
 
     - name: Bump Version and Push Tag
       id: tag_version
@@ -118,39 +106,65 @@ jobs:
         tag_name: ${{ steps.tag_version.outputs.new_tag }}
         body: ${{ steps.tag_version.outputs.changelog }}
 
-    - name: "📂 Create Artifacts Release"
-      uses: actions/upload-artifact@v3
-      with:
-        name: das-app
-        path: ${{github.workspace}}   
+    - run: dir ${{github.workspace}}/build
+    - run: mkdir ${{github.workspace}}/build/Version
+    - run: echo ""${{ steps.tag_version.outputs.new_tag }}" > ${{github.workspace}}/build/Version/Version.txt
 
     - name: Run comando
       run: dir ${{ github.workspace }} -recurse
 
-  deployDEV:
-    name: Deploy DEV
-    needs: 
-        - release
-    runs-on: windows-latest
-    environment:
-      name: DEV
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-
-    steps:  
-    #  Get WebApp/FunctionApp publish profile
-    - name: Download Release Artifacts
-      uses: actions/download-artifact@v2
+    - uses: montudor/action-zip@v1
       with:
-        name: das-app
-        path: ${{github.workspace}}
+        args: zip -qq -r build.zip ${{github.workspace}}/build
 
-    - name: Deploy to Azure Web App
-      id: deploy-to-webapp
-      uses: azure/webapps-deploy@v2      
+    - name: upload windows artifact
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
       with:
-        app-name: ${{ env.AZURE_WEBAPP_NAME }}
-        publish-profile: ${{ env.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{github.workspace}}/build/build.zip
+        asset_name: DAS.zip
+        asset_content_type: application/zip
+
+    - name: Eliminar artefacto build
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: build   
+
+    - name: "📂 production artifacts with version"
+      uses: actions/upload-artifact@v2
+      with:
+        name: build_v
+        path: ${{github.workspace}}/build
+
+    - name: Run comando
+      run: dir ${{ github.workspace }} -recurse
+
+  # deployDEV:
+  #   name: Deploy DEV
+  #   needs: 
+  #       - release
+  #   runs-on: windows-latest
+  #   environment:
+  #     name: DEV
+  #     url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+  #   steps:  
+  #   #  Get WebApp/FunctionApp publish profile
+  #   - name: Download Release Artifacts
+  #     uses: actions/download-artifact@v2
+  #     with:
+  #       name: das-app
+  #       path: ${{github.workspace}}
+
+  #   - name: Deploy to Azure Web App
+  #     id: deploy-to-webapp
+  #     uses: azure/webapps-deploy@v2      
+  #     with:
+  #       app-name: ${{ env.AZURE_WEBAPP_NAME }}
+  #       publish-profile: ${{ env.AZURE_WEBAPP_PUBLISH_PROFILE }}
+  #       package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
   # deployQA:
   #   name: Deploy QA
