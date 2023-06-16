@@ -108,7 +108,7 @@ jobs:
 
     - run: dir ${{github.workspace}}/build
     - run: mkdir ${{github.workspace}}/build/Version
-    - run: echo ""${{ steps.tag_version.outputs.new_tag }}" > ${{github.workspace}}/build/Version/Version.txt
+    - run: echo "${{ steps.tag_version.outputs.new_tag }}" > ${{github.workspace}}/build/Version/Version.txt
 
     - name: Run comando
       run: dir ${{ github.workspace }} -recurse
