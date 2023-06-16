@@ -70,23 +70,23 @@ jobs:
     name: Semantic Release
     needs:
       - build
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     permissions: write-all
 
     steps:
     - name: "☁️ Checkout Repository"
       uses: actions/checkout@v3
       with:
-        fetch-depth: 0
-
-    - name: Run comand
-      run: dir ${{ github.workspace }} -recurse
+        fetch-depth: 0    
 
     - name: "📂 Download Build Artifacts"
       uses: actions/download-artifact@v3
       with:
         name: build
         path: ${{ github.workspace }}/build
+
+    - name: Run comand
+      run: ls * ${{ github.workspace }}
 
     - name: Bump Version and Push Tag
       id: tag_version
@@ -106,12 +106,13 @@ jobs:
         tag_name: ${{ steps.tag_version.outputs.new_tag }}
         body: ${{ steps.tag_version.outputs.changelog }}
 
-    - run: dir ${{github.workspace}}/build
+    - run: ls * ${{github.workspace}}/build
     - run: mkdir ${{github.workspace}}/build/Version
     - run: echo "${{ steps.tag_version.outputs.new_tag }}" > ${{github.workspace}}/build/Version/Version.txt
+    - run: ls * ${{github.workspace}}/build/Version
 
     - name: Run comando
-      run: dir ${{ github.workspace }} -recurse
+      run: ls ${{ github.workspace }}
 
     - uses: montudor/action-zip@v1
       with:
@@ -127,6 +128,9 @@ jobs:
         asset_name: DAS.zip
         asset_content_type: application/zip
 
+    - name: Run comando
+      run: ls * ${{ github.workspace }}
+
     - name: Eliminar artefacto build
       uses: geekyeggo/delete-artifact@v1
       with:
@@ -139,7 +143,7 @@ jobs:
         path: ${{github.workspace}}/build
 
     - name: Run comando
-      run: dir ${{ github.workspace }} -recurse
+      run: ls * ${{ github.workspace }}
 
   # deployDEV:
   #   name: Deploy DEV
