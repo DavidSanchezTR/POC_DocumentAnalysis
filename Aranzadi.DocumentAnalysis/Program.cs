@@ -16,7 +16,6 @@ builder.Configuration.AddEnvironmentVariables();
 
 var documentAnalysisOptions = ApplicationSettings.GetDocumentAnalysisOptions(builder.Configuration);
 
-//if (false)
 {
 
 	#region Configure keyvault
@@ -36,7 +35,7 @@ var documentAnalysisOptions = ApplicationSettings.GetDocumentAnalysisOptions(bui
 		string clientId = documentAnalysisOptions.KeyVault.ClientAppId;
 		builder.Configuration.AddAzureKeyVault(new Uri(keyvaultUri),
 			new ClientCertificateCredential(adTenantId, clientId, certs.OfType<X509Certificate2>().Single())
-				, new ConditionalIgnoreSecretManager(builder.Environment, documentAnalysisOptions.EnvironmentPrefix, documentAnalysisOptions.SecretsIncludedFromKeyVault));
+				, new ConditionalIgnoreSecretManager(builder.Environment, documentAnalysisOptions.EnvironmentPrefix));
 		store.Close();
 
 	}

@@ -12,6 +12,7 @@ using Polly;
 using Polly.Extensions.Http;
 using Polly.Retry;
 using System.Security.Cryptography;
+using System.Web;
 
 namespace Aranzadi.DocumentAnalysis.Services
 {
@@ -20,6 +21,7 @@ namespace Aranzadi.DocumentAnalysis.Services
 		public const string MESSAGE_SOURCE_FUSION = "Fusion";
 		public const string MESSAGE_TYPE_DOCUMENT_ANALYSIS = "DocumentAnalysis";
 		private const int RETRYCOUNTS = 3;
+		private const string DAV_VAL_TOKEN_HEADER = "fusion_session_id";
 
 		static string objLock = "";
 		static IConsumer consumer = null;
@@ -54,8 +56,8 @@ namespace Aranzadi.DocumentAnalysis.Services
 					{
 
 						var conf = new MessagingConfiguration();
-						conf.ServicesBusConnectionString = configuration.ServiceBus.ConnectionString;
-						conf.ServicesBusCola = configuration.ServiceBus.Queue;
+						conf.ServicesBusConnectionString = configuration.Messaging.Endpoint;
+						conf.ServicesBusCola = configuration.Messaging.Queue;
 						conf.Source = MESSAGE_SOURCE_FUSION;
 						conf.Type = MESSAGE_TYPE_DOCUMENT_ANALYSIS;
 
@@ -106,6 +108,9 @@ namespace Aranzadi.DocumentAnalysis.Services
 					var resp = await GetRetryPolicy().ExecuteAsync(async () =>
 					{
 						using HttpClient httpCli = new HttpClient();
+						Uri myUri = new Uri(data.AccessUrl);
+						string valToken = HttpUtility.ParseQueryString(myUri.Query).Get("valToken");
+						httpCli.DefaultRequestHeaders.Add(DAV_VAL_TOKEN_HEADER, valToken);
 						return await httpCli.GetAsync(data.AccessUrl);
 					});
 					resp.EnsureSuccessStatusCode();
