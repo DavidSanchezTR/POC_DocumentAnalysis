@@ -123,7 +123,7 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: build.zip
+        asset_path: ${{github.workspace}}/build.zip
         asset_name: DAS.zip
         asset_content_type: application/zip
 
@@ -144,45 +144,45 @@ jobs:
     - name: Run comando
       run: ls * ${{ github.workspace }}
 
-  deployMockQA:
-    name: Deploy Mock Environment
-    needs: [release]
-    runs-on: windows-latest
-    environment:
-      name: QA
-      url: https://uksouth-iflx-mock-das-qa-app.azurewebsites.net/
-    env:           
-      AZURE_WEBAPP_NAME: uksouth-iflx-mock-das-qa-app    # set this to your application's name
-      AZURE_RESOURCE_GROUP: uksouth-iflx-blue-qa-rg    # set this to your resource group name
-      AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root
-      SUBSCRIPTION: DCO-Legal-N    
-      artifact-package-zip-directory-path: "Upload/"
+  # deployMockQA:
+  #   name: Deploy Mock Environment
+  #   needs: [release]
+  #   runs-on: windows-latest
+  #   environment:
+  #     name: QA
+  #     url: https://uksouth-iflx-mock-das-qa-app.azurewebsites.net/
+  #   env:           
+  #     AZURE_WEBAPP_NAME: uksouth-iflx-mock-das-qa-app    # set this to your application's name
+  #     AZURE_RESOURCE_GROUP: uksouth-iflx-blue-qa-rg    # set this to your resource group name
+  #     AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root
+  #     SUBSCRIPTION: DCO-Legal-N    
+  #     artifact-package-zip-directory-path: "Upload/"
 
-    steps:  
-    #  Get WebApp/FunctionApp publish profile
-    - name: Clean artifact-package-directory
-      run: Remove-Item ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }} -Recurse -Force
+  #   steps:  
+  #   #  Get WebApp/FunctionApp publish profile
+  #   - name: Clean artifact-package-directory
+  #     run: Remove-Item ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }} -Recurse -Force
 
-    - name: Download Release Artifacts
-      uses: actions/download-artifact@v2
-      with:
-        name: build_v
-        path: ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}
+  #   - name: Download Release Artifacts
+  #     uses: actions/download-artifact@v2
+  #     with:
+  #       name: build_v
+  #       path: ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}
         
-    - uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+  #   - uses: azure/login@v1
+  #     with:
+  #       creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: 'Run az commands'
-      id: profiles
-      run: echo "::set-output name=profile::$(az webapp deployment list-publishing-profiles --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --subscription ${{ env.SUBSCRIPTION }} --xml --output tsv)"            
+  #   - name: 'Run az commands'
+  #     id: profiles
+  #     run: echo "::set-output name=profile::$(az webapp deployment list-publishing-profiles --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --subscription ${{ env.SUBSCRIPTION }} --xml --output tsv)"            
 
-    - name: 'Run Azure webapp deploy action using publish profile credentials'
-      uses: azure/webapps-deploy@v2
-      with: 
-        app-name: ${{ env.AZURE_WEBAPP_NAME }} # Replace with your app name
-        publish-profile: ${{ steps.profiles.outputs.profile }} # Define secret variable in repository settings as per action documentation
-        package: '${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}'
+  #   - name: 'Run Azure webapp deploy action using publish profile credentials'
+  #     uses: azure/webapps-deploy@v2
+  #     with: 
+  #       app-name: ${{ env.AZURE_WEBAPP_NAME }} # Replace with your app name
+  #       publish-profile: ${{ steps.profiles.outputs.profile }} # Define secret variable in repository settings as per action documentation
+  #       package: '${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}'
 
   # deployDEV:
   #   name: Deploy DEV
