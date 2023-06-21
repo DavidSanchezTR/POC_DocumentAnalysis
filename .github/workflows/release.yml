@@ -17,8 +17,9 @@ env:
   nuget_config: './Nuget.Config'
 
 jobs:
-
+  
   test:
+    permissions: read-all
     name: Dotnet-Unit-Tests
     uses: DavidSanchezTR/POC_DocumentAnalysis/.github/workflows/dotnet-unit-tests.yml@main    
     
