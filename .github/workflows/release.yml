@@ -16,10 +16,11 @@ env:
   password_ado: ${{ secrets.PASSWORD_ADO }}
   nuget_config: './Nuget.Config'
 
+permissions: read-all|write-all
+
 jobs:
   
-  test:
-    permissions: read-all
+  test:    
     name: Dotnet-Unit-Tests
     uses: DavidSanchezTR/POC_DocumentAnalysis/.github/workflows/dotnet-unit-tests.yml@main    
     
