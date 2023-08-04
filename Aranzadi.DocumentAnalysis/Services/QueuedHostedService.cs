@@ -6,13 +6,16 @@ using Aranzadi.DocumentAnalysis.Messaging.Model;
 using Aranzadi.DocumentAnalysis.Messaging.Model.Enums;
 using Aranzadi.DocumentAnalysis.Messaging.Model.Request;
 using Aranzadi.DocumentAnalysis.Messaging.Model.Response;
-using Microsoft.ApplicationInsights;
+using Aranzadi.DocumentAnalysis.Services.IServices;
+using Aranzadi.DocumentAnalysis.Util;
+using Microsoft.Azure.Cosmos.Serialization.HybridRow.Schemas;
 using Newtonsoft.Json;
 using Polly;
 using Polly.Extensions.Http;
 using Polly.Retry;
+using Serilog;
 using System.Security.Cryptography;
-using System.Web;
+using System.Security.Policy;
 
 namespace Aranzadi.DocumentAnalysis.Services
 {
@@ -20,36 +23,39 @@ namespace Aranzadi.DocumentAnalysis.Services
 	{
 		public const string MESSAGE_SOURCE_FUSION = "Fusion";
 		public const string MESSAGE_TYPE_DOCUMENT_ANALYSIS = "DocumentAnalysis";
-		private const int RETRYCOUNTS = 3;
 		private const string DAV_VAL_TOKEN_HEADER = "fusion_session_id";
 
 		static string objLock = "";
 		static IConsumer consumer = null;
 		public static AnalysisContext Contexto = null;
 
-		private readonly ILogger<QueuedHostedService> logger;
 		private readonly DocumentAnalysisOptions configuration;
-		private readonly TelemetryClient telemetryClient;
+		private readonly IHttpClientFactory httpClientFactory;
+		private readonly IAnalysisProviderService analysisProviderService;
+		private readonly ILogAnalysis logAnalysisService;
 
 		public IServiceProvider serviceProvider { get; }
 
-		public QueuedHostedService(ILogger<QueuedHostedService> logger
-			, IServiceProvider serviceProvider
+		public QueuedHostedService(IServiceProvider serviceProvider
 			, DocumentAnalysisOptions configuration
-			, TelemetryClient telemetryClient)
+			, IHttpClientFactory httpClientFactory
+			, IAnalysisProviderService analysisProviderService
+			, ILogAnalysis logAnalysisService
+			)
 		{
-			this.logger = logger;
 			this.serviceProvider = serviceProvider;
 			this.configuration = configuration;
-			this.telemetryClient = telemetryClient;
+			this.httpClientFactory = httpClientFactory;
+			this.analysisProviderService = analysisProviderService;
+			this.logAnalysisService = logAnalysisService;
 		}
 
 		protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 		{
 			try
 			{
-				logger.LogInformation($"{nameof(QueuedHostedService)} running at: {DateTimeOffset.Now}");
-
+				Log.Information($"{nameof(QueuedHostedService)} running at: {DateTimeOffset.Now}");
+				
 				if (consumer == null)
 				{
 					lock (objLock)
@@ -61,12 +67,12 @@ namespace Aranzadi.DocumentAnalysis.Services
 						conf.Source = MESSAGE_SOURCE_FUSION;
 						conf.Type = MESSAGE_TYPE_DOCUMENT_ANALYSIS;
 
-						var factory = new AnalisisDocumentosDefaultFactory(conf);
+						var factory = new AnalisisDocumentosDefaultFactory(conf, logAnalysisService);
 
 						if (consumer == null)
 						{
 							consumer = factory.GetConsumer();
-							consumer.StartProcess(ProcessMessage);
+							consumer.StartProcess(Process);
 						}
 
 					}
@@ -74,14 +80,23 @@ namespace Aranzadi.DocumentAnalysis.Services
 			}
 			catch (Exception ex)
 			{
-				telemetryClient.TrackException(ex);
-				await telemetryClient.FlushAsync(stoppingToken);
-				throw;
+				Log.Error(ex, ex.Message);
 			}
 		}
 
+		public async Task<bool> Process(AnalysisContext context, DocumentAnalysisRequest request)
+		{
+			try
+			{
+				return await ProcessMessage(context, request);
+			}
+			catch (Exception ex)
+			{
+				return false;
+			}
+		}
 
-		private async Task<bool> ProcessMessage(AnalysisContext context, DocumentAnalysisRequest request)
+		public async Task<bool> ProcessMessage(AnalysisContext context, DocumentAnalysisRequest request)
 		{
 			try
 			{
@@ -98,24 +113,19 @@ namespace Aranzadi.DocumentAnalysis.Services
 					Source = Source.LaLey,
 					DocumentName = request.Name,
 					AccessUrl = request.Path,
-					Sha256 = "" // Calcular el Hash aqui en el paquete
+					Sha256 = "",
+					AnalysisProviderId = null,
+					AnalysisProviderResponse = "Pending"
 				};
 				using (IServiceScope scope = serviceProvider.CreateScope())
 				{
 					IDocumentAnalysisRepository documentAnalysisRepository =
 						scope.ServiceProvider.GetRequiredService<IDocumentAnalysisRepository>();
 
-					var resp = await GetRetryPolicy().ExecuteAsync(async () =>
-					{
-						using HttpClient httpCli = new HttpClient();
-						Uri myUri = new Uri(data.AccessUrl);
-						string valToken = HttpUtility.ParseQueryString(myUri.Query).Get("valToken");
-						httpCli.DefaultRequestHeaders.Add(DAV_VAL_TOKEN_HEADER, valToken);
-						return await httpCli.GetAsync(data.AccessUrl);
-					});
-					resp.EnsureSuccessStatusCode();
-					var stream = await resp.Content.ReadAsStreamAsync();
+					var stream = await GetStreamFromSasToken(data.AccessUrl);
 					data.Sha256 = await GetHashFromFile(stream);
+
+					await documentAnalysisRepository.AddAnalysisDataAsync(data);
 
 					DocumentAnalysisResult? resultAnalysis = null;
 					if (configuration.CheckIfExistsHashFileInCosmos)
@@ -125,62 +135,109 @@ namespace Aranzadi.DocumentAnalysis.Services
 
 					if (resultAnalysis != null)
 					{
-						data.Status = resultAnalysis.Status;
+                        Log.Information($"The document is already analized with status: {data.Status}");
+                        data.Status = resultAnalysis.Status;
 						data.Analysis = resultAnalysis.Analysis;
 					}
 					else
 					{
-						//TODO: Rellenar la respuesta del analysis aqui en modo de pruebas y marcar como Done
-						string json = JsonConvert.SerializeObject(Get_DocumentAnalysisDataResultContent(data));
-						data.Analysis = json;
-						data.Status = AnalysisStatus.Done;
-						////////
-
+						var result = await analysisProviderService.SendAnalysisJob(data);
+						if (result.Item1.IsSuccessStatusCode)
+						{
+							// 200 OK, 201 Created
+							if (result.Item2?.Guid == null)
+							{
+								throw new ArgumentNullException($"AnalysisProviderId is null");
+							}
+							data.AnalysisProviderId = new Guid(result.Item2.Guid);
+							//Estado del job. Valores validos: 'PENDING', 'RUNNING', 'SUCEEDED','PARTIAL_SUCCESS' y 'FAILED'
+							data.AnalysisProviderResponse = result.Item2.ExecutionStatus?.State;	
+						}
+						else
+						{
+							// ERROR
+							data.Status = AnalysisStatus.Error;
+							List<string> listMessages = new List<string>();
+							if (result.Item1 != null)
+							{
+								listMessages.Add(result.Item1.StatusCode.ToString());
+							}
+                            if (result.Item2 != null)
+							{
+								listMessages.Add(result.Item2.ExecutionStatus?.State ?? "");
+								if (result.Item2.ExecutionStatus?.Errors != null)
+								{
+									foreach (var err in result.Item2.ExecutionStatus.Errors)
+									{
+										listMessages.Add($"{err.Message} {err.Reason} {err.Link}");
+									}
+								}
+							}
+							var message = string.Join(Environment.NewLine, listMessages.Where(o => !string.IsNullOrWhiteSpace(o)));
+							data.AnalysisProviderResponse = message;
+							Log.Information($"Error in analysis job with guid {data.Id}, message: {message}");
+                        }
 					}
-					await documentAnalysisRepository.AddAnalysisDataAsync(data);
 
-					/*TODO
-					 *        
-						Crear petición de análisis al proveedor de análisis.
-						Modificar el registro de CosmosDB con el resultado del análisis.
-						Devolver resultado.                  
-					 */
+					//////////////////////////////////
+					//TODO: Rellenar temporalmente la respuesta del analysis aqui en modo de pruebas y marcar como Done
+					string json = JsonConvert.SerializeObject(Get_DocumentAnalysisDataResultContent(data));
+					data.Analysis = json;
+					data.Status = AnalysisStatus.Done;
+					/////////////////////////////////
 
+					await documentAnalysisRepository.UpdateAnalysisDataAsync(data);
 				}
 
-				await Task.Delay(0);
 				return true;
 			}
 			catch (Exception ex)
 			{
-				telemetryClient.TrackException(ex);
-				telemetryClient.Flush();
+				Log.Error(ex, ex.Message);
 				throw;
 			}
 		}
 
 		public async Task<string> GetHashFromFile(Stream stream)
 		{
-			using (SHA256 crypto = SHA256.Create())
+			try
 			{
-				stream.Seek(0, SeekOrigin.Begin);
-				var hash = await crypto.ComputeHashAsync(stream);
-				var hashString = Convert.ToBase64String(hash);
+				using (SHA256 crypto = SHA256.Create())
+				{
+					stream.Seek(0, SeekOrigin.Begin);
+					var hash = await crypto.ComputeHashAsync(stream);
+					var hashString = Convert.ToBase64String(hash);
 
-				return hashString;
+					return hashString;
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error(ex, $"Exception to get Hash from file stream => {ex.Message}");
+				throw;
 			}
 		}
 
-		private AsyncRetryPolicy<HttpResponseMessage> GetRetryPolicy()
+		private async Task<Stream> GetStreamFromSasToken(string url)
 		{
-			return HttpPolicyExtensions.HandleTransientHttpError()
-				.WaitAndRetryAsync(retryCount: RETRYCOUNTS
-				, attempt => TimeSpan.FromSeconds(1 * attempt)
-				, onRetry: (exception, counter, context) =>
+			try
+			{
+				using HttpClient httpCli = httpClientFactory.CreateClient();
+				var resp = await Utils.GetRetryPolicy().ExecuteAsync(async () =>
 				{
-					logger?.LogWarning($"Retry call in {counter}", exception?.Exception);
+					Log.Information($"Request file from SASToken: {url}");
+					return await httpCli.GetAsync(url);
 				});
-		}
+				resp.EnsureSuccessStatusCode();
+				var stream = await resp.Content.ReadAsStreamAsync();
+				return stream;
+			}
+			catch (Exception ex)
+			{
+				Log.Error(ex, $"Exception to get SasToken from {url} => {ex.Message}");
+				throw;
+			}
+		}		
 
 		private DocumentAnalysisDataResultContent Get_DocumentAnalysisDataResultContent(DocumentAnalysisData data)
 		{
@@ -204,31 +261,33 @@ namespace Aranzadi.DocumentAnalysis.Services
 				MilestonesNumber = "numero autos sample",
 				ProceedingType = "procedimiento sample",
 				ProceedingSubtype = "subprocedimiento sample",
-			};
+				Topic = "materia sample",
+				PrincipalQuoted = "1111.11"
+            };
 
 			var lista = new List<DocumentAnalysisDataResultProceedingParts>
-		{
-			new DocumentAnalysisDataResultProceedingParts()
 			{
-				Lawyers = "letrado sample",
-				Source = "naturaleza sample",
-				Name = "nombre sample " + data.DocumentName,
-				Attorney = "procurador sample",
-				PartType = "tipo parte sample",
-				AppealPartType = "tipo parte recurso sample"
+				new DocumentAnalysisDataResultProceedingParts()
+				{
+					Lawyers = "letrado sample",
+					Source = "naturaleza sample",
+					Name = "nombre sample " + data.DocumentName,
+					Attorney = "procurador sample",
+					PartType = "tipo parte sample",
+					AppealPartType = "tipo parte recurso sample"
 
-			},
-			new DocumentAnalysisDataResultProceedingParts()
-			{
-				Lawyers = "letrado sample 2",
-				Source = "naturaleza sample 2",
-				Name = "nombre sample 2",
-				Attorney = "procurador sample 2",
-				PartType = "tipo parte sample 2",
-				AppealPartType = "tipo parte recurso sample 2"
+				},
+				new DocumentAnalysisDataResultProceedingParts()
+				{
+					Lawyers = "letrado sample 2",
+					Source = "naturaleza sample 2",
+					Name = "nombre sample 2",
+					Attorney = "procurador sample 2",
+					PartType = "tipo parte sample 2",
+					AppealPartType = "tipo parte recurso sample 2"
 
-			}
-		};
+				}
+			};
 			content.Proceeding.Parts = lista.ToArray();
 			content.Proceeding.InitialProceeding = new DocumentAnalysisDataResultProceedingInitialProceeding()
 			{
@@ -274,6 +333,7 @@ namespace Aranzadi.DocumentAnalysis.Services
 				WrittenSummary = "resumen",
 				Notifications = requerimientos.ToArray(),
 				Appeal = recursos.ToArray(),
+				SitingDate = DateTime.UtcNow.ToString("O"),
 			};
 
 			return content;

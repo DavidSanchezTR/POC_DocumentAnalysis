@@ -1,47 +1,51 @@
 ﻿using Aranzadi.DocumentAnalysis.Data.IRepository;
 using Aranzadi.DocumentAnalysis.Messaging.Model.Enums;
 using Aranzadi.DocumentAnalysis.Messaging.Model.Response;
+using Aranzadi.DocumentAnalysis.Services.IServices;
 using Newtonsoft.Json;
 
-public class DocumentAnalysisService : IDocumentAnalysisService
+namespace Aranzadi.DocumentAnalysis.Services
 {
-	private readonly IDocumentAnalysisRepository _documentAnalysisRepository;
-	private readonly ILogger<DocumentAnalysisService> _logger;
 
-	public DocumentAnalysisService(IDocumentAnalysisRepository documentAnalysisRepository, ILogger<DocumentAnalysisService> logger)
+	public class DocumentAnalysisService : IDocumentAnalysisService
 	{
-		_documentAnalysisRepository = documentAnalysisRepository;
-		_logger = logger;
-	}
+		private readonly IDocumentAnalysisRepository _documentAnalysisRepository;
 
-	public async Task<IEnumerable<DocumentAnalysisResponse>> GetAnalysisAsync(string tenantId, string userId, string? documentId = null)
-	{
-		if (string.IsNullOrEmpty(tenantId) || string.IsNullOrEmpty(userId))
+		public DocumentAnalysisService(IDocumentAnalysisRepository documentAnalysisRepository)
 		{
-			throw new ArgumentNullException();
+			_documentAnalysisRepository = documentAnalysisRepository;
 		}
 
-		var listaAnalisis = await _documentAnalysisRepository.GetAnalysisAsync(tenantId, userId, documentId);
-
-		var listDocumentAnalysisResponse = new List<DocumentAnalysisResponse>();
-		foreach (var singleAnalisis in listaAnalisis)
+		public async Task<IEnumerable<DocumentAnalysisResponse>> GetAnalysisAsync(string tenantId, string userId, string? documentId = null)
 		{
-			var documentAnalysisResponse = new DocumentAnalysisResponse();
-			documentAnalysisResponse.DocumentUniqueRefences = singleAnalisis.DocumentId.ToString();
-			documentAnalysisResponse.Status = singleAnalisis?.Status ?? AnalysisStatus.Unknown;
+			if (string.IsNullOrWhiteSpace(tenantId) || string.IsNullOrWhiteSpace(userId))
+			{
+				throw new ArgumentNullException();
+			}
 
-			if (string.IsNullOrWhiteSpace(singleAnalisis?.Analysis))
+			var listaAnalisis = await _documentAnalysisRepository.GetAnalysisAsync(tenantId, userId, documentId);
+
+			var listDocumentAnalysisResponse = new List<DocumentAnalysisResponse>();
+			foreach (var singleAnalisis in listaAnalisis)
 			{
-				documentAnalysisResponse.Result = new DocumentAnalysisDataResultContent();
+				var documentAnalysisResponse = new DocumentAnalysisResponse();
+				documentAnalysisResponse.DocumentUniqueRefences = singleAnalisis.DocumentId.ToString();
+				documentAnalysisResponse.Status = singleAnalisis?.Status ?? AnalysisStatus.Unknown;
+
+				if (string.IsNullOrWhiteSpace(singleAnalisis?.Analysis))
+				{
+					documentAnalysisResponse.Result = new DocumentAnalysisDataResultContent();
+				}
+				else
+				{
+					documentAnalysisResponse.Result = JsonConvert.DeserializeObject<DocumentAnalysisDataResultContent>(singleAnalisis.Analysis);
+				}
+				listDocumentAnalysisResponse.Add(documentAnalysisResponse);
 			}
-			else
-			{
-				documentAnalysisResponse.Result = JsonConvert.DeserializeObject<DocumentAnalysisDataResultContent>(singleAnalisis.Analysis);
-			}
-			listDocumentAnalysisResponse.Add(documentAnalysisResponse);
+
+			return listDocumentAnalysisResponse;
+
 		}
-
-		return listDocumentAnalysisResponse;
-
 	}
+
 }

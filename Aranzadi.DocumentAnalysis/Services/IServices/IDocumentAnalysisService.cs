@@ -1,7 +1,10 @@
 ﻿using Aranzadi.DocumentAnalysis.Messaging.Model.Response;
 
-public interface IDocumentAnalysisService
+namespace Aranzadi.DocumentAnalysis.Services.IServices
 {
-	Task<IEnumerable<DocumentAnalysisResponse>> GetAnalysisAsync(string tenantId, string userId, string? documentId = null);
+	public interface IDocumentAnalysisService
+	{
+		Task<IEnumerable<DocumentAnalysisResponse>> GetAnalysisAsync(string tenantId, string userId, string? documentId = null);
 
+	}
 }

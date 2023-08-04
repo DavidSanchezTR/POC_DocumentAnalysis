@@ -4,7 +4,7 @@ using static Aranzadi.DocumentAnalysis.DocumentAnalysisOptions;
 
 namespace Aranzadi.DocumentAnalysis.Util
 {
-    internal class ConditionalIgnoreSecretManager : KeyVaultSecretManager
+    public class ConditionalIgnoreSecretManager : KeyVaultSecretManager
     {
         private IHostEnvironment hostingEnvironment;
         private string environmentPrefix;

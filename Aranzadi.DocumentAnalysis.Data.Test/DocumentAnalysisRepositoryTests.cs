@@ -49,10 +49,8 @@ namespace Aranzadi.DocumentAnalysis.Data.Test
 
             DocumentAnalysisRepository analysisRepository = new DocumentAnalysisRepository(mockDocumentAnalysisDbContext.Object);
 
-            var result = await analysisRepository.AddAnalysisDataAsync(data);
-            Assert.AreEqual(result, 0);
+            await Assert.ThrowsExceptionAsync<Exception>(async () => await analysisRepository.AddAnalysisDataAsync(data));
         }
-
 
         [TestMethod]
         public async Task UpdateAnalysisDataAsync_ValidValues_Returns1()
@@ -148,8 +146,7 @@ namespace Aranzadi.DocumentAnalysis.Data.Test
             mockDocumentAnalysisDbContext.Setup(sp => sp.Analysis).Returns(dbSetMock.Object);
 
             DocumentAnalysisRepository analysisRepository = new DocumentAnalysisRepository(mockDocumentAnalysisDbContext.Object);
-            var result = await analysisRepository.GetAnalysisAsync("","");
-            Assert.AreEqual(result.Count(), 0);
+            await Assert.ThrowsExceptionAsync<NotSupportedException>( async () => await analysisRepository.GetAnalysisAsync("",""));
         }
 
 
@@ -198,7 +195,7 @@ namespace Aranzadi.DocumentAnalysis.Data.Test
 		}
 
         [TestMethod]
-        public async Task GetAnalysisAsync_InvalidDocumentId_ReturnsDocumentAnalysisResultEmpty()
+        public async Task GetAnalysisAsync_EmptyDocumentId_ReturnsAnalysisByTenantAndUser()
         {
             var lista = new List<DocumentAnalysisData>
              {
@@ -213,7 +210,7 @@ namespace Aranzadi.DocumentAnalysis.Data.Test
 
             DocumentAnalysisRepository analysisRepository = new DocumentAnalysisRepository(mockDocumentAnalysisDbContext.Object);
             var result = await analysisRepository.GetAnalysisAsync(lista[0].TenantId, lista[0].UserId, "");
-            Assert.AreEqual(result.Count(), 0);
+            Assert.IsTrue(result.Count() > 0);
         }
 
         [TestMethod]

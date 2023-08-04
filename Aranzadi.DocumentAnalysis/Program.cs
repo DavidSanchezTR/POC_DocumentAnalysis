@@ -4,47 +4,25 @@ using Aranzadi.DocumentAnalysis.Data;
 using Aranzadi.DocumentAnalysis.Services;
 using Aranzadi.DocumentAnalysis.Util;
 using Azure.Identity;
+using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using Serilog;
+using Serilog.Events;
+using System.Configuration;
 using System.Security.Cryptography.X509Certificates;
 
 var builder = WebApplication.CreateBuilder(args);
 
+DocumentAnalysisOptions documentAnalysisOptions = ApplicationSettings.InitConfiguration(builder, "appsettings.json");
 
-builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-builder.Configuration.AddEnvironmentVariables();
-
-
-var documentAnalysisOptions = ApplicationSettings.GetDocumentAnalysisOptions(builder.Configuration);
-
-{
-
-	#region Configure keyvault
-	StoreLocation storeLocation = CertificateModes.Webapp.Equals(documentAnalysisOptions.KeyVault.CertificateMode, StringComparison.OrdinalIgnoreCase)
-		? StoreLocation.CurrentUser : StoreLocation.LocalMachine;
-	using var store = new X509Store(StoreName.My, storeLocation);
-	store.Open(OpenFlags.ReadOnly);
-	string thumbprint = documentAnalysisOptions.KeyVault.CertificateThumbprint;
-    if (!string.IsNullOrEmpty(thumbprint))
-	{
-		var certs = store.Certificates
-			.Find(X509FindType.FindByThumbprint, thumbprint, false);
-		if (certs.Count == 0)
-			throw new Exception($"Could not find certificate by thumbprint {thumbprint}. Environment was resolved to: " + builder.Environment.EnvironmentName + ", searched in store" + storeLocation);
-		string keyvaultUri = documentAnalysisOptions.KeyVault.Url;
-		string adTenantId = documentAnalysisOptions.KeyVault.ActiveDirectoryTenantId;
-		string clientId = documentAnalysisOptions.KeyVault.ClientAppId;
-		builder.Configuration.AddAzureKeyVault(new Uri(keyvaultUri),
-			new ClientCertificateCredential(adTenantId, clientId, certs.OfType<X509Certificate2>().Single())
-				, new ConditionalIgnoreSecretManager(builder.Environment, documentAnalysisOptions.EnvironmentPrefix));
-		store.Close();
-
-	}
-    documentAnalysisOptions = ApplicationSettings.GetDocumentAnalysisOptions(builder.Configuration);
-
-    #endregion Configure keyvault
-}
-
-
+//Use Serilog
+Log.Logger = new LoggerConfiguration()
+	.ReadFrom.Configuration(builder.Configuration)
+	.WriteTo.ApplicationInsights(new TelemetryConfiguration() { ConnectionString = documentAnalysisOptions.ApplicationInsights.ConnectionString }
+		, TelemetryConverter.Traces)
+	.WriteTo.AzureAnalytics(documentAnalysisOptions.LogAnalytics.WorkspaceId, documentAnalysisOptions.LogAnalytics.AuthenticationId, documentAnalysisOptions.LogAnalytics.LogName)
+	.CreateLogger();
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -52,9 +30,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddApplicationInsightsTelemetry((x) => { x.ConnectionString = documentAnalysisOptions.ApplicationInsights.ConnectionString; });
-
-ConfigurationServicesApplication.ConfigureServices(builder);
+ConfigurationServicesApplication.ConfigureServices(builder, documentAnalysisOptions);
 
 builder.Services.AddHostedService<QueuedHostedService>();
 
@@ -82,5 +58,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHealthChecks("/healthcheck");
 
 app.Run();

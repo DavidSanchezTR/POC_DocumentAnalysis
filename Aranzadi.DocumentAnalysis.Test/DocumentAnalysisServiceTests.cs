@@ -2,15 +2,13 @@
 using Aranzadi.DocumentAnalysis.Data.IRepository;
 using Aranzadi.DocumentAnalysis.Messaging.Model.Enums;
 using Aranzadi.DocumentAnalysis.Messaging.Model.Response;
-using Microsoft.Azure.Amqp.Framing;
-using Microsoft.Extensions.Logging;
+using Aranzadi.DocumentAnalysis.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Aranzadi.DocumentAnalysis.Test
 {
@@ -19,7 +17,7 @@ namespace Aranzadi.DocumentAnalysis.Test
 	{
 
 		[TestMethod]
-		public async Task GetAnalysisAsync_StringEmpty_ReturnsException()
+		public async System.Threading.Tasks.Task GetAnalysisAsync_StringEmpty_ReturnsException()
 		{
 			DocumentAnalysisResult documentAnalysisResult = GetDocumentAnalysisResult();
 			List<DocumentAnalysisResult> documentAnalysisResultList = new List<DocumentAnalysisResult>();
@@ -27,13 +25,13 @@ namespace Aranzadi.DocumentAnalysis.Test
 
 			Mock<IDocumentAnalysisRepository> documentAnalysisRepositoryMock = GetIDocumentAnalysisRepositoryOKMock(documentAnalysisResultList);
 
-			var documentAnalysisService = new DocumentAnalysisService(documentAnalysisRepositoryMock.Object, Mock.Of<ILogger<DocumentAnalysisService>>());
+			var documentAnalysisService = new DocumentAnalysisService(documentAnalysisRepositoryMock.Object);
 
 			await Assert.ThrowsExceptionAsync<ArgumentNullException>(() => documentAnalysisService.GetAnalysisAsync("", "", Guid.Empty.ToString()), "Debería haber lanzado una excepción  por parametro vacío");
 		}
 
         [TestMethod]
-        public async Task GetAnalysisAsync_InvalidDocumentId_ReturnsEmtyList()
+        public async System.Threading.Tasks.Task GetAnalysisAsync_InvalidDocumentId_ReturnsEmtyList()
         {
             DocumentAnalysisResult documentAnalysisResult = GetDocumentAnalysisResult();
             List<DocumentAnalysisResult> documentAnalysisResultList = new List<DocumentAnalysisResult>();
@@ -45,14 +43,14 @@ namespace Aranzadi.DocumentAnalysis.Test
 
             Mock<IDocumentAnalysisRepository> documentAnalysisRepositoryMock = GetIDocumentAnalysisRepositoryEmtyListMock(documentAnalysisResultList);
 
-            var documentAnalysisService = new DocumentAnalysisService(documentAnalysisRepositoryMock.Object, Mock.Of<ILogger<DocumentAnalysisService>>());
+            var documentAnalysisService = new DocumentAnalysisService(documentAnalysisRepositoryMock.Object);
 
             var result = await documentAnalysisService.GetAnalysisAsync("122", "22", "");
             Assert.AreEqual(0, result.Count());
         }
 
         [TestMethod]
-		public async Task GetAllAnalysisAsync_ValidValues_ReturnsDocumentAnalysisResultList()
+		public async System.Threading.Tasks.Task GetAllAnalysisAsync_ValidValues_ReturnsDocumentAnalysisResultList()
 		{
 			DocumentAnalysisResult documentAnalysisResult = GetDocumentAnalysisResult();
 			List<DocumentAnalysisResult> documentAnalysisResultList = new List<DocumentAnalysisResult>();
@@ -64,7 +62,7 @@ namespace Aranzadi.DocumentAnalysis.Test
 
 			Mock<IDocumentAnalysisRepository> documentAnalysisRepositoryMock = GetIDocumentAnalysisRepositoryOKMock(documentAnalysisResultList);
 
-			var documentAnalysisService = new DocumentAnalysisService(documentAnalysisRepositoryMock.Object, Mock.Of<ILogger<DocumentAnalysisService>>());
+			var documentAnalysisService = new DocumentAnalysisService(documentAnalysisRepositoryMock.Object);
 
 			var result = await documentAnalysisService.GetAnalysisAsync("122", "22");
 			Assert.AreEqual(documentAnalysisResponseList.Count, result.Count());
@@ -74,7 +72,7 @@ namespace Aranzadi.DocumentAnalysis.Test
 
 
 		[TestMethod]
-		public async Task GetAllAnalysisAsync_StringEmpty_ReturnsException()
+		public async System.Threading.Tasks.Task GetAllAnalysisAsync_StringEmpty_ReturnsException()
 		{
 			DocumentAnalysisResult documentAnalysisResult = GetDocumentAnalysisResult();
 			List<DocumentAnalysisResult> documentAnalysisResultList = new List<DocumentAnalysisResult>();
@@ -82,7 +80,7 @@ namespace Aranzadi.DocumentAnalysis.Test
 
 			Mock<IDocumentAnalysisRepository> documentAnalysisRepositoryMock = GetIDocumentAnalysisRepositoryOKMock(documentAnalysisResultList);
 
-			var documentAnalysisService = new DocumentAnalysisService(documentAnalysisRepositoryMock.Object, Mock.Of<ILogger<DocumentAnalysisService>>());
+			var documentAnalysisService = new DocumentAnalysisService(documentAnalysisRepositoryMock.Object);
 
 			await Assert.ThrowsExceptionAsync<ArgumentNullException>(() => documentAnalysisService.GetAnalysisAsync("", "22"), "Debería haber lanzado una excepción  por parametro vacío");
 		}
@@ -181,7 +179,7 @@ namespace Aranzadi.DocumentAnalysis.Test
 		private Mock<IDocumentAnalysisRepository> GetIDocumentAnalysisRepositoryOKMock(List<DocumentAnalysisResult> documentAnalysisResultList)
 		{
 			Mock<IDocumentAnalysisRepository> documentAnalysisRepositoryMock = new Mock<IDocumentAnalysisRepository>();
-			documentAnalysisRepositoryMock.Setup(e => e.GetAnalysisAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(documentAnalysisResultList.AsEnumerable()));
+			documentAnalysisRepositoryMock.Setup(e => e.GetAnalysisAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(System.Threading.Tasks.Task.FromResult(documentAnalysisResultList.AsEnumerable()));
 			return documentAnalysisRepositoryMock;
 		}
         private Mock<IDocumentAnalysisRepository> GetIDocumentAnalysisRepositoryEmtyListMock(List<DocumentAnalysisResult> documentAnalysisResultList)
@@ -191,5 +189,5 @@ namespace Aranzadi.DocumentAnalysis.Test
             return documentAnalysisRepositoryMock;
         }
 
-    }
+	}
 }

@@ -11,7 +11,7 @@ using System.Web.Mvc;
 namespace SampleClientApp.Controllers
 {
 	public class HomeController : Controller
-    {        
+    {
         public ActionResult Index()
         {
             return View();
@@ -56,9 +56,9 @@ namespace SampleClientApp.Controllers
 
 				LogManager.GetLogger("InfolexWebSessionLog");
 				ILog logger = LogManager.GetLogger("loggerTest");
+                ILogAnalysis logAnalysis = new LogAnalysis();
 
-
-				var factory = new AnalisisDocumentosDefaultFactory(conf, logger);
+				var factory = new AnalisisDocumentosDefaultFactory(conf, null);
                 IClient client = factory.GetClient();	
 
 
