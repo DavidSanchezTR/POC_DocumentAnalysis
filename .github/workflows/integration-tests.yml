@@ -21,6 +21,7 @@ on:
 env:
     configuration: 'Release'
     solution_path: 'Aranzadi.DocumentAnalysis/Aranzadi.DocumentAnalysis.csproj'
+    solution_test_path: 'Aranzadi.DocumentAnalysis.Integration.Test'
     nuget_feed_name: 'SWF_Burgos_Spain_Artifacts_feed'
     nuget_feed_source: 'https://pkgs.dev.azure.com/TR-Legal-OnlineServices/_packaging/SWF_Burgos_Spain_Artifacts_feed/nuget/v3/index.json'
     password_ado: ${{ secrets.PASSWORD_ADO }}
@@ -62,7 +63,7 @@ jobs:
 
     - name: 'Run cp commands'
       id: copyconfig
-      run: cp -v ${{github.workspace}}/Settings/appsettings.TEST.test.json ${{github.workspace}}/Settings/appsettings.test.json
+      run: cp -v ${{github.workspace}}/${{ env.solution_test_path }}/Settings/appsettings.TEST.test.json ${{github.workspace}}/${{ env.solution_test_path }}/Settings/appsettings.test.json
 
     - name: Build Solution
       run: dotnet build ${{ env.solution_path }} --configuration ${{ env.configuration }} --no-restore
