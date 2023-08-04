@@ -60,6 +60,10 @@ jobs:
     - name: Restore Nuget Packages
       run: dotnet restore ${{ env.solution_path }} --verbosity normal 
 
+    - name: 'Run cp commands'
+      id: copyconfig
+      run: cp -v ${{github.workspace}}/Settings/appsettings.TEST.test.json ${{github.workspace}}/Settings/appsettings.test.json
+
     - name: Build Solution
       run: dotnet build ${{ env.solution_path }} --configuration ${{ env.configuration }} --no-restore
     
