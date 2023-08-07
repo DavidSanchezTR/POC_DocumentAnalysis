@@ -72,6 +72,7 @@ jobs:
       uses: zyborg/dotnet-tests-report@v1
       if: ${{ !cancelled() }}
       id: testIntegration
+      continue-on-error: false
       with:
        project_path: ./Aranzadi.DocumentAnalysis.Integration.Test
        report_name: Unit Tests Result
