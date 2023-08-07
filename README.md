@@ -9,9 +9,8 @@ Resultado del análisis de la calidad del código en la solución.
 
 [![CodeQL](https://github.com/DavidSanchezTR/POC_DocumentAnalysis/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/DavidSanchezTR/POC_DocumentAnalysis/actions/workflows/codeql-analysis.yml)
 
-## Resultado Test Unitarios
-Resultado de los tests unitarios
+## Resultado Test Unitarios y Test de Integración
+Resultado de los tests unitarios y test de integración.
 
 Test Result DocumentAnalysis [![Dotnet-Unit-Tests](https://github.com/DavidSanchezTR/POC_DocumentAnalysis/actions/workflows/dotnet-unit-tests.yml/badge.svg)](https://github.com/DavidSanchezTR/POC_DocumentAnalysis/actions/workflows/dotnet-unit-tests.yml)
-
-Test Result DocumentAnalysis.Data [![Dotnet-Unit-Tests](https://github.com/DavidSanchezTR/POC_DocumentAnalysis/actions/workflows/dotnet-unit-tests.yml/badge.svg)](https://github.com/DavidSanchezTR/POC_DocumentAnalysis/actions/workflows/dotnet-unit-tests.yml)
+[![Integration-Tests](https://github.com/DavidSanchezTR/POC_DocumentAnalysis/actions/workflows/integration-tests.yml/badge.svg)](https://github.com/DavidSanchezTR/POC_DocumentAnalysis/actions/workflows/integration-tests.yml)

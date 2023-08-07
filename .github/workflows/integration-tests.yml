@@ -71,6 +71,7 @@ jobs:
     - name: DotNet Integration Test DocumentAnalysis
       uses: zyborg/dotnet-tests-report@v1
       if: ${{ !cancelled() }}
+      id: testIntegration
       with:
        project_path: ./Aranzadi.DocumentAnalysis.Integration.Test
        report_name: Unit Tests Result
@@ -79,3 +80,17 @@ jobs:
        gist_name: unit_tests.md
        gist_badge_label: "Unit-Tests: %Counters_passed%/%Counters_total%"
        set_check_status_from_test_outcome: true
+
+    - name: dump test results
+      shell: pwsh
+      run: |
+        Write-ActionInfo 'Testing on: windows-latest'
+        Write-ActionInfo ''
+        Write-ActionInfo '  MSTest in DocumentAnalysis.Integration.Test:'
+        Write-ActionInfo '    * result_value    = ${{ steps.testIntegration.outputs.result_value }}'
+        Write-ActionInfo '    * total_count     = ${{ steps.testIntegration.outputs.total_count }}'
+        Write-ActionInfo '    * passed_count    = ${{ steps.testIntegration.outputs.passed_count }}'
+        Write-ActionInfo '    * failed_count    = ${{ steps.testIntegration.outputs.failed_count }}'
+        Write-ActionInfo '    * gist_report_url = ${{ steps.testIntegration.outputs.gist_report_url }}'
+        Write-ActionInfo '    * gist_badge_url  = ${{ steps.testIntegration.outputs.gist_badge_url }}'
+        Write-ActionInfo ''

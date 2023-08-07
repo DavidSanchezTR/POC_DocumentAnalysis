@@ -69,6 +69,7 @@ jobs:
     - name: DotNet Unit Test DocumentAnalysis
       uses: zyborg/dotnet-tests-report@v1
       if: ${{ !cancelled() }}
+      id: testAction
       with:
         project_path: ./Aranzadi.DocumentAnalysis.Test
         report_name: Unit Tests Result
@@ -81,6 +82,7 @@ jobs:
     - name: DotNet Unit Test DocumentAnalysis.Data
       uses: zyborg/dotnet-tests-report@v1
       if: ${{ !cancelled() }}
+      id: testActionData
       with:
         project_path: ./Aranzadi.DocumentAnalysis.Data.Test
         report_name: Unit Tests Result Data
@@ -89,3 +91,26 @@ jobs:
         gist_name: unit_tests_data.md
         gist_badge_label: "Unit-Tests-Data: %Counters_passed%/%Counters_total%"
         set_check_status_from_test_outcome: true
+
+    - name: dump test results
+      shell: pwsh
+      run: |
+        Write-ActionInfo 'Testing on: windows-latest'
+        Write-ActionInfo ''
+        Write-ActionInfo '  MSTest in DocumentAnalysis.Test:'
+        Write-ActionInfo '    * result_value    = ${{ steps.testAction.outputs.result_value }}'
+        Write-ActionInfo '    * total_count     = ${{ steps.testAction.outputs.total_count }}'
+        Write-ActionInfo '    * passed_count    = ${{ steps.testAction.outputs.passed_count }}'
+        Write-ActionInfo '    * failed_count    = ${{ steps.testAction.outputs.failed_count }}'
+        Write-ActionInfo '    * gist_report_url = ${{ steps.testAction.outputs.gist_report_url }}'
+        Write-ActionInfo '    * gist_badge_url  = ${{ steps.testAction.outputs.gist_badge_url }}'
+        Write-ActionInfo ''
+        Write-ActionInfo ''
+        Write-ActionInfo '  MSTest in DocumentAnalysis.Data.Test:'
+        Write-ActionInfo '    * result_value    = ${{ steps.testActionData.outputs.result_value }}'
+        Write-ActionInfo '    * total_count     = ${{ steps.testActionData.outputs.total_count }}'
+        Write-ActionInfo '    * passed_count    = ${{ steps.testActionData.outputs.passed_count }}'
+        Write-ActionInfo '    * failed_count    = ${{ steps.testActionData.outputs.failed_count }}'
+        Write-ActionInfo '    * gist_report_url = ${{ steps.testActionData.outputs.gist_report_url }}'
+        Write-ActionInfo '    * gist_badge_url  = ${{ steps.testActionData.outputs.gist_badge_url }}'
+        Write-ActionInfo ''
