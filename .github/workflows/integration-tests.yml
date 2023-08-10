@@ -99,26 +99,26 @@ jobs:
 
     - name: 'Run cp commands'
       id: listar-dir
-      run: dir
+      run: dir ${{ github.workspace }} -recurse
      
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: ${{ env.dotnet_version }}
 
-    - name: Setup NuGet
-      uses: NuGet/setup-nuget@v1
-      with:
-       nuget-version: ${{ env.nuget_version }}
+    # - name: Setup NuGet
+    #   uses: NuGet/setup-nuget@v1
+    #   with:
+    #    nuget-version: ${{ env.nuget_version }}
 
-    - name: Auth Nuget TR
-      run: dotnet nuget add source ${{ env.nuget_feed_source }} --name ${{ env.nuget_feed_name }} --username 'david.sanchezfuentes@thomsonreuters.com' --password ${{ env.password_ado }} --store-password-in-clear-text --configfile ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}/${{ env.nuget_config }}
+    # - name: Auth Nuget TR
+    #   run: dotnet nuget add source ${{ env.nuget_feed_source }} --name ${{ env.nuget_feed_name }} --username 'david.sanchezfuentes@thomsonreuters.com' --password ${{ env.password_ado }} --store-password-in-clear-text --configfile ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}/${{ env.nuget_config }}
 
-    - name: Restore Nuget Packages
-      run: dotnet restore ${{ env.solution_path }} --verbosity normal 
+    # - name: Restore Nuget Packages
+    #   run: dotnet restore ${{ env.solution_path }} --verbosity normal 
 
     - name: Build Solution
-      run: dotnet build ${{ env.solution_path }} --configuration ${{ env.configuration }} --no-restore
+      run: dotnet build ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}/${{ env.solution_path }} --configuration ${{ env.configuration }}
 
     - name: 'Copy configs'
       id: copyconfig
