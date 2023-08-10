@@ -14,6 +14,10 @@ using Polly;
 using Polly.Extensions.Http;
 using Polly.Retry;
 using Serilog;
+using System;
+using System.IO;
+using System.Net;
+using System.Reflection.Metadata;
 using System.Security.Cryptography;
 using System.Security.Policy;
 
@@ -113,7 +117,7 @@ namespace Aranzadi.DocumentAnalysis.Services
 					Source = Source.LaLey,
 					DocumentName = request.Name,
 					AccessUrl = request.Path,
-					Sha256 = "",
+					Sha256 = null,
 					AnalysisProviderId = null,
 					AnalysisProviderResponse = "Pending"
 				};
@@ -122,14 +126,34 @@ namespace Aranzadi.DocumentAnalysis.Services
 					IDocumentAnalysisRepository documentAnalysisRepository =
 						scope.ServiceProvider.GetRequiredService<IDocumentAnalysisRepository>();
 
-					var stream = await GetStreamFromSasToken(data.AccessUrl);
-					data.Sha256 = await GetHashFromFile(stream);
-
 					await documentAnalysisRepository.AddAnalysisDataAsync(data);
 
 					DocumentAnalysisResult? resultAnalysis = null;
 					if (configuration.CheckIfExistsHashFileInCosmos)
-					{
+					{		
+						Stream stream = null;
+						try
+						{
+							stream = await GetStreamFromSasToken(data.AccessUrl);							
+						}
+						catch (Exception ex)
+						{
+							data.Status = AnalysisStatus.NotFound;
+							await documentAnalysisRepository.UpdateAnalysisDataAsync(data);
+							throw;
+						}
+
+						try
+						{
+							data.Sha256 = await GetHashFromFile(stream);
+						}
+						catch (Exception)
+						{
+							data.Status = AnalysisStatus.Error;
+							await documentAnalysisRepository.UpdateAnalysisDataAsync(data);
+							throw;
+						}
+
 						resultAnalysis = await documentAnalysisRepository.GetAnalysisDoneAsync(data.Sha256);
 					}
 
@@ -151,7 +175,7 @@ namespace Aranzadi.DocumentAnalysis.Services
 							}
 							data.AnalysisProviderId = new Guid(result.Item2.Guid);
 							//Estado del job. Valores validos: 'PENDING', 'RUNNING', 'SUCEEDED','PARTIAL_SUCCESS' y 'FAILED'
-							data.AnalysisProviderResponse = result.Item2.ExecutionStatus?.State;	
+							data.AnalysisProviderResponse = result.Item2.ExecutionStatus?.State;
 						}
 						else
 						{

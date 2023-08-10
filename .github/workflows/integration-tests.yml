@@ -26,11 +26,13 @@ env:
     nuget_feed_source: 'https://pkgs.dev.azure.com/TR-Legal-OnlineServices/_packaging/SWF_Burgos_Spain_Artifacts_feed/nuget/v3/index.json'
     password_ado: ${{ secrets.PASSWORD_ADO }}
     nuget_config: './Nuget.Config'
+    nuget_version: '5.x'
+    dotnet_version: '6.x'
 
 jobs:
   build:
 
-    name: Build and Test
+    name: Build
     runs-on: windows-latest
 
     permissions:
@@ -61,13 +63,67 @@ jobs:
     - name: Restore Nuget Packages
       run: dotnet restore ${{ env.solution_path }} --verbosity normal 
 
-    - name: 'Run cp commands'
-      id: copyconfig
-      run: cp -v ${{github.workspace}}/${{ env.solution_test_path }}/Settings/appsettings.TEST.test.json ${{github.workspace}}/${{ env.solution_test_path }}/Settings/appsettings.test.json
-
     - name: Build Solution
       run: dotnet build ${{ env.solution_path }} --configuration ${{ env.configuration }} --no-restore
     
+    - name: Run comand
+      run: dir ${{ github.workspace }} -recurse
+
+    - name: "📂 Create Artifacts Build"
+      uses: actions/upload-artifact@v3
+      with:
+        name: build_test
+        path: ./ 
+
+  Integration_Test:
+
+    name: Integration Test
+    needs: [build]
+    runs-on: windows-latest
+    environment:
+      name: QA
+
+    env:
+      artifact-package-zip-directory-path: "Upload"
+
+    steps:
+
+    - name: Clean artifact-package-directory
+      run: Remove-Item ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }} -Recurse -Force -ErrorAction SilentlyContinue
+
+    - name: Download Release Artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: build_test
+        path: ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}
+
+    - name: 'Run cp commands'
+      id: listar-dir
+      run: dir
+     
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ env.dotnet_version }}
+
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v1
+      with:
+       nuget-version: ${{ env.nuget_version }}
+
+    - name: Auth Nuget TR
+      run: dotnet nuget add source ${{ env.nuget_feed_source }} --name ${{ env.nuget_feed_name }} --username 'david.sanchezfuentes@thomsonreuters.com' --password ${{ env.password_ado }} --store-password-in-clear-text --configfile ${{ env.nuget_config }}
+
+    - name: Restore Nuget Packages
+      run: dotnet restore ${{ env.solution_path }} --verbosity normal 
+
+    - name: Build Solution
+      run: dotnet build ${{ env.solution_path }} --configuration ${{ env.configuration }} --no-restore
+
+    - name: 'Copy configs'
+      id: copyconfig
+      run: cp -v ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}/${{ env.solution_test_path }}/Settings/appsettings.TEST.test.json ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}/${{ env.solution_test_path }}/Settings/appsettings.test.json
+
     - name: DotNet Integration Test DocumentAnalysis
       uses: zyborg/dotnet-tests-report@v1
       if: ${{ !cancelled() }}

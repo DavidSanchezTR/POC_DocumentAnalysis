@@ -1,6 +1,7 @@
 ﻿using Aranzadi.DocumentAnalysis.Configuration;
 using Aranzadi.DocumentAnalysis.Data;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Aranzadi.DocumentAnalysis.Integration.Test
@@ -14,6 +15,7 @@ namespace Aranzadi.DocumentAnalysis.Integration.Test
 		{
 			AssemblyApp.builder = WebApplication.CreateBuilder();
 			AssemblyApp.documentAnalysisOptions = ApplicationSettings.InitConfiguration(AssemblyApp.builder, "Settings/appsettings.test.json");
+			AssemblyApp.SasToken = AssemblyApp.builder.Configuration.GetValue<string>("SasToken");
 
 			ConfigurationServicesApplication.ConfigureServices(AssemblyApp.builder, AssemblyApp.documentAnalysisOptions);
 

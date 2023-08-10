@@ -156,7 +156,7 @@ namespace Aranzadi.DocumentAnalysis.Test
 		{
 			//Arrange
 			DocumentAnalysisOptions documentAnalysisOptions = new DocumentAnalysisOptions();
-			documentAnalysisOptions.CheckIfExistsHashFileInCosmos = false; //EDIT
+			documentAnalysisOptions.CheckIfExistsHashFileInCosmos = true; //EDIT
 
 			Mock<ILogAnalysis> logAnalysisService = new Mock<ILogAnalysis>();
 

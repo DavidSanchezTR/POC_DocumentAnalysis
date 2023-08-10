@@ -206,7 +206,7 @@ namespace Aranzadi.DocumentAnalysis.Integration.Test
 		{
 			//Arrange
 			DocumentAnalysisOptions documentAnalysisOptions = AssemblyApp.documentAnalysisOptions;
-			documentAnalysisOptions.CheckIfExistsHashFileInCosmos = false; //EDIT
+			documentAnalysisOptions.CheckIfExistsHashFileInCosmos = true; //EDIT
 			var configuration = documentAnalysisOptions;
 			var httpClientFactory = AssemblyApp.app.Services.GetService<IHttpClientFactory>();
 			var logAnalysisService = new Mock<ILogAnalysis>();
@@ -264,6 +264,8 @@ namespace Aranzadi.DocumentAnalysis.Integration.Test
 			//Act Assert
 			var hostedService = new QueuedHostedService(serviceProviderMock.Object, configuration, httpClientFactory, analysisProviderServiceMock.Object, logAnalysisService.Object);
 			await Assert.ThrowsExceptionAsync<HttpRequestException>(async () => await hostedService.ProcessMessage(analysisContext, documentAnalysisRequest));
+
+
 
 		}
 

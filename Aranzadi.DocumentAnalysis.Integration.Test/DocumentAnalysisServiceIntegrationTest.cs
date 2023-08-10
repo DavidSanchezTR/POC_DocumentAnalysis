@@ -42,7 +42,10 @@ namespace Aranzadi.DocumentAnalysis.Integration.Test
 			var result = await documentAnalysisService.GetAnalysisAsync(tenantId, userId, documentId.ToString());
 
 			//Assert
-			Assert.IsTrue(result.Count() > 0);
+			Assert.IsTrue(result.Count() == 1);
+			Assert.IsTrue(result.FirstOrDefault().DocumentUniqueRefences == documentId.ToString());
+
+
 		}
 
 		[TestMethod]
