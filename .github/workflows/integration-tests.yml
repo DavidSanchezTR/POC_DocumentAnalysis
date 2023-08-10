@@ -25,7 +25,7 @@ env:
     nuget_feed_name: 'SWF_Burgos_Spain_Artifacts_feed'
     nuget_feed_source: 'https://pkgs.dev.azure.com/TR-Legal-OnlineServices/_packaging/SWF_Burgos_Spain_Artifacts_feed/nuget/v3/index.json'
     password_ado: ${{ secrets.PASSWORD_ADO }}
-    nuget_config: 'Nuget.Config'
+    nuget_config: ./'Nuget.Config'
     nuget_version: '5.x'
     dotnet_version: '6.x'
 
@@ -58,7 +58,7 @@ jobs:
        nuget-version: ${{ matrix.nuget_version }}
 
     - name: Auth Nuget TR
-      run: dotnet nuget add source ${{ env.nuget_feed_source }} --name ${{ env.nuget_feed_name }} --username 'david.sanchezfuentes@thomsonreuters.com' --password ${{ env.password_ado }} --store-password-in-clear-text --configfile ./${{ env.nuget_config }}
+      run: dotnet nuget add source ${{ env.nuget_feed_source }} --name ${{ env.nuget_feed_name }} --username 'david.sanchezfuentes@thomsonreuters.com' --password ${{ env.password_ado }} --store-password-in-clear-text --configfile ${{ env.nuget_config }}
 
     - name: Restore Nuget Packages
       run: dotnet restore ${{ env.solution_path }} --verbosity normal 
@@ -101,10 +101,10 @@ jobs:
       id: listar-dir
       run: dir ${{ github.workspace }} -recurse
      
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: ${{ env.dotnet_version }}
+    # - name: Setup .NET
+    #   uses: actions/setup-dotnet@v3
+    #   with:
+    #     dotnet-version: ${{ env.dotnet_version }}
 
     # - name: Setup NuGet
     #   uses: NuGet/setup-nuget@v1
@@ -117,8 +117,8 @@ jobs:
     # - name: Restore Nuget Packages
     #   run: dotnet restore ${{ env.solution_path }} --verbosity normal 
 
-    - name: Build Solution
-      run: dotnet build ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}/${{ env.solution_path }} --configuration ${{ env.configuration }}
+    # - name: Build Solution
+    #   run: dotnet build ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}/${{ env.solution_path }} --configuration ${{ env.configuration }}
 
     - name: 'Copy configs'
       id: copyconfig
@@ -130,7 +130,7 @@ jobs:
       id: testIntegration
       continue-on-error: false
       with:
-       project_path: ./Aranzadi.DocumentAnalysis.Integration.Test
+       project_path: ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}/${{ env.solution_test_path }}
        report_name: Unit Tests Result
        report_title: Unit Tests Result
        github_token: ${{ secrets.GITHUB_TOKEN }}
