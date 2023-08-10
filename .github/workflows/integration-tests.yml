@@ -25,7 +25,7 @@ env:
     nuget_feed_name: 'SWF_Burgos_Spain_Artifacts_feed'
     nuget_feed_source: 'https://pkgs.dev.azure.com/TR-Legal-OnlineServices/_packaging/SWF_Burgos_Spain_Artifacts_feed/nuget/v3/index.json'
     password_ado: ${{ secrets.PASSWORD_ADO }}
-    nuget_config: './Nuget.Config'
+    nuget_config: 'Nuget.Config'
     nuget_version: '5.x'
     dotnet_version: '6.x'
 
@@ -58,7 +58,7 @@ jobs:
        nuget-version: ${{ matrix.nuget_version }}
 
     - name: Auth Nuget TR
-      run: dotnet nuget add source ${{ env.nuget_feed_source }} --name ${{ env.nuget_feed_name }} --username 'david.sanchezfuentes@thomsonreuters.com' --password ${{ env.password_ado }} --store-password-in-clear-text --configfile ${{ env.nuget_config }}
+      run: dotnet nuget add source ${{ env.nuget_feed_source }} --name ${{ env.nuget_feed_name }} --username 'david.sanchezfuentes@thomsonreuters.com' --password ${{ env.password_ado }} --store-password-in-clear-text --configfile ./${{ env.nuget_config }}
 
     - name: Restore Nuget Packages
       run: dotnet restore ${{ env.solution_path }} --verbosity normal 
