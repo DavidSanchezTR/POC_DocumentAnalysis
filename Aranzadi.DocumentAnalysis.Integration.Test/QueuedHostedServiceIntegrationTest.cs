@@ -14,6 +14,10 @@ using Aranzadi.DocumentAnalysis.Data;
 using System.Configuration;
 using System.Data;
 using System.Reflection.Metadata;
+using Aranzadi.HttpPooling.Interfaces;
+using Aranzadi.HttpPooling.Models;
+using Aranzadi.DocumentAnalysis.Models.CreditConsumption;
+using Aranzadi.DocumentAnalysis.Models.CreditReservations;
 
 namespace Aranzadi.DocumentAnalysis.Integration.Test
 {
@@ -24,13 +28,13 @@ namespace Aranzadi.DocumentAnalysis.Integration.Test
 		[ClassInitialize]
 		public static void ClassInitialize(TestContext context)
 		{
-			
+
 		}
 
 		[ClassCleanup]
 		public static void ClassCleanup()
 		{
-			
+
 		}
 
 		[TestMethod]
@@ -38,16 +42,63 @@ namespace Aranzadi.DocumentAnalysis.Integration.Test
 		{
 			//Arrange
 			DocumentAnalysisOptions documentAnalysisOptions = AssemblyApp.documentAnalysisOptions;
-			documentAnalysisOptions.CheckIfExistsHashFileInCosmos = false; //EDIT
 			var serviceProvider = AssemblyApp.app.Services.GetService<IServiceProvider>();
 			var configuration = documentAnalysisOptions;
-			var httpClientFactory = AssemblyApp.app.Services.GetService<IHttpClientFactory>(); 
+			var httpClientFactory = AssemblyApp.app.Services.GetService<IHttpClientFactory>();
 			var analysisProviderService = AssemblyApp.app.Services.GetService<IAnalysisProviderService>();
 			var logAnalysisService = AssemblyApp.app.Services.GetService<ILogAnalysis>();
-			var hostedService = new QueuedHostedService(serviceProvider, configuration, httpClientFactory, analysisProviderService, logAnalysisService);
+			var serviceBusPoolingService = AssemblyApp.app.Services.GetService<IHttpPoolingServices>();
+			await serviceBusPoolingService.Start();
+			//var creditsConsumptionClient = AssemblyApp.app.Services.GetService<ICreditsConsumptionClient>();
+			#region Mock CreditsConsumption
+			var creditsConsumptionClientMock = new Mock<ICreditsConsumptionClient>();
+			var operationResultCompleteReservation = new OperationResult()
+			{
+				Code = OperationResult.ResultCode.Success
+			};
+			creditsConsumptionClientMock.Setup(x => x.CompleteReservation(It.IsAny<string>(), It.IsAny<string>())).Returns(() => { return Task.FromResult(operationResultCompleteReservation); });
+
+			var operationResultGetTenantCredits = new OperationResult<CreditResponse>()
+			{
+				Code = OperationResult.ResultCode.Success,
+				Result = new CreditResponse()
+				{
+					Count = 5,
+					TenantCredits = new List<TenantCredit>()
+					{
+						new TenantCredit()
+						{
+							Id = Guid.NewGuid().ToString(),
+							CreditTemplateId = "analisisdocumental",
+							TenantId = AssemblyApp.TenantId,
+							FreeReservations = 5
+						}
+					}
+				}
+			};
+			creditsConsumptionClientMock.Setup(x => x.GetTenantCredits(It.IsAny<string>(), It.IsAny<string>())).Returns(() => { return Task.FromResult(operationResultGetTenantCredits); });
+
+			var operationResultCreateReservation = new OperationResult<TenantCreditReservation>()
+			{
+				Code = OperationResult.ResultCode.Success,
+
+				Result = new TenantCreditReservation()
+				{
+					Completed = false,
+					CreditTemplateID = Guid.NewGuid().ToString(),
+					ExpiresAt = DateTime.UtcNow.AddMinutes(5),
+					ID = Guid.NewGuid().ToString(),
+					TenantCreditID = Guid.NewGuid().ToString(),
+					UserID = AssemblyApp.UserId
+				}
+			};
+			creditsConsumptionClientMock.Setup(x => x.CreateReservation((It.IsAny<NewTenantCreditReservation>()))).Returns(() => { return Task.FromResult(operationResultCreateReservation); });
+			#endregion Mock CreditsConsumption
+
+			var hostedService = new QueuedHostedService(serviceProvider, configuration, httpClientFactory, analysisProviderService, logAnalysisService, serviceBusPoolingService, creditsConsumptionClientMock.Object);
 			IDocumentAnalysisService documentAnalysisService = AssemblyApp.app.Services.GetService<IDocumentAnalysisService>();
-			var tenant = "5600";
-			var owner = "98";
+			var tenant = AssemblyApp.TenantId;
+			var owner = AssemblyApp.UserId;
 			var documentId = Guid.NewGuid().ToString();
 			AnalysisContext analysisContext = new AnalysisContext()
 			{
@@ -60,29 +111,81 @@ namespace Aranzadi.DocumentAnalysis.Integration.Test
 			{
 				Guid = documentId,
 				Name = "prueba.zip",
-				Path = AssemblyApp.SasToken
-			};
+				Path = AssemblyApp.SasToken,
+                AnalysisType = Messaging.Model.Enums.AnalysisTypes.Undefined
+            };
 
 			//Act
 			var result = await hostedService.ProcessMessage(analysisContext, documentAnalysisRequest);
-			var analysis = await documentAnalysisService.GetAnalysisAsync(tenant, owner, documentId);
+            Thread.Sleep(5000);
+            var analysis = await documentAnalysisService.GetAnalysisAsync(tenant, documentId);
 
 			//Assert
 			Assert.IsTrue(result);
-			Assert.IsTrue(analysis.Count() == 1);
-		}
+            Assert.IsTrue(analysis.DocumentUniqueRefences == documentId);
+            //Assert.IsTrue(analysis.First().Status == Messaging.Model.Enums.AnalysisStatus.Done);
+            //Este test choca con el test de sistema, ya que comparte la cola de pooling, y el mensaje que deja en la cola
+            //lo procesa el servicio de DAS mock. Puede en algunos casos dar un comportamiento erroneo
+        }
 
 		[TestMethod()]
 		public async Task ProcessMessage_DBCosmosReal_OK()
 		{
 			//Arrange
 			DocumentAnalysisOptions documentAnalysisOptions = AssemblyApp.documentAnalysisOptions;
-			documentAnalysisOptions.CheckIfExistsHashFileInCosmos = false; //EDIT
 			var serviceProvider = AssemblyApp.app.Services.GetService<IServiceProvider>();
 			var configuration = documentAnalysisOptions;
 			var httpClientFactory = AssemblyApp.app.Services.GetService<IHttpClientFactory>();
 			var analysisProviderService = AssemblyApp.app.Services.GetService<IAnalysisProviderService>();
 			var logAnalysisService = new Mock<ILogAnalysis>();
+
+			#region Mock CreditsConsumption
+			var creditsConsumptionClientMock = new Mock<ICreditsConsumptionClient>();
+			var operationResultCompleteReservation = new OperationResult()
+			{
+				Code = OperationResult.ResultCode.Success
+			};
+			creditsConsumptionClientMock.Setup(x => x.CompleteReservation(It.IsAny<string>(), It.IsAny<string>())).Returns(() => { return Task.FromResult(operationResultCompleteReservation); });
+
+			var operationResultGetTenantCredits = new OperationResult<CreditResponse>()
+			{
+				Code = OperationResult.ResultCode.Success,
+				Result = new CreditResponse()
+				{
+					Count = 5,
+					TenantCredits = new List<TenantCredit>()
+					{
+						new TenantCredit()
+						{
+							Id = Guid.NewGuid().ToString(),
+							CreditTemplateId = "analisisdocumental",
+							TenantId = AssemblyApp.TenantId,
+							FreeReservations = 5
+						}
+					}
+				}
+			};
+			creditsConsumptionClientMock.Setup(x => x.GetTenantCredits(It.IsAny<string>(), It.IsAny<string>())).Returns(() => { return Task.FromResult(operationResultGetTenantCredits); });
+
+			var operationResultCreateReservation = new OperationResult<TenantCreditReservation>()
+			{
+				Code = OperationResult.ResultCode.Success,
+
+				Result = new TenantCreditReservation()
+				{
+					Completed = false,
+					CreditTemplateID = Guid.NewGuid().ToString(),
+					ExpiresAt = DateTime.UtcNow.AddMinutes(5),
+					ID = Guid.NewGuid().ToString(),
+					TenantCreditID = Guid.NewGuid().ToString(),
+					UserID = AssemblyApp.UserId
+				}
+			};
+			creditsConsumptionClientMock.Setup(x => x.CreateReservation((It.IsAny<NewTenantCreditReservation>()))).Returns(() => { return Task.FromResult(operationResultCreateReservation); });
+			#endregion Mock CreditsConsumption
+
+			var serviceBusPoolingService = new Mock<IHttpPoolingServices>();
+			serviceBusPoolingService.Setup(o => o.AddRequest(It.IsAny<HttpPoolingRequest>())).Returns(Task.CompletedTask);
 
 			#region Mock response Sas token
 			//******* Mock response Sas token
@@ -108,25 +211,26 @@ namespace Aranzadi.DocumentAnalysis.Integration.Test
 			responseJob.Guid = Guid.NewGuid().ToString();
 			Mock<IAnalysisProviderService> analysisProviderServiceMock = new Mock<IAnalysisProviderService>();
 			analysisProviderServiceMock.Setup(o => o.SendAnalysisJob(It.IsAny<DocumentAnalysisData>()))
-				.Returns(Task.FromResult((responseMessage, responseJob)));
+					.Returns(Task.FromResult((responseMessage, responseJob)));
 			#endregion Mock response analysis provider (Anaconda) 
 
 			AnalysisContext analysisContext = new AnalysisContext()
 			{
-				Account = "5600",
+				Account = AssemblyApp.TenantId,
 				App = "Fusion",
-				Owner = "98",
-				Tenant = "5600"
+				Owner = AssemblyApp.UserId,
+				Tenant = AssemblyApp.TenantId
 			};
 			DocumentAnalysisRequest documentAnalysisRequest = new DocumentAnalysisRequest()
 			{
 				Guid = Guid.NewGuid().ToString(),
 				Name = "prueba.zip",
-				Path = "https://dev.infolexnube.es/Communication/GetDocument?path=&requireSessionAlive=false&valToken=792-DB-97a515c3bf3a4c20aeafbb8a8b0c60ca-sTAmBnO%2BX8Y1GUJEl5XiSw%3D%3D"
-			};
+				Path = "https://dev.infolexnube.es/Communication/GetDocument?path=&requireSessionAlive=false&valToken=792-DB-97a515c3bf3a4c20aeafbb8a8b0c60ca-sTAmBnO%2BX8Y1GUJEl5XiSw%3D%3D",
+                AnalysisType = Messaging.Model.Enums.AnalysisTypes.Undefined
+            };
 
 			//Act
-			var hostedService = new QueuedHostedService(serviceProvider, configuration, httpClientFactoryMock.Object, analysisProviderServiceMock.Object, logAnalysisService.Object);
+			var hostedService = new QueuedHostedService(serviceProvider, configuration, httpClientFactoryMock.Object, analysisProviderServiceMock.Object, logAnalysisService.Object, serviceBusPoolingService.Object, creditsConsumptionClientMock.Object);
 			var result = await hostedService.ProcessMessage(analysisContext, documentAnalysisRequest);
 
 			//Assert
@@ -138,10 +242,56 @@ namespace Aranzadi.DocumentAnalysis.Integration.Test
 		{
 			//Arrange
 			DocumentAnalysisOptions documentAnalysisOptions = AssemblyApp.documentAnalysisOptions;
-			documentAnalysisOptions.CheckIfExistsHashFileInCosmos = false; //EDIT
 			var configuration = documentAnalysisOptions;
 			var httpClientFactory = AssemblyApp.app.Services.GetService<IHttpClientFactory>();
 			var logAnalysisService = new Mock<ILogAnalysis>();
+			var serviceBusPoolingService = new Mock<IHttpPoolingServices>();
+			serviceBusPoolingService.Setup(o => o.AddRequest(It.IsAny<HttpPoolingRequest>())).Returns(Task.CompletedTask);
+
+			#region Mock CreditsConsumption
+			var creditsConsumptionClientMock = new Mock<ICreditsConsumptionClient>();
+			var operationResultCompleteReservation = new OperationResult()
+			{
+				Code = OperationResult.ResultCode.Success
+			};
+			creditsConsumptionClientMock.Setup(x => x.CompleteReservation(It.IsAny<string>(), It.IsAny<string>())).Returns(() => { return Task.FromResult(operationResultCompleteReservation); });
+
+			var operationResultGetTenantCredits = new OperationResult<CreditResponse>()
+			{
+				Code = OperationResult.ResultCode.Success,
+				Result = new CreditResponse()
+				{
+					Count = 5,
+					TenantCredits = new List<TenantCredit>()
+					{
+						new TenantCredit()
+						{
+							Id = Guid.NewGuid().ToString(),
+							CreditTemplateId = "analisisdocumental",
+							TenantId = AssemblyApp.TenantId,
+							FreeReservations = 5
+						}
+					}
+				}
+			};
+			creditsConsumptionClientMock.Setup(x => x.GetTenantCredits(It.IsAny<string>(), It.IsAny<string>())).Returns(() => { return Task.FromResult(operationResultGetTenantCredits); });
+
+			var operationResultCreateReservation = new OperationResult<TenantCreditReservation>()
+			{
+				Code = OperationResult.ResultCode.Success,
+
+				Result = new TenantCreditReservation()
+				{
+					Completed = false,
+					CreditTemplateID = Guid.NewGuid().ToString(),
+					ExpiresAt = DateTime.UtcNow.AddMinutes(5),
+					ID = Guid.NewGuid().ToString(),
+					TenantCreditID = Guid.NewGuid().ToString(),
+					UserID = AssemblyApp.UserId
+				}
+			};
+			creditsConsumptionClientMock.Setup(x => x.CreateReservation((It.IsAny<NewTenantCreditReservation>()))).Returns(() => { return Task.FromResult(operationResultCreateReservation); });
+			#endregion Mock CreditsConsumption
 
 			#region Mock ServiceScope
 			//******* Mock ServiceScope
@@ -181,20 +331,21 @@ namespace Aranzadi.DocumentAnalysis.Integration.Test
 
 			AnalysisContext analysisContext = new AnalysisContext()
 			{
-				Account = "5600",
+				Account = AssemblyApp.TenantId,
 				App = "Fusion",
-				Owner = "98",
-				Tenant = "5600"
+				Owner = AssemblyApp.UserId,
+				Tenant = AssemblyApp.TenantId
 			};
 			DocumentAnalysisRequest documentAnalysisRequest = new DocumentAnalysisRequest()
 			{
 				Guid = Guid.NewGuid().ToString(),
 				Name = "prueba.zip",
-				Path = AssemblyApp.SasToken
-			};
+				Path = AssemblyApp.SasToken,
+                AnalysisType = Messaging.Model.Enums.AnalysisTypes.Undefined
+            };
 
 			//Act
-			var hostedService = new QueuedHostedService(serviceProviderMock.Object, configuration, httpClientFactory, analysisProviderServiceMock.Object, logAnalysisService.Object);
+			var hostedService = new QueuedHostedService(serviceProviderMock.Object, configuration, httpClientFactory, analysisProviderServiceMock.Object, logAnalysisService.Object, serviceBusPoolingService.Object, creditsConsumptionClientMock.Object);
 			var result = await hostedService.ProcessMessage(analysisContext, documentAnalysisRequest);
 
 			//Assert
@@ -202,14 +353,60 @@ namespace Aranzadi.DocumentAnalysis.Integration.Test
 		}
 
 		[TestMethod]
-		public async Task ProcessMessage_SasTokenRealUrlErronea_ThrowHttpRequestException()
+		public async Task ProcessMessage_SasTokenRealUrlErronea_ReturnTrue()
 		{
 			//Arrange
 			DocumentAnalysisOptions documentAnalysisOptions = AssemblyApp.documentAnalysisOptions;
-			documentAnalysisOptions.CheckIfExistsHashFileInCosmos = false; //EDIT
 			var configuration = documentAnalysisOptions;
 			var httpClientFactory = AssemblyApp.app.Services.GetService<IHttpClientFactory>();
 			var logAnalysisService = new Mock<ILogAnalysis>();
+			var serviceBusPoolingService = new Mock<IHttpPoolingServices>();
+			serviceBusPoolingService.Setup(o => o.AddRequest(It.IsAny<HttpPoolingRequest>())).Returns(Task.CompletedTask);
+
+			#region Mock CreditsConsumption
+			var creditsConsumptionClientMock = new Mock<ICreditsConsumptionClient>();
+			var operationResultCompleteReservation = new OperationResult()
+			{
+				Code = OperationResult.ResultCode.Success
+			};
+			creditsConsumptionClientMock.Setup(x => x.CompleteReservation(It.IsAny<string>(), It.IsAny<string>())).Returns(() => { return Task.FromResult(operationResultCompleteReservation); });
+
+			var operationResultGetTenantCredits = new OperationResult<CreditResponse>()
+			{
+				Code = OperationResult.ResultCode.Success,
+				Result = new CreditResponse()
+				{
+					Count = 5,
+					TenantCredits = new List<TenantCredit>()
+					{
+						new TenantCredit()
+						{
+							Id = Guid.NewGuid().ToString(),
+							CreditTemplateId = "analisisdocumental",
+							TenantId = AssemblyApp.TenantId,
+							FreeReservations = 5
+						}
+					}
+				}
+			};
+			creditsConsumptionClientMock.Setup(x => x.GetTenantCredits(It.IsAny<string>(), It.IsAny<string>())).Returns(() => { return Task.FromResult(operationResultGetTenantCredits); });
+
+			var operationResultCreateReservation = new OperationResult<TenantCreditReservation>()
+			{
+				Code = OperationResult.ResultCode.Success,
+
+				Result = new TenantCreditReservation()
+				{
+					Completed = false,
+					CreditTemplateID = Guid.NewGuid().ToString(),
+					ExpiresAt = DateTime.UtcNow.AddMinutes(5),
+					ID = Guid.NewGuid().ToString(),
+					TenantCreditID = Guid.NewGuid().ToString(),
+					UserID = AssemblyApp.UserId
+				}
+			};
+			creditsConsumptionClientMock.Setup(x => x.CreateReservation((It.IsAny<NewTenantCreditReservation>()))).Returns(() => { return Task.FromResult(operationResultCreateReservation); });
+			#endregion Mock CreditsConsumption
 
 			#region Mock ServiceScope
 			//******* Mock ServiceScope
@@ -246,25 +443,27 @@ namespace Aranzadi.DocumentAnalysis.Integration.Test
 			analysisProviderServiceMock.Setup(o => o.SendAnalysisJob(It.IsAny<DocumentAnalysisData>()))
 				.Returns(Task.FromResult((responseMessage, responseJob)));
 			#endregion Mock response analysis provider (Anaconda) 
-			
+
 			AnalysisContext analysisContext = new AnalysisContext()
 			{
-				Account = "5600",
+				Account = AssemblyApp.TenantId,
 				App = "Fusion",
-				Owner = "98",
-				Tenant = "5600"
+				Owner = AssemblyApp.UserId,
+				Tenant = AssemblyApp.TenantId
 			};
 			DocumentAnalysisRequest documentAnalysisRequest = new DocumentAnalysisRequest()
 			{
 				Guid = Guid.NewGuid().ToString(),
 				Name = "prueba.zip",
-				Path = AssemblyApp.SasToken + "invalidUrl"
-			};
+				Path = AssemblyApp.SasToken + "invalidUrl",
+                AnalysisType = Messaging.Model.Enums.AnalysisTypes.Undefined
+            };
 
 			//Act Assert
-			var hostedService = new QueuedHostedService(serviceProviderMock.Object, configuration, httpClientFactory, analysisProviderServiceMock.Object, logAnalysisService.Object);
-			await Assert.ThrowsExceptionAsync<HttpRequestException>(async () => await hostedService.ProcessMessage(analysisContext, documentAnalysisRequest));
-
+			var hostedService = new QueuedHostedService(serviceProviderMock.Object, configuration, httpClientFactory, analysisProviderServiceMock.Object, logAnalysisService.Object, serviceBusPoolingService.Object, creditsConsumptionClientMock.Object);
+			var result = await hostedService.ProcessMessage(analysisContext, documentAnalysisRequest);
+			//Assert
+			Assert.IsTrue(result);
 		}
 
 		[TestMethod]
@@ -272,10 +471,56 @@ namespace Aranzadi.DocumentAnalysis.Integration.Test
 		{
 			//Arrange
 			DocumentAnalysisOptions documentAnalysisOptions = AssemblyApp.documentAnalysisOptions;
-			documentAnalysisOptions.CheckIfExistsHashFileInCosmos = false; //EDIT
 			var configuration = documentAnalysisOptions;
 			var analysisProviderService = AssemblyApp.app.Services.GetService<IAnalysisProviderService>();
 			var logAnalysisService = new Mock<ILogAnalysis>();
+			var serviceBusPoolingService = new Mock<IHttpPoolingServices>();
+			serviceBusPoolingService.Setup(o => o.AddRequest(It.IsAny<HttpPoolingRequest>())).Returns(Task.CompletedTask);
+			
+			#region Mock CreditsConsumption
+			var creditsConsumptionClientMock = new Mock<ICreditsConsumptionClient>();
+			var operationResultCompleteReservation = new OperationResult()
+			{
+				Code = OperationResult.ResultCode.Success
+			};
+			creditsConsumptionClientMock.Setup(x => x.CompleteReservation(It.IsAny<string>(), It.IsAny<string>())).Returns(() => { return Task.FromResult(operationResultCompleteReservation); });
+
+			var operationResultGetTenantCredits = new OperationResult<CreditResponse>()
+			{
+				Code = OperationResult.ResultCode.Success,
+				Result = new CreditResponse()
+				{
+					Count = 5,
+					TenantCredits = new List<TenantCredit>()
+					{
+						new TenantCredit()
+						{
+							Id = Guid.NewGuid().ToString(),
+							CreditTemplateId = "analisisdocumental",
+							TenantId = AssemblyApp.TenantId,
+							FreeReservations = 5
+						}
+					}
+				}
+			};
+			creditsConsumptionClientMock.Setup(x => x.GetTenantCredits(It.IsAny<string>(), It.IsAny<string>())).Returns(() => { return Task.FromResult(operationResultGetTenantCredits); });
+
+			var operationResultCreateReservation = new OperationResult<TenantCreditReservation>()
+			{
+				Code = OperationResult.ResultCode.Success,
+
+				Result = new TenantCreditReservation()
+				{
+					Completed = false,
+					CreditTemplateID = Guid.NewGuid().ToString(),
+					ExpiresAt = DateTime.UtcNow.AddMinutes(5),
+					ID = Guid.NewGuid().ToString(),
+					TenantCreditID = Guid.NewGuid().ToString(),
+					UserID = AssemblyApp.UserId
+				}
+			};
+			creditsConsumptionClientMock.Setup(x => x.CreateReservation((It.IsAny<NewTenantCreditReservation>()))).Returns(() => { return Task.FromResult(operationResultCreateReservation); });
+			#endregion Mock CreditsConsumption
 
 			#region Mock ServiceScope
 			//******* Mock ServiceScope
@@ -318,20 +563,21 @@ namespace Aranzadi.DocumentAnalysis.Integration.Test
 
 			AnalysisContext analysisContext = new AnalysisContext()
 			{
-				Account = "5600",
+				Account = AssemblyApp.TenantId,
 				App = "Fusion",
-				Owner = "98",
-				Tenant = "5600"
+				Owner = AssemblyApp.UserId,
+				Tenant = AssemblyApp.TenantId
 			};
 			DocumentAnalysisRequest documentAnalysisRequest = new DocumentAnalysisRequest()
 			{
 				Guid = Guid.NewGuid().ToString(),
 				Name = "prueba.zip",
-				Path = AssemblyApp.SasToken
-			};
+				Path = AssemblyApp.SasToken,
+                AnalysisType = Messaging.Model.Enums.AnalysisTypes.Undefined
+            };
 
 			//Act
-			var hostedService = new QueuedHostedService(serviceProviderMock.Object, configuration, httpClientFactoryMock.Object, analysisProviderService, logAnalysisService.Object);
+			var hostedService = new QueuedHostedService(serviceProviderMock.Object, configuration, httpClientFactoryMock.Object, analysisProviderService, logAnalysisService.Object, serviceBusPoolingService.Object, creditsConsumptionClientMock.Object);
 			var result = await hostedService.ProcessMessage(analysisContext, documentAnalysisRequest);
 
 			//Assert

@@ -8,8 +8,10 @@ namespace Aranzadi.DocumentAnalysis.Configuration
     {
         public static void Seed(DocumentAnalysisDbContext context)
         {
-            bool save = false;            
-            if (context.Analysis.Count() == 0)
+            bool save = false;
+            var element = context.Analysis.FirstOrDefault();
+
+            if (element is null)
             {
                 context.Analysis.Add(new DocumentAnalysisData 
                     { 
@@ -20,7 +22,7 @@ namespace Aranzadi.DocumentAnalysis.Configuration
                         AccessUrl = "www.prueba.com",
                         Sha256 = "HasCode",
                         Status = AnalysisStatus.Pending,
-                        TenantId = "122",
+                        TenantId = "0",
                         UserId = "22",
                         Source = Source.LaLey,
                         AnalysisDate = DateTimeOffset.Now,

@@ -222,5 +222,160 @@ namespace Aranzadi.DocumentAnalysis.Test
 			Assert.IsTrue(result.Item1.IsSuccessStatusCode);
 		}
 
+		[TestMethod]
+		public async Task GetAnalysisResult_ValidData_ReturnsOK()
+		{
+			//Arrange
+			Mock<DocumentAnalysisOptions> documentAnalysisOptionsMock = new Mock<DocumentAnalysisOptions>();
+			AnalysisProviderClass config = new AnalysisProviderClass();
+			config.ApiKey = "ApiKey";
+			config.UrlApiDocuments = "https://UrlApiDocuments";
+			documentAnalysisOptionsMock.Object.AnalysisProvider = config;
+
+			var response = "json de respuesta";
+			var handler = new HttpMessageHandlerMoq(1, (num, request) =>
+			{
+				return new HttpResponseMessage()
+				{
+					StatusCode = System.Net.HttpStatusCode.OK,
+					Content = new StringContent(JsonConvert.SerializeObject(response))
+				};
+			});
+
+			Mock<IHttpClientFactory> httpClientFactoryMock = new Mock<IHttpClientFactory>();
+			httpClientFactoryMock.Setup(o => o.CreateClient(It.IsAny<string>())).Returns(new HttpClient(handler));
+
+			string analysisId = Guid.NewGuid().ToString();
+			string clientDocumentId = Guid.NewGuid().ToString();
+
+			//Act
+			var analysisProviderService = new AnalysisProviderService(documentAnalysisOptionsMock.Object, httpClientFactoryMock.Object);
+			var result = await analysisProviderService.GetAnalysisResult(analysisId, clientDocumentId);
+
+			//Assert
+			Assert.IsTrue(result.Item1.IsSuccessStatusCode);
+		}
+
+		[TestMethod]
+		public async Task GetAnalysisResult_EmptyValues_ReturnsOK()
+		{
+			//Arrange
+			Mock<DocumentAnalysisOptions> documentAnalysisOptionsMock = new Mock<DocumentAnalysisOptions>();
+			AnalysisProviderClass config = new AnalysisProviderClass();
+			config.ApiKey = "ApiKey";
+			config.UrlApiDocuments = "https://UrlApiDocuments";
+			documentAnalysisOptionsMock.Object.AnalysisProvider = config;
+
+			var response = "json de respuesta";
+			var handler = new HttpMessageHandlerMoq(1, (num, request) =>
+			{
+				return new HttpResponseMessage()
+				{
+					StatusCode = System.Net.HttpStatusCode.OK,
+					Content = new StringContent(JsonConvert.SerializeObject(response))
+				};
+			});
+
+			Mock<IHttpClientFactory> httpClientFactoryMock = new Mock<IHttpClientFactory>();
+			httpClientFactoryMock.Setup(o => o.CreateClient(It.IsAny<string>())).Returns(new HttpClient(handler));
+
+			string analysisId = "";
+			string clientDocumentId = "";
+
+			//Act Assert
+			var analysisProviderService = new AnalysisProviderService(documentAnalysisOptionsMock.Object, httpClientFactoryMock.Object);
+			await Assert.ThrowsExceptionAsync<ArgumentNullException>(async () =>  await analysisProviderService.GetAnalysisResult(analysisId, clientDocumentId));
+
+		}
+
+		[TestMethod]
+		public async Task GetAnalysisResult_ResponseInternalServerError_ReturnNull()
+		{
+			//Arrange
+			Mock<DocumentAnalysisOptions> documentAnalysisOptionsMock = new Mock<DocumentAnalysisOptions>();
+			AnalysisProviderClass config = new AnalysisProviderClass();
+			config.ApiKey = "ApiKey";
+			config.UrlApiDocuments = "https://UrlApiDocuments";
+			documentAnalysisOptionsMock.Object.AnalysisProvider = config;
+
+			var response = string.Empty;
+			var handler = new HttpMessageHandlerMoq(1, (num, request) =>
+			{
+				return new HttpResponseMessage()
+				{
+					StatusCode = System.Net.HttpStatusCode.InternalServerError,
+					Content = new StringContent(JsonConvert.SerializeObject(response))
+				};
+			});
+
+			Mock<IHttpClientFactory> httpClientFactoryMock = new Mock<IHttpClientFactory>();
+			httpClientFactoryMock.Setup(o => o.CreateClient(It.IsAny<string>())).Returns(new HttpClient(handler));
+
+			string analysisId = Guid.NewGuid().ToString();
+			string clientDocumentId = Guid.NewGuid().ToString();
+
+			//Act
+			var analysisProviderService = new AnalysisProviderService(documentAnalysisOptionsMock.Object, httpClientFactoryMock.Object);
+			var result = await analysisProviderService.GetAnalysisResult(analysisId, clientDocumentId);
+
+			//Assert
+			Assert.IsTrue(result.Item1.StatusCode == System.Net.HttpStatusCode.InternalServerError);
+		}
+
+		[TestMethod]
+		public async Task GetAnalysisResult_RetryPolicyOnce_OK()
+		{
+			//Arrange
+			Mock<DocumentAnalysisOptions> documentAnalysisOptionsMock = new Mock<DocumentAnalysisOptions>();
+			AnalysisProviderClass config = new AnalysisProviderClass();
+			config.ApiKey = "ApiKey";
+			config.UrlApiDocuments = "https://UrlApiDocuments";
+			documentAnalysisOptionsMock.Object.AnalysisProvider = config;
+
+			var response = new AnalysisJobResponse();
+			response.Guid = Guid.NewGuid().ToString();
+			int errors = 0;
+			var handler = new HttpMessageHandlerMoq(1, (num, request) =>
+			{
+				try
+				{
+					if (errors == 0) //provocar un error para usar el polly retry policy
+					{
+						return new HttpResponseMessage()
+						{
+							StatusCode = System.Net.HttpStatusCode.InternalServerError,
+							Content = new StringContent(JsonConvert.SerializeObject(response))
+						};
+					}
+					else
+					{
+						return new HttpResponseMessage()
+						{
+							StatusCode = System.Net.HttpStatusCode.OK,
+							Content = new StringContent(JsonConvert.SerializeObject(response))
+						};
+					}
+				}
+				finally
+				{
+					errors++;
+				}
+
+			});
+
+			Mock<IHttpClientFactory> httpClientFactoryMock = new Mock<IHttpClientFactory>();
+			httpClientFactoryMock.Setup(o => o.CreateClient(It.IsAny<string>())).Returns(new HttpClient(handler));
+
+			string analysisId = Guid.NewGuid().ToString();
+			string clientDocumentId = Guid.NewGuid().ToString();
+
+			//Act
+			var analysisProviderService = new AnalysisProviderService(documentAnalysisOptionsMock.Object, httpClientFactoryMock.Object);
+			var result = await analysisProviderService.GetAnalysisResult(analysisId, clientDocumentId);
+
+			//Assert
+			Assert.IsTrue(result.Item1.IsSuccessStatusCode);
+		}
+
 	}
 }

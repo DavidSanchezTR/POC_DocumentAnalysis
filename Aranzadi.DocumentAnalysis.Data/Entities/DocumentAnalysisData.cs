@@ -30,6 +30,9 @@ namespace Aranzadi.DocumentAnalysis.Data.Entities
         public AnalysisStatus Status { get; set; }
 		public Guid? AnalysisProviderId { get; set; }
         public string? AnalysisProviderResponse { get; set; }
+		public string? TenantCreditID { get; set; }
+		public string? ReservationCreditID { get; set; }
 
-	}
+        public AnalysisTypes? AnalysisType { get; set; }
+    }
 }

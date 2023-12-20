@@ -12,6 +12,8 @@ namespace Aranzadi.DocumentAnalysis.Integration.Test
 		public static DocumentAnalysisOptions? documentAnalysisOptions = null;
 		public static WebApplication? app = null;
 
-		public static string SasToken = "https://ukiflxcustomerqa1.blob.core.windows.net/dastest/TestDAS.zip?sp=r&st=2023-08-03T12:15:43Z&se=2028-08-03T20:15:43Z&spr=https&sv=2022-11-02&sr=b&sig=JyliI7l68vEwTtiCxig2FtX8rJo26UM%2BYFWSSwSs0qU%3D";
+		public static string TenantId = "";
+		public static string UserId = "";
+		public static string SasToken = "";
 	}
 }

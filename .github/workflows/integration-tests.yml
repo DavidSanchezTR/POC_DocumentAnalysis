@@ -1,0 +1,151 @@
+name: Integration-Tests
+
+on:
+  #pull_request:
+    # The branches below must be a subset of the branches above
+  #  branches: ["main"]
+
+  # Allows you to run this workflow called from another WF
+  workflow_call:
+    secrets:
+        ADO_TKV:
+          description: 'ADO token'
+          required: false
+        AZURE_TKV:
+          description: 'Azure credential'
+          required: false
+                   
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+env:
+  configuration: 'Release'
+  solution_path: 'Aranzadi.DocumentAnalysis/Aranzadi.DocumentAnalysis.csproj'
+  solution_restore: 'Aranzadi.DocumentAnalysis.sln'
+  solution_test_path: 'Aranzadi.DocumentAnalysis.Integration.Test'
+  nuget_feed_name: 'SWF_Burgos_Spain_Artifacts_feed'
+  nuget_feed_source: 'https://pkgs.dev.azure.com/TR-Legal-OnlineServices/_packaging/SWF_Burgos_Spain_Artifacts_feed/nuget/v3/index.json'
+  password_ado: ${{ secrets.PASSWORD_ADO }}
+  nuget_config: './Nuget.Config'
+  file_name: 'Integration_Test'
+
+
+jobs:
+ 
+  build:
+    name: Build
+    runs-on: windows-latest
+
+    permissions:
+       write-all
+
+    strategy:
+      matrix:
+        dotnet_version: [6.x]
+        nuget_version: [5.x]
+
+    steps:
+    - name: "☁️ Checkout Repository"
+      uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ matrix.dotnet_version }}
+
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v1
+      with:
+        nuget-version: ${{ matrix.nuget_version }}
+
+    - name: Auth Nuget TR Local
+      if: ${{ github.workflow == 'Integration-Tests' }}
+      run: dotnet nuget add source ${{ env.nuget_feed_source }} --name ${{ env.nuget_feed_name }} --username 'david.sanchezfuentes@thomsonreuters.com' --password ${{ env.password_ado }} --store-password-in-clear-text --configfile ${{ env.nuget_config }}
+
+    - name: Auth Nuget TR Remote
+      if: ${{ github.workflow != 'Integration-Tests' }}
+      run: dotnet nuget add source ${{ env.nuget_feed_source }} --name ${{ env.nuget_feed_name }} --username 'david.sanchezfuentes@thomsonreuters.com' --password ${{ secrets.ADO_TKV }} --store-password-in-clear-text --configfile ${{ env.nuget_config }}
+
+    - name: Restore Nuget Packages
+      run: dotnet restore ${{ env.solution_restore }} --verbosity normal 
+
+    - name: Build Solution
+      run: dotnet build ${{ env.solution_path }} --configuration ${{ env.configuration }} --no-restore
+
+    - name: Run Dir
+      run: dir ${{ github.workspace }} -recurse
+
+    - name: "📂 Create Artifacts Build"
+      uses: actions/upload-artifact@v3
+      with:
+        name: build_integration_test
+        path: ./          
+
+  IntegrationTests:
+    name: Integration Tests
+    needs: [build]
+    runs-on: BUILD-MICRO-DEV-DAS
+    environment:
+      name: QA
+
+    env:
+      artifact-package-zip-directory-path: "Upload_Integration_Test"
+
+    steps:  
+    
+    - name: Clean artifact-package-directory
+      run: Remove-Item ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }} -Recurse -Force -ErrorAction SilentlyContinue
+
+    - name: Download Release Artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: build_integration_test
+        path: ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}
+
+    - name: Az Login Local
+      if: ${{ github.workflow == 'Integration-Tests' }}
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}      
+
+    - name: Az Login Remote
+      if: ${{ github.workflow != 'Integration-Tests' }}
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_TKV }}
+            
+    - name: 'Run Dir'
+      id: listar-dir
+      run: dir ${{ github.workspace }} -recurse
+        
+    - name: 'Copy configs'
+      id: copyconfig
+      run: cp -v ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}/${{ env.solution_test_path }}/Settings/appsettings.TEST.test.json ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}/${{ env.solution_test_path }}/Settings/appsettings.test.json
+
+    # - name: Dotnet Test
+    #   run: dotnet test  ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}/${{ env.solution_test_path }}/${{ env.solution_test_path }}.csproj
+    
+    - name: DotNet Integration Tests
+      uses: zyborg/dotnet-tests-report@v1
+      if: ${{ !cancelled() }}
+      id: testIntegration
+      with:
+       project_path: ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}/${{ env.solution_test_path }}/${{ env.solution_test_path }}.csproj
+       report_name: Integration Tests Result
+       report_title: Integration Tests Result
+       github_token: ${{ secrets.GITHUB_TOKEN }}
+       fail_build_on_failed_tests: true       
+       gist_name: integration_tests.md
+       gist_badge_label: "Integration-Tests: %Counters_passed%/%Counters_total%"
+       set_check_status_from_test_outcome: true
+
+    - name: Dump IntegrationTests Results
+      shell: pwsh
+      run: |
+        Write-ActionInfo 'Testing on: BUILD-MICRO-DEV-DAS'
+        Write-ActionInfo ''
+        Write-ActionInfo '  MSTest in DocumentAnalysis.Integration.Test:'
+        Write-ActionInfo '    * result_value    = ${{ steps.testIntegration.outputs.result_value }}'
+        Write-ActionInfo '    * total_count     = ${{ steps.testIntegration.outputs.total_count }}'
+        Write-ActionInfo '    * passed_count    = ${{ steps.testIntegration.outputs.passed_count }}'
+        Write-ActionInfo '    * failed_count    = ${{ steps.testIntegration.outputs.failed_count }}'

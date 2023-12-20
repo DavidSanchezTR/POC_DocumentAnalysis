@@ -1,5 +1,7 @@
 ﻿using Aranzadi.DocumentAnalysis.Util;
+using Aranzadi.HttpPooling;
 using Azure.Identity;
+using System.Configuration;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Aranzadi.DocumentAnalysis;
@@ -49,18 +51,29 @@ public static class ApplicationSettings
 
 		}
 		documentAnalysisOptions = GetDocumentAnalysisOptions(builder.Configuration);
+		documentAnalysisOptions.Environment = builder.Environment.EnvironmentName;
+        #endregion Configure keyvault
 
-		#endregion Configure keyvault
-
-		return documentAnalysisOptions;
+        return documentAnalysisOptions;
 	}
 
 }
 
 public class DocumentAnalysisOptions
 {
+    public DocumentAnalysisOptions()
+    {
+		AnalysisProvider = new AnalysisProviderClass()
+		{
+			UrlApiJobs = string.Empty,
+			UrlApiDocuments = string.Empty,
+			ApiKey = string.Empty
+		};
 
-	public string? EnvironmentPrefix { get; set; }
+	}
+    public string? Environment { get; set; }
+
+    public string? EnvironmentPrefix { get; set; }
 
 	public string? CosmosDatabaseName { get; set; }
 
@@ -105,8 +118,16 @@ public class DocumentAnalysisOptions
 		public string? AuthenticationId { get; set; }
 		public string? LogName { get; set; }
 	}
+	public bool CheckIfActiveCreditsConsumption { get; set; }
+	public CreditsConsumptionClass? CreditsConsumption { get; set; }
+	public class CreditsConsumptionClass
+    {
+        public string? CreditsConsumptionService { get; set; }
+        public string? AzureADCreditsConsumptionScope { get; set; }
+		public string? AzureADCreditsConsumptionTenant { get; set; }
+	}
 
-	public bool CheckIfExistsHashFileInCosmos { get; set; }
+    
 
 	public AnalysisProviderClass? AnalysisProvider { get; set; }
 	public class AnalysisProviderClass
@@ -115,6 +136,8 @@ public class DocumentAnalysisOptions
 		public string? UrlApiDocuments { get; set; }
 		public string? ApiKey { get; set; }
 	}
+
+	public PoolingConfiguration Pooling { get; set; }
 
 }
 
@@ -143,6 +166,3 @@ public class KeyVaultSettings
 	public string? ActiveDirectoryTenantId { get; set; }
 	public string? CertificateMode { get; set; }
 }
-
-
-

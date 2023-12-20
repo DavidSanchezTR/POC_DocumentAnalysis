@@ -1,0 +1,146 @@
+name: System-Tests
+
+on:
+  # Allows you to run this workflow called from another WF
+  workflow_call:
+    secrets:
+        ADO_TKV:
+          description: 'ADO token'
+          required: false
+        AZURE_TKV:
+          description: 'Azure credential'
+          required: false
+          
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+env:
+  configuration: 'Release'
+  solution_path: 'Aranzadi.DocumentAnalysis/Aranzadi.DocumentAnalysis.csproj'
+  solution_restore: 'Aranzadi.DocumentAnalysis.sln'
+  solution_test_path: 'Aranzadi.DocumentAnalysis.System.Test'
+  nuget_feed_name: 'SWF_Burgos_Spain_Artifacts_feed'
+  nuget_feed_source: 'https://pkgs.dev.azure.com/TR-Legal-OnlineServices/_packaging/SWF_Burgos_Spain_Artifacts_feed/nuget/v3/index.json'
+  password_ado: ${{ secrets.PASSWORD_ADO }}
+  nuget_config: './Nuget.Config'
+
+
+jobs:
+ 
+  build:
+    name: Build
+    runs-on: windows-latest
+
+    permissions:
+       write-all
+
+    strategy:
+      matrix:
+        dotnet_version: [6.x]
+        nuget_version: [5.x]
+
+    steps:
+    - name: "☁️ Checkout Repository"
+      uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ matrix.dotnet_version }}
+
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v1
+      with:
+        nuget-version: ${{ matrix.nuget_version }}
+
+    - name: Auth Nuget TR Local
+      if: ${{ github.workflow == 'System-Tests' }}
+      run: dotnet nuget add source ${{ env.nuget_feed_source }} --name ${{ env.nuget_feed_name }} --username 'david.sanchezfuentes@thomsonreuters.com' --password ${{ env.password_ado }} --store-password-in-clear-text --configfile ${{ env.nuget_config }}
+
+    - name: Auth Nuget TR Remote
+      if: ${{ github.workflow != 'System-Tests' }}
+      run: dotnet nuget add source ${{ env.nuget_feed_source }} --name ${{ env.nuget_feed_name }} --username 'david.sanchezfuentes@thomsonreuters.com' --password ${{ secrets.ADO_TKV }} --store-password-in-clear-text --configfile ${{ env.nuget_config }}
+
+    - name: Restore Nuget Packages
+      run: dotnet restore ${{ env.solution_restore }} --verbosity normal 
+
+    - name: Build Solution
+      run: dotnet build ${{ env.solution_path }} --configuration ${{ env.configuration }} --no-restore
+
+    - name: Run Dir
+      run: dir ${{ github.workspace }} -recurse
+
+    - name: "📂 Create Artifacts Build"
+      uses: actions/upload-artifact@v3
+      with:
+        name: build_system_test
+        path: ./          
+
+  SystemTests:
+    name: System Tests
+    needs: [build]
+    runs-on: BUILD-MICRO-DEV-DAS
+    environment:
+      name: QA
+
+    env:
+      artifact-package-zip-directory-path: "Upload_System_Test"
+
+    steps:  
+    
+    - name: Clean artifact-package-directory
+      run: Remove-Item ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }} -Recurse -Force -ErrorAction SilentlyContinue
+
+    - name: Download Release Artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: build_system_test
+        path: ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}
+
+    - name: Az Login Local
+      if: ${{ github.workflow == 'System-Tests' }}
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}      
+
+    - name: Az Login Remote
+      if: ${{ github.workflow != 'System-Tests' }}
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_TKV }}
+            
+    - name: 'Run Dir'
+      id: listar-dir
+      run: dir ${{ github.workspace }} -recurse
+        
+    - name: 'Copy configs'
+      id: copyconfig
+      run: cp -v ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}/${{ env.solution_test_path }}/Settings/appsettings.TEST.systemtest.json ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}/${{ env.solution_test_path }}/Settings/appsettings.systemtest.json
+
+    # - name: Dotnet System Test
+    #   run: dotnet test  ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}/${{ env.solution_test_path }}/${{ env.solution_test_path }}.csproj
+    
+    - name: DotNet System Tests
+      uses: zyborg/dotnet-tests-report@v1
+      if: ${{ !cancelled() }}
+      id: systemTest
+      with:
+       project_path: ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}/${{ env.solution_test_path }}/${{ env.solution_test_path }}.csproj
+       report_name: System Tests Result
+       report_title: System Tests Result
+       github_token: ${{ secrets.GITHUB_TOKEN }}
+       fail_build_on_failed_tests: true
+       gist_name: system_tests.md
+       gist_badge_label: "System-Tests: %Counters_passed%/%Counters_total%"
+       set_check_status_from_test_outcome: true
+
+    - name: Dump System Tests Results
+      shell: pwsh
+      run: |
+        Write-ActionInfo 'Testing on: BUILD-MICRO-DEV-DAS'
+        Write-ActionInfo ''
+        Write-ActionInfo '  MSTest in DocumentAnalysis.System.Test:'
+        Write-ActionInfo '    * result_value    = ${{ steps.systemTest.outputs.result_value }}'
+        Write-ActionInfo '    * total_count     = ${{ steps.systemTest.outputs.total_count }}'
+        Write-ActionInfo '    * passed_count    = ${{ steps.systemTest.outputs.passed_count }}'
+        Write-ActionInfo '    * failed_count    = ${{ steps.systemTest.outputs.failed_count }}'

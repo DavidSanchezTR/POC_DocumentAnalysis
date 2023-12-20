@@ -4,19 +4,26 @@
 name: Dotnet-Unit-Tests
 
 on:
-  push:
-    branches:    
-      - '*'         # matches every branch that doesn't contain a '/'
-      - '*/*'       # matches every branch containing a single '/'
-      - '**'        # matches every branch
-      - '!master'   # excludes master
-      - '!main'   # excludes main
-  pull_request:
-    # The branches below must be a subset of the branches above
-    branches: ["main"]
+  # push:
+  #   branches:    
+  #     - '*'         # matches every branch that doesn't contain a '/'
+  #     - '*/*'       # matches every branch containing a single '/'
+  #     - '**'        # matches every branch
+  #     - '!master'   # excludes master
+  #     - '!main'   # excludes main
+  # pull_request:
+  #   # The branches below must be a subset of the branches above
+  #   branches: ["main"]
 
   # Allows you to run this workflow called from another WF
   workflow_call:
+    secrets:
+        ADO_TKV:
+          description: 'ADO token'
+          required: false
+        AZURE_TKV:
+          description: 'Azure credential'
+          required: false
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -24,6 +31,7 @@ on:
 env:
   configuration: 'Release'
   solution_path: 'Aranzadi.DocumentAnalysis/Aranzadi.DocumentAnalysis.csproj'
+  solution_restore: 'Aranzadi.DocumentAnalysis.sln'
   nuget_feed_name: 'SWF_Burgos_Spain_Artifacts_feed'
   nuget_feed_source: 'https://pkgs.dev.azure.com/TR-Legal-OnlineServices/_packaging/SWF_Burgos_Spain_Artifacts_feed/nuget/v3/index.json'
   password_ado: ${{ secrets.PASSWORD_ADO }}
@@ -32,11 +40,11 @@ env:
 jobs:
   build:
 
-    name: Build and Test
+    name: Build and Unit-Test
     runs-on: windows-latest
 
     permissions:
-       write-all
+      write-all
 
     strategy:
       matrix:
@@ -44,7 +52,7 @@ jobs:
         dotnet_version: [6.x]
 
     steps:
-    - name: Checkout Repository
+    - name: "☁️ Checkout Repository"
       uses: actions/checkout@v3
 
     - name: Setup .NET
@@ -57,35 +65,91 @@ jobs:
       with:
         nuget-version: ${{ matrix.nuget_version }}
 
-    - name: Auth Nuget TR
+    - name: Auth Nuget TR Local
+      if: ${{ github.workflow == 'Dotnet-Unit-Tests' }}
       run: dotnet nuget add source ${{ env.nuget_feed_source }} --name ${{ env.nuget_feed_name }} --username 'david.sanchezfuentes@thomsonreuters.com' --password ${{ env.password_ado }} --store-password-in-clear-text --configfile ${{ env.nuget_config }}
 
+    - name: Auth Nuget TR Remote
+      if: ${{ github.workflow != 'Dotnet-Unit-Tests' }}
+      run: dotnet nuget add source ${{ env.nuget_feed_source }} --name ${{ env.nuget_feed_name }} --username 'david.sanchezfuentes@thomsonreuters.com' --password ${{ secrets.ADO_TKV }} --store-password-in-clear-text --configfile ${{ env.nuget_config }}
+
     - name: Restore Nuget Packages
-      run: dotnet restore ${{ env.solution_path }} --verbosity normal 
+      run: dotnet restore ${{ env.solution_restore }} --verbosity normal 
 
     - name: Build Solution
       run: dotnet build ${{ env.solution_path }} --configuration ${{ env.configuration }} --no-restore
 
-    - name: DotNet Unit Test DocumentAnalysis
+    - name: DotNet Unit Test Aranzadi.DocumentAnalysis.Test
       uses: zyborg/dotnet-tests-report@v1
       if: ${{ !cancelled() }}
+      id: testUnitarios
       with:
         project_path: ./Aranzadi.DocumentAnalysis.Test
-        report_name: Unit Tests Result
-        report_title: Unit Tests Result
+        report_name: Unit Tests Result Aranzadi.DocumentAnalysis.Test
+        report_title: Unit Tests Result Aranzadi.DocumentAnalysis.Test
         github_token: ${{ secrets.GITHUB_TOKEN }}
+        fail_build_on_failed_tests: true
         gist_name: unit_tests.md
         gist_badge_label: "Unit-Tests: %Counters_passed%/%Counters_total%"
         set_check_status_from_test_outcome: true
 
-    - name: DotNet Unit Test DocumentAnalysis.Data
+    - name: Dump UnitTest Aranzadi.DocumentAnalysis.Test Results
+      shell: pwsh
+      run: |
+        Write-ActionInfo 'Testing on: windows-latest'
+        Write-ActionInfo ''
+        Write-ActionInfo '  MSTest in Aranzadi.DocumentAnalysis.Test:'
+        Write-ActionInfo '    * result_value    = ${{ steps.testUnitarios.outputs.result_value }}'
+        Write-ActionInfo '    * total_count     = ${{ steps.testUnitarios.outputs.total_count }}'
+        Write-ActionInfo '    * passed_count    = ${{ steps.testUnitarios.outputs.passed_count }}'
+        Write-ActionInfo '    * failed_count    = ${{ steps.testUnitarios.outputs.failed_count }}'
+
+    - name: DotNet Unit Test Aranzadi.DocumentAnalysis.Data.Test
       uses: zyborg/dotnet-tests-report@v1
       if: ${{ !cancelled() }}
+      id: testUnitariosData
       with:
         project_path: ./Aranzadi.DocumentAnalysis.Data.Test
-        report_name: Unit Tests Result Data
-        report_title: Unit Tests Result Data
+        report_name: Unit Tests Result Aranzadi.DocumentAnalysis.Data.Test
+        report_title: Unit Tests Result Aranzadi.DocumentAnalysis.Data.Test
         github_token: ${{ secrets.GITHUB_TOKEN }}
+        fail_build_on_failed_tests: true
         gist_name: unit_tests_data.md
         gist_badge_label: "Unit-Tests-Data: %Counters_passed%/%Counters_total%"
         set_check_status_from_test_outcome: true
+
+    - name: Dump UnitTest Aranzadi.DocumentAnalysis.Data.Test Results
+      shell: pwsh
+      run: |
+        Write-ActionInfo 'Testing on: windows-latest'
+        Write-ActionInfo ''
+        Write-ActionInfo '  MSTest in Aranzadi.DocumentAnalysis.Data.Test:'
+        Write-ActionInfo '    * result_value    = ${{ steps.testUnitariosData.outputs.result_value }}'
+        Write-ActionInfo '    * total_count     = ${{ steps.testUnitariosData.outputs.total_count }}'
+        Write-ActionInfo '    * passed_count    = ${{ steps.testUnitariosData.outputs.passed_count }}'
+        Write-ActionInfo '    * failed_count    = ${{ steps.testUnitariosData.outputs.failed_count }}'
+
+    - name: DotNet Unit Test Aranzadi.HttpPooling.Test
+      uses: zyborg/dotnet-tests-report@v1
+      if: ${{ !cancelled() }}
+      id: testUnitariosPooling
+      with:
+        project_path: ./Aranzadi.HttpPooling.Test
+        report_name: Unit Tests Result Aranzadi.HttpPooling.Test
+        report_title: Unit Tests Result Aranzadi.HttpPooling.Test
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        fail_build_on_failed_tests: true
+        gist_name: unit_tests_httpPooling.md
+        gist_badge_label: "Unit-Tests-HttpPooling: %Counters_passed%/%Counters_total%"
+        set_check_status_from_test_outcome: true
+  
+    - name: Dump UnitTest Aranzadi.HttpPooling.Test Results
+      shell: pwsh
+      run: |
+        Write-ActionInfo 'Testing on: windows-latest'
+        Write-ActionInfo ''
+        Write-ActionInfo '  MSTest in Aranzadi.HttpPooling.Test:'
+        Write-ActionInfo '    * result_value    = ${{ steps.testUnitariosPooling.outputs.result_value }}'
+        Write-ActionInfo '    * total_count     = ${{ steps.testUnitariosPooling.outputs.total_count }}'
+        Write-ActionInfo '    * passed_count    = ${{ steps.testUnitariosPooling.outputs.passed_count }}'
+        Write-ActionInfo '    * failed_count    = ${{ steps.testUnitariosPooling.outputs.failed_count }}'

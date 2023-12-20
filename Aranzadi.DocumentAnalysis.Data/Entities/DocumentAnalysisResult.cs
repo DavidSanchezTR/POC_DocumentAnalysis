@@ -11,5 +11,7 @@ namespace Aranzadi.DocumentAnalysis.Data.Entities
 
         public AnalysisStatus Status { get; set; }
 
+		public AnalysisTypes Type { get; set; }
+
 	}
 }

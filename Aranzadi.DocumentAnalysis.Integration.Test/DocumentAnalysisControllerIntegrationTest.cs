@@ -19,15 +19,14 @@ namespace Aranzadi.DocumentAnalysis.Integration.Test
 		{
 			//Arrange
 			DocumentAnalysisOptions documentAnalysisOptions = AssemblyApp.documentAnalysisOptions;
-			documentAnalysisOptions.CheckIfExistsHashFileInCosmos = false; //EDIT
 			var configuration = documentAnalysisOptions;
 			var documentAnalysisService = AssemblyApp.app.Services.GetService<IDocumentAnalysisService>();
-			string tenantId = "5600";
-			string userId = "98";
+			string tenantId = AssemblyApp.TenantId;
+            string documentId = Guid.NewGuid().ToString();
 
-			//Act
-			var documentAnalysisController = new DocumentAnalysisController(documentAnalysisService, documentAnalysisOptions);
-			var result = await documentAnalysisController.Get(tenantId, userId);
+            //Act
+            var documentAnalysisController = new DocumentAnalysisController(documentAnalysisService, documentAnalysisOptions);
+			var result = await documentAnalysisController.Get(tenantId, documentId);
 
 			//Assert
 			Assert.IsTrue((result as ObjectResult).StatusCode == (int)HttpStatusCode.OK);
@@ -39,7 +38,6 @@ namespace Aranzadi.DocumentAnalysis.Integration.Test
 		{
 			//Arrange
 			DocumentAnalysisOptions documentAnalysisOptions = AssemblyApp.documentAnalysisOptions;
-			documentAnalysisOptions.CheckIfExistsHashFileInCosmos = false; //EDIT
 			var configuration = documentAnalysisOptions;
 			var documentAnalysisService = AssemblyApp.app.Services.GetService<IDocumentAnalysisService>();
 			string tenantId = null;
@@ -54,6 +52,51 @@ namespace Aranzadi.DocumentAnalysis.Integration.Test
 
 		}
 
-	}
+		[TestMethod]
+		public async Task Get_List_ValidValues_ReturnsOK()
+		{
+			//Arrange
+			if(AssemblyApp.documentAnalysisOptions == null || AssemblyApp.app == null) Assert.Fail();
 
+			DocumentAnalysisOptions documentAnalysisOptions = AssemblyApp.documentAnalysisOptions;
+
+			IDocumentAnalysisService? documentAnalysisService = AssemblyApp.app.Services.GetService<IDocumentAnalysisService>();
+			string tenantId = "5600";
+            string documentsIds = Guid.NewGuid().ToString() + ";" + Guid.NewGuid().ToString(); 
+
+            if (documentAnalysisService == null) Assert.Fail();
+
+            //Act
+            DocumentAnalysisController documentAnalysisController = new DocumentAnalysisController(documentAnalysisService, documentAnalysisOptions);
+            IActionResult result = await documentAnalysisController.Get_List(tenantId, documentsIds);
+
+			//Assert
+			Assert.IsNotNull(result as ObjectResult);
+			Assert.IsTrue((result as ObjectResult).StatusCode == (int)HttpStatusCode.OK);
+
+		}
+
+		[TestMethod]
+		public async Task Get_List_ValidValues_ReturnsERROR()
+		{
+            //Arrange
+            if (AssemblyApp.documentAnalysisOptions == null || AssemblyApp.app == null) Assert.Fail();
+
+            DocumentAnalysisOptions documentAnalysisOptions = AssemblyApp.documentAnalysisOptions;
+
+            IDocumentAnalysisService? documentAnalysisService = AssemblyApp.app.Services.GetService<IDocumentAnalysisService>();
+			string? tenantId = null;
+			string? documentsIds = null;
+
+            if (documentAnalysisService == null) Assert.Fail();
+
+            //Act
+            DocumentAnalysisController documentAnalysisController = new DocumentAnalysisController(documentAnalysisService, documentAnalysisOptions);
+            IActionResult result = await documentAnalysisController.Get_List(tenantId, documentsIds);
+
+            //Assert
+            Assert.IsNotNull(result as ObjectResult);
+            Assert.IsTrue((result as ObjectResult).StatusCode == (int)HttpStatusCode.BadRequest);
+		}
+	}
 }

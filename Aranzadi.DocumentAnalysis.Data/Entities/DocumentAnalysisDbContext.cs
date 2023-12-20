@@ -22,7 +22,8 @@ namespace Aranzadi.DocumentAnalysis.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-            builder.Entity<DocumentAnalysisData>();
+            builder.Entity<DocumentAnalysisData>()
+                .HasPartitionKey(x => x.TenantId);
 
         }
     }

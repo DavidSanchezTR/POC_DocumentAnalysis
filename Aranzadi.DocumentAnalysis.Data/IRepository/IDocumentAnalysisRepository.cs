@@ -14,10 +14,12 @@ namespace Aranzadi.DocumentAnalysis.Data.IRepository
 
         Task<int> UpdateAnalysisDataAsync(DocumentAnalysisData data);
 
-		Task<IEnumerable<DocumentAnalysisResult>> GetAnalysisAsync(string tenantId, string userId, string? documentId = null);
+		Task<DocumentAnalysisData?> GetAnalysisDataAsync(string documentId);
+
+		Task<DocumentAnalysisResult> GetAnalysisAsync(string tenantId, string documentId);
 
 		Task<DocumentAnalysisResult?> GetAnalysisDoneAsync(string sha256);
 
-
-	}
+        Task<IEnumerable<DocumentAnalysisResult>> GetAnalysisListAsync(string tenantId, string documentIdList);
+    }
 }

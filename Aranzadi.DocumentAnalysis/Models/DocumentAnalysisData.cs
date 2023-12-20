@@ -19,6 +19,8 @@ namespace Aranzadi.DocumentAnalysis.Models
 	public class TaskParameter
 	{
 		public string? Country { get; set; }
+
+		public string? NotificationType { get; set; }
 	}
 
 	
@@ -47,7 +49,7 @@ namespace Aranzadi.DocumentAnalysis.Models
 	public class JobTask
 	{		
 		public string? Type { get; set; }
-		public List<TaskParameter>? Parameters { get; set; }
+		public TaskParameter? Parameters { get; set; }
 	}
 
 	public class JobLink
