@@ -12,6 +12,8 @@ namespace Aranzadi.DocumentAnalysis.Integration.Test
 		public static DocumentAnalysisOptions? documentAnalysisOptions = null;
 		public static WebApplication? app = null;
 
+		public static string TenantId = "";
+		public static string UserId = "";
 		public static string SasToken = "";
 	}
 }

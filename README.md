@@ -9,7 +9,11 @@ Resultado del análisis de la calidad del código en la solución.
 
 [![CodeQL](https://github.com/tr/aiid202226_SWFBurgos_DocumentAnalysis/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/tr/aiid202226_SWFBurgos_DocumentAnalysis/actions/workflows/codeql-analysis.yml)
 
-## Resultado Test Unitarios
-Resultado de los test unitarios
+## Resultado Tests
+Resultado de los test (Unitarios, Integración, Sistema).
 
 [![Dotnet-Unit-Tests](https://github.com/tr/aiid202226_SWFBurgos_DocumentAnalysis/actions/workflows/dotnet-unit-tests.yml/badge.svg)](https://github.com/tr/aiid202226_SWFBurgos_DocumentAnalysis/actions/workflows/dotnet-unit-tests.yml)
+
+[![Integration-Tests](https://github.com/tr/aiid202226_SWFBurgos_DocumentAnalysis/actions/workflows/integration-tests.yml/badge.svg)](https://github.com/tr/aiid202226_SWFBurgos_DocumentAnalysis/actions/workflows/integration-tests.yml)
+
+[![System Test](https://github.com/tr/aiid202226_SWFBurgos_DocumentAnalysis/actions/workflows/system-test.yml/badge.svg)](https://github.com/tr/aiid202226_SWFBurgos_DocumentAnalysis/actions/workflows/system-test.yml)

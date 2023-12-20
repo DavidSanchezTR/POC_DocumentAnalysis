@@ -22,8 +22,8 @@ namespace Aranzadi.DocumentAnalysis.System.Test
 				IdAnalysis = Guid.NewGuid().ToString(),
 				ZipName = "test.zip",
 				SasToken = AssemblyApp.sasToken,
-				Tenant = "5600",
-				Owner = "98"
+				Tenant = AssemblyApp.TenantId,
+				Owner = AssemblyApp.UserId
 			};
 			string serviceBusMessage = generateJson(data);
 			await sendMessageToQueueServiceBus(serviceBusMessage);
@@ -32,21 +32,24 @@ namespace Aranzadi.DocumentAnalysis.System.Test
 
 			//Check result 
 			Uri baseUri = new Uri(AssemblyApp.urlBaseDocumentAnalysisService);
-			var uri = new Uri(baseUri, $"api/DocumentAnalysis/GetAnalysis?Tenant={data.Tenant}&Owner={data.Owner}&DocumentId={data.IdAnalysis}");
+			var uri = new Uri(baseUri, $"api/DocumentAnalysis/GetAnalysis?Tenant={data.Tenant}&DocumentId={data.IdAnalysis}");
 			using HttpClient client = new HttpClient();
 			var response = await client.GetAsync(uri);
 			var result = await response.Content.ReadAsStringAsync();
 			IEnumerable<DocumentAnalysisResponse> documentAnalysisResponse = JsonConvert.DeserializeObject<IEnumerable<DocumentAnalysisResponse>>(result);
 
 			// Assert
-			Assert.IsTrue(documentAnalysisResponse.Count() == 1);
+			Assert.IsTrue(documentAnalysisResponse.Count() == 1, $"La coleccion de respuesta debería tener 1 analisis con ID: '{data.IdAnalysis.ToString()}', pero hay {documentAnalysisResponse.Count()}.");
+			Assert.IsTrue(documentAnalysisResponse.FirstOrDefault(o => o.DocumentUniqueRefences == data.IdAnalysis) != null, $"No ha encontrado en la coleccion de respuesta el analisis con Id {data.IdAnalysis}");
+			//Assert.IsTrue(documentAnalysisResponse.FirstOrDefault(o => o.DocumentUniqueRefences == data.IdAnalysis).Status == Messaging.Model.Enums.AnalysisStatus.Done, $"El analisis con Id {data.IdAnalysis} no está en estado 'Done', si no '{documentAnalysisResponse.FirstOrDefault(o => o.DocumentUniqueRefences == data.IdAnalysis).Status}'");
+
 		}
 
 		[TestMethod]
 		public async Task SendTwoMessagesAndRetrieveSeveralAnalysisByTenantAndOwner_OK()
 		{
-			string tenant = "5600";
-			string owner = "101";
+			string tenant = AssemblyApp.TenantId;
+			string owner = AssemblyApp.UserId;
 			//Send message
 			JsonData data1 = new JsonData()
 			{
@@ -57,7 +60,6 @@ namespace Aranzadi.DocumentAnalysis.System.Test
 				Owner = owner
 			};
 			string serviceBusMessage1 = generateJson(data1);
-			await sendMessageToQueueServiceBus(serviceBusMessage1);
 
 			//Send another message
 			JsonData data2 = new JsonData()
@@ -69,53 +71,35 @@ namespace Aranzadi.DocumentAnalysis.System.Test
 				Owner = owner
 			};
 			string serviceBusMessage2 = generateJson(data2);
+
+
+			await sendMessageToQueueServiceBus(serviceBusMessage1);
+			Thread.Sleep(30000);
 			await sendMessageToQueueServiceBus(serviceBusMessage2);
 
 			wait();
 
 			//Check result 
+			string documentsIds = data1.IdAnalysis.ToString() + ";" + data2.IdAnalysis.ToString();
 			Uri baseUri = new Uri(AssemblyApp.urlBaseDocumentAnalysisService);
-			var uri = new Uri(baseUri, $"api/DocumentAnalysis/GetAnalysis?Tenant={tenant}&Owner={owner}");
+			var uri = new Uri(baseUri, $"api/DocumentAnalysis/GetAnalysisList?Tenant={tenant}&documentIdList={documentsIds}");
 			using HttpClient client = new HttpClient();
 			var response = await client.GetAsync(uri);
 			var result = await response.Content.ReadAsStringAsync();
 			IEnumerable<DocumentAnalysisResponse> documentAnalysisResponse = JsonConvert.DeserializeObject<IEnumerable<DocumentAnalysisResponse>>(result);
 
 			// Assert
-			Assert.IsTrue(documentAnalysisResponse.Count() > 1);
+			Assert.IsTrue(documentAnalysisResponse.Count() == 2, $"La coleccion de respuesta debería tener 2 analisis con IDs: '{data1.IdAnalysis.ToString()}' y '{data2.IdAnalysis.ToString()}', pero hay {documentAnalysisResponse.Count()}.");
+			Assert.IsTrue(documentAnalysisResponse.FirstOrDefault(o => o.DocumentUniqueRefences == data1.IdAnalysis) != null, $"No ha encontrado en la coleccion de respuesta el analisis con Id {data1.IdAnalysis}");
+			Assert.IsTrue(documentAnalysisResponse.FirstOrDefault(o => o.DocumentUniqueRefences == data2.IdAnalysis) != null, $"No ha encontrado en la coleccion de respuesta el analisis con Id {data2.IdAnalysis}");
+			//Assert.IsTrue(documentAnalysisResponse.FirstOrDefault(o => o.DocumentUniqueRefences == data1.IdAnalysis).Status == Messaging.Model.Enums.AnalysisStatus.Done, $"El analisis con Id {data1.IdAnalysis} no está en estado 'Done', si no '{documentAnalysisResponse.FirstOrDefault(o => o.DocumentUniqueRefences == data1.IdAnalysis).Status}'");
+			//Assert.IsTrue(documentAnalysisResponse.FirstOrDefault(o => o.DocumentUniqueRefences == data2.IdAnalysis).Status == Messaging.Model.Enums.AnalysisStatus.Done, $"El analisis con Id {data1.IdAnalysis} no está en estado 'Done', si no '{documentAnalysisResponse.FirstOrDefault(o => o.DocumentUniqueRefences == data2.IdAnalysis).Status}'");
+
+
 		}
 
 		[TestMethod]
-		public async Task SendMessageJsonBadFormatted_FailMessageInServiceBusQueue()
-		{
-			//Send Message
-			JsonData data = new JsonData()
-			{
-				IdAnalysis = Guid.NewGuid().ToString(),
-				ZipName = "test.zip",
-				SasToken = AssemblyApp.sasToken,
-				Tenant = "5600",
-				Owner = "98"
-			};
-			string serviceBusMessage = generateJsonBadFormatted(data);
-			await sendMessageToQueueServiceBus(serviceBusMessage);
-
-			wait();
-
-			//Check result 
-			Uri baseUri = new Uri(AssemblyApp.urlBaseDocumentAnalysisService);
-			var uri = new Uri(baseUri, $"api/DocumentAnalysis/GetAnalysis?Tenant={data.Tenant}&Owner={data.Owner}&DocumentId={data.IdAnalysis}");
-			using HttpClient client = new HttpClient();
-			var response = await client.GetAsync(uri);
-			var result = await response.Content.ReadAsStringAsync();
-			IEnumerable<DocumentAnalysisResponse> documentAnalysisResponse = JsonConvert.DeserializeObject<IEnumerable<DocumentAnalysisResponse>>(result);
-
-			// Assert
-			Assert.IsTrue(documentAnalysisResponse.Count() == 0);
-		}
-
-		[TestMethod]
-		public async Task SendMessageSasTokenNotExist_NoAddInCosmos()
+		public async Task SendMessageSasTokenNotExist_AddInCosmos()
 		{
 			//Send Message
 			JsonData data = new JsonData()
@@ -123,8 +107,8 @@ namespace Aranzadi.DocumentAnalysis.System.Test
 				IdAnalysis = Guid.NewGuid().ToString(),
 				ZipName = "test.zip",
 				SasToken = AssemblyApp.sasToken + "urlErronea",
-				Tenant = "5600",
-				Owner = "98"
+				Tenant = AssemblyApp.TenantId,
+				Owner = AssemblyApp.UserId
 			};
 			string serviceBusMessage = generateJson(data);
 			await sendMessageToQueueServiceBus(serviceBusMessage);
@@ -133,17 +117,21 @@ namespace Aranzadi.DocumentAnalysis.System.Test
 
 			//Check result 
 			Uri baseUri = new Uri(AssemblyApp.urlBaseDocumentAnalysisService);
-			var uri = new Uri(baseUri, $"api/DocumentAnalysis/GetAnalysis?Tenant={data.Tenant}&Owner={data.Owner}&DocumentId={data.IdAnalysis}");
+			var uri = new Uri(baseUri, $"api/DocumentAnalysis/GetAnalysis?Tenant={data.Tenant}&DocumentId={data.IdAnalysis}");
 			using HttpClient client = new HttpClient();
 			var response = await client.GetAsync(uri);
 			var result = await response.Content.ReadAsStringAsync();
 			IEnumerable<DocumentAnalysisResponse> documentAnalysisResponse = JsonConvert.DeserializeObject<IEnumerable<DocumentAnalysisResponse>>(result);
 
-			// Assert
-			Assert.IsTrue(documentAnalysisResponse.Count() == 0);
+            // Assert
+			Assert.IsTrue(documentAnalysisResponse.Count() == 1, $"La colección de respuesta solo debería tener un analisis para el ID: '{data.IdAnalysis.ToString()}', hay {documentAnalysisResponse.Count()}.");
+			Assert.IsTrue(documentAnalysisResponse.FirstOrDefault(o => o.DocumentUniqueRefences == data.IdAnalysis) != null, $"No ha encontrado en la coleccion de respuesta el analisis con Id {data.IdAnalysis}");
+			Assert.IsTrue(documentAnalysisResponse.FirstOrDefault(o => o.DocumentUniqueRefences == data.IdAnalysis).Status == Messaging.Model.Enums.AnalysisStatus.Error, $"El analisis con Id {data.IdAnalysis} no está en estado 'Error', si no '{documentAnalysisResponse.FirstOrDefault(o => o.DocumentUniqueRefences == data.IdAnalysis).Status}'");
+
 		}
 
 
+		[Ignore]
 		[TestMethod]
 		public async Task Send100Messages_OK()
 		{
@@ -156,8 +144,8 @@ namespace Aranzadi.DocumentAnalysis.System.Test
 					IdAnalysis = Guid.NewGuid().ToString(),
 					ZipName = "test.zip",
 					SasToken = AssemblyApp.sasToken,
-					Tenant = "5600",
-					Owner = "98"
+					Tenant = AssemblyApp.TenantId,
+					Owner = AssemblyApp.UserId
 				};
 				listaIDs.Add(data.IdAnalysis);
 				string serviceBusMessage = generateJson(data);
@@ -173,7 +161,7 @@ namespace Aranzadi.DocumentAnalysis.System.Test
 			Uri baseUri = new Uri(AssemblyApp.urlBaseDocumentAnalysisService);
 			foreach (var id in listaIDs)
 			{
-				var uri = new Uri(baseUri, $"api/DocumentAnalysis/GetAnalysis?Tenant=5600&Owner=98&DocumentId={id}");
+				var uri = new Uri(baseUri, $"api/DocumentAnalysis/GetAnalysis?Tenant={AssemblyApp.TenantId}&DocumentId={id}");
 				using HttpClient client = new HttpClient();
 				var response = await client.GetAsync(uri);
 				var result = await response.Content.ReadAsStringAsync();

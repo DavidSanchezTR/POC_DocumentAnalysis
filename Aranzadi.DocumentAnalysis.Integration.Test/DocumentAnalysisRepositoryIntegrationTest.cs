@@ -32,8 +32,8 @@ namespace Aranzadi.DocumentAnalysis.Integration.Test
 			{
 				Id = Guid.NewGuid(),
 				App = "Fusion",
-				TenantId = "5600",
-				UserId = "98",
+				TenantId = AssemblyApp.TenantId,
+				UserId = AssemblyApp.UserId,
 				Analysis = null,
 				Status = AnalysisStatus.Pending,
 				AnalysisDate = DateTimeOffset.Now,
@@ -71,8 +71,8 @@ namespace Aranzadi.DocumentAnalysis.Integration.Test
 			{
 				Id = Guid.NewGuid(),
 				App = "Fusion",
-				TenantId = "5600",
-				UserId = "98",
+				TenantId = AssemblyApp.TenantId,
+				UserId = AssemblyApp.UserId,
 				Analysis = null,
 				Status = AnalysisStatus.Pending,
 				AnalysisDate = DateTimeOffset.Now,
@@ -98,8 +98,8 @@ namespace Aranzadi.DocumentAnalysis.Integration.Test
 			{
 				Id = Guid.NewGuid(),
 				App = "Fusion",
-				TenantId = "5600",
-				UserId = "98",
+				TenantId = AssemblyApp.TenantId,
+				UserId = AssemblyApp.UserId,
 				Analysis = null,
 				Status = AnalysisStatus.Pending,
 				AnalysisDate = DateTimeOffset.Now,
@@ -132,8 +132,8 @@ namespace Aranzadi.DocumentAnalysis.Integration.Test
 			{
 				Id = Guid.NewGuid(),
 				App = "Fusion",
-				TenantId = "5600",
-				UserId = "98",
+				TenantId = AssemblyApp.TenantId,
+				UserId = AssemblyApp.UserId,
 				Analysis = null,
 				Status = statusAnalysis,
 				AnalysisDate = DateTimeOffset.Now,
@@ -165,8 +165,8 @@ namespace Aranzadi.DocumentAnalysis.Integration.Test
 			{
 				Id = Guid.NewGuid(),
 				App = "Fusion",
-				TenantId = "5600",
-				UserId = "98",
+				TenantId = AssemblyApp.TenantId,
+				UserId = AssemblyApp.UserId,
 				Analysis = null,
 				Status = statusAnalysis,
 				AnalysisDate = DateTimeOffset.Now,
@@ -191,8 +191,8 @@ namespace Aranzadi.DocumentAnalysis.Integration.Test
 		public async Task GetAnalysisAsync_ValidValues_ReturnsOneAnalysis()
 		{
 			//Arrange
-			var tenantId = "5600";
-			var userId = "98";
+			var tenantId = AssemblyApp.TenantId;
+			var userId = AssemblyApp.UserId;
 			var documentId = Guid.NewGuid();
 			IDocumentAnalysisRepository documentAnalysisRepository = AssemblyApp.app.Services.GetService<IDocumentAnalysisRepository>();
 			var data = new DocumentAnalysisData
@@ -215,63 +215,126 @@ namespace Aranzadi.DocumentAnalysis.Integration.Test
 
 			//Act
 			await documentAnalysisRepository.AddAnalysisDataAsync(data);
-			var result = await documentAnalysisRepository.GetAnalysisAsync(tenantId, userId, documentId.ToString());
+			var result = await documentAnalysisRepository.GetAnalysisAsync(tenantId, documentId.ToString());
 
 			//Assert
 			Assert.IsNotNull(result);
 		}
 
-		[TestMethod]
-		public async Task GetAnalysisAsync_ValidValues_ReturnsAnalysis()
-		{
-			//Arrange
-			var tenantId = "5600";
-			var userId = "98";
-			IDocumentAnalysisRepository documentAnalysisRepository = AssemblyApp.app.Services.GetService<IDocumentAnalysisRepository>();
-			var data = new DocumentAnalysisData
-			{
-				Id = Guid.NewGuid(),
-				App = "Fusion",
-				TenantId = tenantId,
-				UserId = userId,
-				Analysis = null,
-				Status = AnalysisStatus.Pending,
-				AnalysisDate = DateTimeOffset.Now,
-				CreateDate = DateTimeOffset.Now,
-				Source = Source.LaLey,
-				DocumentName = "test.zip",
-				AccessUrl = AssemblyApp.SasToken,
-				Sha256 = "HashTest",
-				AnalysisProviderId = null,
-				AnalysisProviderResponse = "Pending"
-			};
+        [TestMethod]
+        public async Task GetAnalysisListAsync_ValidValues_ReturnsOneAnalysis()
+        {
+            //Arrange
+            string tenantId = "5600";
+            string userId = "98";
+            Guid documentId1 = Guid.NewGuid();
+            Guid documentId2 = Guid.NewGuid();
+            IDocumentAnalysisRepository? documentAnalysisRepository = AssemblyApp.app.Services.GetService<IDocumentAnalysisRepository>();
+            
+			DocumentAnalysisData data1 = new DocumentAnalysisData
+            {
+                Id = documentId1,
+                App = "Fusion",
+                TenantId = tenantId,
+                UserId = userId,
+                Analysis = null,
+                Status = AnalysisStatus.Done,
+                AnalysisDate = DateTimeOffset.Now,
+                CreateDate = DateTimeOffset.Now,
+                Source = Source.LaLey,
+                DocumentName = "test.zip",
+                AccessUrl = AssemblyApp.SasToken,
+                Sha256 = "HashTest",
+                AnalysisProviderId = null,
+                AnalysisProviderResponse = "Pending"
+            };
 
-			var data1 = new DocumentAnalysisData
-			{
-				Id = Guid.NewGuid(),
-				App = "Fusion",
-				TenantId = tenantId,
-				UserId = userId,
-				Analysis = null,
-				Status = AnalysisStatus.Pending,
-				AnalysisDate = DateTimeOffset.Now,
-				CreateDate = DateTimeOffset.Now,
-				Source = Source.LaLey,
-				DocumentName = "test.zip",
-				AccessUrl = AssemblyApp.SasToken,
-				Sha256 = "HashTest",
-				AnalysisProviderId = null,
-				AnalysisProviderResponse = "Pending"
-			};
+			DocumentAnalysisData data2 = new DocumentAnalysisData
+            {
+                Id = documentId2,
+                App = "Fusion",
+                TenantId = tenantId,
+                UserId = userId,
+                Analysis = null,
+                Status = AnalysisStatus.Pending,
+                AnalysisDate = DateTimeOffset.Now,
+                CreateDate = DateTimeOffset.Now,
+                Source = Source.LaLey,
+                DocumentName = "test.zip",
+                AccessUrl = AssemblyApp.SasToken,
+                Sha256 = "HashTest",
+                AnalysisProviderId = null,
+                AnalysisProviderResponse = "Pending"
+            };
 
 			//Act
-			await documentAnalysisRepository.AddAnalysisDataAsync(data);
-			await documentAnalysisRepository.AddAnalysisDataAsync(data1);
-			var result = await documentAnalysisRepository.GetAnalysisAsync(tenantId, userId);
+			if (documentAnalysisRepository == null) Assert.Fail();
+            await documentAnalysisRepository.AddAnalysisDataAsync(data1);
+            await documentAnalysisRepository.AddAnalysisDataAsync(data2);
+            IEnumerable<DocumentAnalysisResult> result =
+				await documentAnalysisRepository.GetAnalysisListAsync(tenantId, documentId1.ToString() + ";" + documentId2.ToString());
 
-			//Assert
-			Assert.IsTrue(result.Count() > 1);
-		}
+            //Assert
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result.Count() == 1);
+        }
 
-	}
+        [TestMethod]
+        public async Task GetAnalysisListAsync_ValidValues_ReturnsAnalysis()
+        {
+            //Arrange
+            string tenantId = "5600";
+            string userId = "98";
+            Guid documentId1 = Guid.NewGuid();
+            Guid documentId2 = Guid.NewGuid();
+            IDocumentAnalysisRepository? documentAnalysisRepository = AssemblyApp.app.Services.GetService<IDocumentAnalysisRepository>();
+
+            DocumentAnalysisData data1 = new DocumentAnalysisData
+            {
+                Id = documentId1,
+                App = "Fusion",
+                TenantId = tenantId,
+                UserId = userId,
+                Analysis = null,
+                Status = AnalysisStatus.Done,
+                AnalysisDate = DateTimeOffset.Now,
+                CreateDate = DateTimeOffset.Now,
+                Source = Source.LaLey,
+                DocumentName = "test.zip",
+                AccessUrl = AssemblyApp.SasToken,
+                Sha256 = "HashTest",
+                AnalysisProviderId = null,
+                AnalysisProviderResponse = "Pending"
+            };
+
+            DocumentAnalysisData data2 = new DocumentAnalysisData
+            {
+                Id = documentId2,
+                App = "Fusion",
+                TenantId = tenantId,
+                UserId = userId,
+                Analysis = null,
+                Status = AnalysisStatus.Error,
+                AnalysisDate = DateTimeOffset.Now,
+                CreateDate = DateTimeOffset.Now,
+                Source = Source.LaLey,
+                DocumentName = "test.zip",
+                AccessUrl = AssemblyApp.SasToken,
+                Sha256 = "HashTest",
+                AnalysisProviderId = null,
+                AnalysisProviderResponse = "Pending"
+            };
+
+            //Act
+            if (documentAnalysisRepository == null) Assert.Fail();
+            await documentAnalysisRepository.AddAnalysisDataAsync(data1);
+            await documentAnalysisRepository.AddAnalysisDataAsync(data2);
+            IEnumerable<DocumentAnalysisResult> result =
+                await documentAnalysisRepository.GetAnalysisListAsync(tenantId, documentId1.ToString() + ";" + documentId2.ToString());
+
+            //Assert
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result.Count() == 2);
+        }
+    }
 }

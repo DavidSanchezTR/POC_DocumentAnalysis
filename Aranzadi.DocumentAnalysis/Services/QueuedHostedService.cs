@@ -6,8 +6,12 @@ using Aranzadi.DocumentAnalysis.Messaging.Model;
 using Aranzadi.DocumentAnalysis.Messaging.Model.Enums;
 using Aranzadi.DocumentAnalysis.Messaging.Model.Request;
 using Aranzadi.DocumentAnalysis.Messaging.Model.Response;
+using Aranzadi.DocumentAnalysis.Models.CreditReservations;
+using Aranzadi.DocumentAnalysis.Models;
 using Aranzadi.DocumentAnalysis.Services.IServices;
 using Aranzadi.DocumentAnalysis.Util;
+using Aranzadi.HttpPooling.Interfaces;
+using Aranzadi.HttpPooling.Models;
 using Microsoft.Azure.Cosmos.Serialization.HybridRow.Schemas;
 using Newtonsoft.Json;
 using Polly;
@@ -20,14 +24,20 @@ using System.Net;
 using System.Reflection.Metadata;
 using System.Security.Cryptography;
 using System.Security.Policy;
+using Microsoft.ApplicationInsights.Extensibility.Implementation;
+using ThomsonReuters.BackgroundOperations.Messaging.Models;
+using Aranzadi.DocumentAnalysis.Models.CreditConsumption;
+using Serilog.Context;
 
 namespace Aranzadi.DocumentAnalysis.Services
 {
 	public class QueuedHostedService : BackgroundService
 	{
+		private const string ORIGIN = "Document Analysis";
 		public const string MESSAGE_SOURCE_FUSION = "Fusion";
 		public const string MESSAGE_TYPE_DOCUMENT_ANALYSIS = "DocumentAnalysis";
 		private const string DAV_VAL_TOKEN_HEADER = "fusion_session_id";
+		private const string CREDIT_TEMPLATE_ID = "analisisdocumental";
 
 		static string objLock = "";
 		static IConsumer consumer = null;
@@ -37,6 +47,8 @@ namespace Aranzadi.DocumentAnalysis.Services
 		private readonly IHttpClientFactory httpClientFactory;
 		private readonly IAnalysisProviderService analysisProviderService;
 		private readonly ILogAnalysis logAnalysisService;
+		private readonly IHttpPoolingServices serviceBusPoolingService;
+		private readonly ICreditsConsumptionClient creditsConsumptionClient;
 
 		public IServiceProvider serviceProvider { get; }
 
@@ -45,6 +57,8 @@ namespace Aranzadi.DocumentAnalysis.Services
 			, IHttpClientFactory httpClientFactory
 			, IAnalysisProviderService analysisProviderService
 			, ILogAnalysis logAnalysisService
+			, IHttpPoolingServices serviceBusPoolingService
+			, ICreditsConsumptionClient creditsConsumptionClient
 			)
 		{
 			this.serviceProvider = serviceProvider;
@@ -52,6 +66,8 @@ namespace Aranzadi.DocumentAnalysis.Services
 			this.httpClientFactory = httpClientFactory;
 			this.analysisProviderService = analysisProviderService;
 			this.logAnalysisService = logAnalysisService;
+			this.serviceBusPoolingService = serviceBusPoolingService;
+			this.creditsConsumptionClient = creditsConsumptionClient;
 		}
 
 		protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -59,7 +75,7 @@ namespace Aranzadi.DocumentAnalysis.Services
 			try
 			{
 				Log.Information($"{nameof(QueuedHostedService)} running at: {DateTimeOffset.Now}");
-				
+
 				if (consumer == null)
 				{
 					lock (objLock)
@@ -104,6 +120,8 @@ namespace Aranzadi.DocumentAnalysis.Services
 		{
 			try
 			{
+				LogContext.PushProperty("Origin", ORIGIN);
+
 				var data = new DocumentAnalysisData
 				{
 					Id = new Guid(request.Guid),
@@ -119,8 +137,17 @@ namespace Aranzadi.DocumentAnalysis.Services
 					AccessUrl = request.Path,
 					Sha256 = null,
 					AnalysisProviderId = null,
-					AnalysisProviderResponse = "Pending"
+					AnalysisProviderResponse = "Pending",
+					TenantCreditID = null,
+					ReservationCreditID = null,
+					AnalysisType = request.AnalysisType
 				};
+
+				LogContext.PushProperty("DocumentId", data.Id);
+				LogContext.PushProperty("LawfirmId", data.TenantId);
+				LogContext.PushProperty("UserId", data.UserId);
+				LogContext.PushProperty("DocumentName", data.DocumentName);
+
 				using (IServiceScope scope = serviceProvider.CreateScope())
 				{
 					IDocumentAnalysisRepository documentAnalysisRepository =
@@ -128,92 +155,80 @@ namespace Aranzadi.DocumentAnalysis.Services
 
 					await documentAnalysisRepository.AddAnalysisDataAsync(data);
 
-					DocumentAnalysisResult? resultAnalysis = null;
-					if (configuration.CheckIfExistsHashFileInCosmos)
-					{		
-						Stream stream = null;
-						try
-						{
-							stream = await GetStreamFromSasToken(data.AccessUrl);							
-						}
-						catch (Exception ex)
-						{
-							data.Status = AnalysisStatus.NotFound;
-							await documentAnalysisRepository.UpdateAnalysisDataAsync(data);
-							throw;
-						}
-
-						try
-						{
-							data.Sha256 = await GetHashFromFile(stream);
-						}
-						catch (Exception)
-						{
-							data.Status = AnalysisStatus.Error;
-							await documentAnalysisRepository.UpdateAnalysisDataAsync(data);
-							throw;
-						}
-
-						resultAnalysis = await documentAnalysisRepository.GetAnalysisDoneAsync(data.Sha256);
-					}
-
-					if (resultAnalysis != null)
+					OperationResult<TenantCreditReservation> reservation = new OperationResult<TenantCreditReservation>
 					{
-                        Log.Information($"The document is already analized with status: {data.Status}");
-                        data.Status = resultAnalysis.Status;
-						data.Analysis = resultAnalysis.Analysis;
+						Code = OperationResult.ResultCode.Success
+					};
+					OperationResult<CreditResponse> freeReservation = new OperationResult<CreditResponse>
+					{
+						Code = OperationResult.ResultCode.Success
+					};					
+
+					reservation = creditsConsumptionClient.CreateReservation(new NewTenantCreditReservation
+					{
+						CreditTemplateID = CREDIT_TEMPLATE_ID,
+						TenantID = context.Tenant,
+						UserID = context.Owner
+					}).Result;
+					if (reservation.Code != OperationResult.ResultCode.Success)
+					{
+						data.Status = AnalysisStatus.Error;
+						Log.Error($"Error in analysis job with guid {data.Id}, message: Error in credits reservation,{reservation.Detail}");
+						await documentAnalysisRepository.UpdateAnalysisDataAsync(data);
+						return false;
 					}
 					else
 					{
-						var result = await analysisProviderService.SendAnalysisJob(data);
-						if (result.Item1.IsSuccessStatusCode)
-						{
-							// 200 OK, 201 Created
-							if (result.Item2?.Guid == null)
-							{
-								throw new ArgumentNullException($"AnalysisProviderId is null");
-							}
-							data.AnalysisProviderId = new Guid(result.Item2.Guid);
-							//Estado del job. Valores validos: 'PENDING', 'RUNNING', 'SUCEEDED','PARTIAL_SUCCESS' y 'FAILED'
-							data.AnalysisProviderResponse = result.Item2.ExecutionStatus?.State;
-						}
-						else
-						{
-							// ERROR
-							data.Status = AnalysisStatus.Error;
-							List<string> listMessages = new List<string>();
-							if (result.Item1 != null)
-							{
-								listMessages.Add(result.Item1.StatusCode.ToString());
-							}
-                            if (result.Item2 != null)
-							{
-								listMessages.Add(result.Item2.ExecutionStatus?.State ?? "");
-								if (result.Item2.ExecutionStatus?.Errors != null)
-								{
-									foreach (var err in result.Item2.ExecutionStatus.Errors)
-									{
-										listMessages.Add($"{err.Message} {err.Reason} {err.Link}");
-									}
-								}
-							}
-							var message = string.Join(Environment.NewLine, listMessages.Where(o => !string.IsNullOrWhiteSpace(o)));
-							data.AnalysisProviderResponse = message;
-							Log.Information($"Error in analysis job with guid {data.Id}, message: {message}");
-                        }
+						data.TenantCreditID = reservation.Result.TenantCreditID;
+						data.ReservationCreditID = reservation.Result.ID;
+						await documentAnalysisRepository.UpdateAnalysisDataAsync(data);
 					}
 
-					//////////////////////////////////
-					//TODO: Rellenar temporalmente la respuesta del analysis aqui en modo de pruebas y marcar como Done
-					string json = JsonConvert.SerializeObject(Get_DocumentAnalysisDataResultContent(data));
-					data.Analysis = json;
-					data.Status = AnalysisStatus.Done;
-					/////////////////////////////////
+					var result = await analysisProviderService.SendAnalysisJob(data);
+					if (result.Item1.IsSuccessStatusCode)
+					{
+						// 200 OK, 201 Created
+						if (result.Item2?.Guid == null)
+						{
+							throw new ArgumentNullException($"AnalysisProviderId is null");
+						}
+						data.AnalysisProviderId = new Guid(result.Item2.Guid);
+						data.AnalysisProviderResponse = result.Item2.ExecutionStatus?.State;
+						await documentAnalysisRepository.UpdateAnalysisDataAsync(data);
+						await SendMessageToPoolingQueue(data);
 
-					await documentAnalysisRepository.UpdateAnalysisDataAsync(data);
+						return true;
+					}
+					else
+					{
+						// ERROR
+						data.Status = AnalysisStatus.Error;
+						List<string> listMessages = new List<string>();
+						if (result.Item1 != null)
+						{
+							listMessages.Add(result.Item1.StatusCode.ToString());
+						}
+						if (result.Item2 != null)
+						{
+							listMessages.Add(result.Item2.ExecutionStatus?.State ?? "");
+							if (result.Item2.ExecutionStatus?.Errors != null)
+							{
+								foreach (var err in result.Item2.ExecutionStatus.Errors)
+								{
+									listMessages.Add($"{err.Message} {err.Reason} {err.Link}");
+								}
+							}
+						}
+						var message = string.Join(Environment.NewLine, listMessages.Where(o => !string.IsNullOrWhiteSpace(o)));
+						data.AnalysisProviderResponse = message;
+						await documentAnalysisRepository.UpdateAnalysisDataAsync(data);
+						Log.Error($"Error in analysis job with guid {data.Id}, message: {message}");
+
+						return false;
+					}
+
 				}
 
-				return true;
 			}
 			catch (Exception ex)
 			{
@@ -222,147 +237,36 @@ namespace Aranzadi.DocumentAnalysis.Services
 			}
 		}
 
-		public async Task<string> GetHashFromFile(Stream stream)
+		public async Task SendMessageToPoolingQueue(DocumentAnalysisData data)
 		{
 			try
 			{
-				using (SHA256 crypto = SHA256.Create())
+				if (data == null)
 				{
-					stream.Seek(0, SeekOrigin.Begin);
-					var hash = await crypto.ComputeHashAsync(stream);
-					var hashString = Convert.ToBase64String(hash);
-
-					return hashString;
+					throw new ArgumentNullException("Data is null");
 				}
+				if (data.Id == Guid.Empty)
+				{
+					throw new ArgumentNullException("Data.Id is null or empty");
+				}
+				if (string.IsNullOrWhiteSpace(data?.AnalysisProviderId?.ToString()))
+				{
+					throw new ArgumentNullException("Data.AnalysisProviderId is null or empty");
+				}
+
+				HttpPoolingRequest poolingRequest = new HttpPoolingRequest();
+				//poolingRequest.Id = data.Id.ToString();
+				poolingRequest.ExternalIdentificator = data.Id.ToString();
+				poolingRequest.Url = $"{configuration.AnalysisProvider.UrlApiJobs.Trim().TrimEnd('/')}/{data.AnalysisProviderId.ToString()}";
+				await serviceBusPoolingService.AddRequest(poolingRequest);
 			}
 			catch (Exception ex)
 			{
-				Log.Error(ex, $"Exception to get Hash from file stream => {ex.Message}");
+				Log.Error(ex, $"Exception to send message to pooling queue => {ex.Message}");
 				throw;
 			}
+
 		}
-
-		private async Task<Stream> GetStreamFromSasToken(string url)
-		{
-			try
-			{
-				using HttpClient httpCli = httpClientFactory.CreateClient();
-				var resp = await Utils.GetRetryPolicy().ExecuteAsync(async () =>
-				{
-					Log.Information($"Request file from SASToken: {url}");
-					return await httpCli.GetAsync(url);
-				});
-				resp.EnsureSuccessStatusCode();
-				var stream = await resp.Content.ReadAsStreamAsync();
-				return stream;
-			}
-			catch (Exception ex)
-			{
-				Log.Error(ex, $"Exception to get SasToken from {url} => {ex.Message}");
-				throw;
-			}
-		}		
-
-		private DocumentAnalysisDataResultContent Get_DocumentAnalysisDataResultContent(DocumentAnalysisData data)
-		{
-			DocumentAnalysisDataResultContent content = new DocumentAnalysisDataResultContent();
-			content.Court = new DocumentAnalysisDataResultCourt()
-			{
-				City = "ciudad sample",
-				Jurisdiction = "jurisdiccion sample",
-				Name = "nombre sample " + data.DocumentName,
-				Number = "numero sample",
-				CourtType = "tribunal sample"
-			};
-			content.Review = new DocumentAnalysisDataResultReview()
-			{
-				Cause = new string[] { "cause 1", "cause 2" },
-				Review = "review sample " + data.DocumentName
-			};
-			content.Proceeding = new DocumentAnalysisDataResultProceeding()
-			{
-				NIG = "NIG sample",
-				MilestonesNumber = "numero autos sample",
-				ProceedingType = "procedimiento sample",
-				ProceedingSubtype = "subprocedimiento sample",
-				Topic = "materia sample",
-				PrincipalQuoted = "1111.11"
-            };
-
-			var lista = new List<DocumentAnalysisDataResultProceedingParts>
-			{
-				new DocumentAnalysisDataResultProceedingParts()
-				{
-					Lawyers = "letrado sample",
-					Source = "naturaleza sample",
-					Name = "nombre sample " + data.DocumentName,
-					Attorney = "procurador sample",
-					PartType = "tipo parte sample",
-					AppealPartType = "tipo parte recurso sample"
-
-				},
-				new DocumentAnalysisDataResultProceedingParts()
-				{
-					Lawyers = "letrado sample 2",
-					Source = "naturaleza sample 2",
-					Name = "nombre sample 2",
-					Attorney = "procurador sample 2",
-					PartType = "tipo parte sample 2",
-					AppealPartType = "tipo parte recurso sample 2"
-
-				}
-			};
-			content.Proceeding.Parts = lista.ToArray();
-			content.Proceeding.InitialProceeding = new DocumentAnalysisDataResultProceedingInitialProceeding()
-			{
-				Court = "juzgado sample " + data.DocumentName,
-				MilestonesNumber = "numero autos"
-			};
-
-			var requerimientos = new List<DocumentAnalysisDataResultNotification>();
-			requerimientos.Add(new DocumentAnalysisDataResultNotification()
-			{
-				NotificationDate = DateTime.UtcNow.AddDays(5).ToString("O"),
-				Term = "5",
-				Notification = "requerimiento sample 1 " + data.DocumentName,
-
-			});
-			requerimientos.Add(new DocumentAnalysisDataResultNotification()
-			{
-				NotificationDate = DateTime.UtcNow.AddDays(10).ToString("O"),
-				Term = "10",
-				Notification = "requerimiento sample 2 " + data.DocumentName,
-
-			});
-
-			var recursos = new List<DocumentAnalysisDataResultAppeal>();
-			recursos.Add(new DocumentAnalysisDataResultAppeal()
-			{
-				Term = "6",
-				Appeal = "Recurso sample 1 " + data.DocumentName,
-			});
-			recursos.Add(new DocumentAnalysisDataResultAppeal()
-			{
-				Term = "20",
-				Appeal = "Recurso sample 2 " + data.DocumentName,
-			});
-
-			content.CourtDecision = new DocumentAnalysisDataCourtDecision()
-			{
-				Amount = "",
-				CommunicationDate = DateTime.UtcNow.AddDays(-100).ToString("O"),
-				CourtDecisionDate = DateTime.UtcNow.ToString("O"),
-				Milestone = "hito sample " + data.DocumentName,
-				CourtDecisionNumber = "num resolucion sample",
-				WrittenSummary = "resumen",
-				Notifications = requerimientos.ToArray(),
-				Appeal = recursos.ToArray(),
-				SitingDate = DateTime.UtcNow.ToString("O"),
-			};
-
-			return content;
-		}
-
 
 	}
 }

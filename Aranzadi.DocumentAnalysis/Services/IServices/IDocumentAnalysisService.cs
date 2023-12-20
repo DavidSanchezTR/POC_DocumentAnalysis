@@ -4,7 +4,8 @@ namespace Aranzadi.DocumentAnalysis.Services.IServices
 {
 	public interface IDocumentAnalysisService
 	{
-		Task<IEnumerable<DocumentAnalysisResponse>> GetAnalysisAsync(string tenantId, string userId, string? documentId = null);
+		Task<DocumentAnalysisResponse> GetAnalysisAsync(string tenantId, string documentId);
 
-	}
+		Task<IEnumerable<DocumentAnalysisResponse>> GetAnalysisListAsync(string tenantId, string documentIdList);
+    }
 }

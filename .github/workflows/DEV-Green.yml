@@ -1,0 +1,144 @@
+name: Dev-Green
+
+on:
+        # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+env:
+  configuration: 'Release'
+  solution_path: 'Aranzadi.DocumentAnalysis/Aranzadi.DocumentAnalysis.csproj'
+  nuget_feed_name: 'SWF_Burgos_Spain_Artifacts_feed'
+  nuget_feed_source: 'https://pkgs.dev.azure.com/TR-Legal-OnlineServices/_packaging/SWF_Burgos_Spain_Artifacts_feed/nuget/v3/index.json'
+  password_ado: ${{ secrets.PASSWORD_ADO }}
+  nuget_config: './Nuget.Config'
+
+
+jobs:
+
+  unit-test:    
+    name: Dotnet-Unit-Tests
+    uses: tr/aiid202226_SWFBurgos_DocumentAnalysis/.github/workflows/dotnet-unit-tests.yml@main    
+    secrets:
+      ADO_TKV: ${{ secrets.PASSWORD_ADO }}
+      AZURE_TKV: ${{ secrets.AZURE_CREDENTIALS_NONPROD }}
+
+ 
+  build:
+
+    strategy:
+      matrix:
+        dotnet_version: [6.x]
+        nuget_version: [5.x]
+
+    runs-on: windows-latest
+    needs: [unit-test]
+    steps:
+    - name: "☁️ Checkout Repository"
+      uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ matrix.dotnet_version }}
+
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v1
+      with:
+        nuget-version: ${{ matrix.nuget_version }}
+
+    - name: Auth Nuget TR
+      run: dotnet nuget add source ${{ env.nuget_feed_source }} --name ${{ env.nuget_feed_name }} --username 'david.sanchezfuentes@thomsonreuters.com' --password ${{ env.password_ado }} --store-password-in-clear-text --configfile ${{ env.nuget_config }}
+
+    - name: Restore Nuget Packages
+      run: dotnet restore ${{ env.solution_path }} --verbosity normal 
+
+    - name: Compile Solution
+      run: dotnet.exe publish ${{ env.solution_path }} -c Dev -f net6.0
+
+    - name: Run Dir
+      run: dir ${{ github.workspace }} -recurse
+
+    - name: "📂 Create Artifacts Build"
+      uses: actions/upload-artifact@v3
+      with:
+        name: build
+        path: Aranzadi.DocumentAnalysis/bin/Dev/net6.0/publish
+
+ 
+  DeployDEV:
+    name: Deploy DEV
+    needs: [build]
+    strategy:
+      matrix:
+        destination: [dev]
+        colour: [blue, green]
+        exclude:
+          - colour: blue
+            destination: dev  
+    
+    runs-on: BUILD-MICRO-DEV-DAS
+    environment:
+      name: DEV
+      url: https://uksouth-iflx-${{ matrix.colour }}-das-${{ matrix.destination }}-app.azurewebsites.net/
+    env:           
+      AZURE_WEBAPP_NAME: uksouth-iflx-${{ matrix.colour }}-das-${{ matrix.destination }}-app    # set this to your application's name
+      AZURE_RESOURCE_GROUP: uksouth-iflx-${{ matrix.colour }}-${{ matrix.destination }}-rg    # set this to your resource group name
+      AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root
+      SUBSCRIPTION: DCO-Legal-N    
+      artifact-package-zip-directory-path: "Upload/"
+      timeToSleep: '30'    
+
+    steps:
+    
+    - name: Clean artifact-package-directory
+      run: Remove-Item ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }} -Recurse -Force -ErrorAction SilentlyContinue
+
+    - name: Download Release Artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: build
+        path: ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}
+        
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+     
+    - name: 'Set Subscription'
+      id: setsubscription
+      run: az account set --subscription ${{ env.SUBSCRIPTION }}
+
+    - name: 'Run Get Profile AppService'
+      id: profiles
+      run: echo "::set-output name=profile::$(az webapp deployment list-publishing-profiles --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --subscription ${{ env.SUBSCRIPTION }} --xml --output tsv)"            
+
+    - name: 'Run List Dir'
+      id: listar-dir
+      run: dir
+        
+    - name: 'Run Copy Configs'
+      id: copyconfig
+      run: cp -v ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}appsettings.${{ matrix.destination }}${{ matrix.colour }}.json ${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}appsettings.json
+
+    - name: Stop Azure App Service with Azure CLI
+      id: stopappservice
+      run: az webapp stop --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
+
+    - name: 'Sleep for ${{ env.timeToSleep }} seconds'
+      run: Start-Sleep -s ${{ env.timeToSleep }}
+      shell: pwsh
+
+    - name: 'Run Azure webapp deploy action using publish profile credentials'
+      uses: azure/webapps-deploy@v2
+      with: 
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        publish-profile: ${{ steps.profiles.outputs.profile }}
+        package: '${{github.workspace}}/${{ env.artifact-package-zip-directory-path }}'
+
+    - name: 'Sleep for ${{ env.timeToSleep }} seconds'
+      run: Start-Sleep -s ${{ env.timeToSleep }}
+      shell: pwsh
+
+    - name: Start Azure App Service with Azure CLI
+      id: startappservice
+      run: az webapp start --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }}

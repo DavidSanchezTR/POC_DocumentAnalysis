@@ -1,8 +1,6 @@
 ﻿using Aranzadi.DocumentAnalysis.Data.Entities;
 using Aranzadi.DocumentAnalysis.Data.IRepository;
 using Aranzadi.DocumentAnalysis.Messaging.Model.Enums;
-using Microsoft.Azure.Amqp.Framing;
-using Microsoft.Azure.Cosmos;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System;
@@ -21,6 +19,7 @@ namespace Aranzadi.DocumentAnalysis.Data.Repository
 		{
 			dbContext = context;
 		}
+
 		#region Insert
 
 		public async Task<int> AddAnalysisDataAsync(DocumentAnalysisData data)
@@ -34,12 +33,11 @@ namespace Aranzadi.DocumentAnalysis.Data.Repository
 			}
 			catch (Exception ex)
 			{
-				Log.Error(ex, $"Error:{ex.Message}");
 				throw;
 			}
 		}
-		#endregion
 
+		#endregion Insert
 
 		#region Update
 
@@ -62,62 +60,90 @@ namespace Aranzadi.DocumentAnalysis.Data.Repository
 			}
 			catch (Exception ex)
 			{
-				Log.Error(ex, $"Error:{ex.Message}");
 				throw;
 			}
-            
-
 		}
 
-		#endregion
+		#endregion Update
 
 		#region Get
+
+		public async Task<DocumentAnalysisData?> GetAnalysisDataAsync(string documentId)
+		{
+			Log.Information($"Get analysis for documentId:{documentId}");
+			try
+			{
+				Guid guid = new Guid(documentId);
+				var analysis = await dbContext.Analysis.Where(e => e.Id == guid).FirstOrDefaultAsync();
+				return analysis;
+			}
+			catch (Exception ex)
+			{
+				throw;
+			}
+		}
 
 		public async Task<DocumentAnalysisResult?> GetAnalysisDoneAsync(string sha256)
         {
 			try
 			{
 				Log.Information($"Get analysis with hash {sha256}");
-				var analysis = await dbContext.Analysis.Where(e => e.Sha256 == sha256 && e.Status == AnalysisStatus.Done).Select(a => new DocumentAnalysisResult { Status = a.Status, DocumentId = a.Id, Analysis = a.Analysis }).FirstOrDefaultAsync();
+				var analysis = await dbContext.Analysis.Where(e => e.Sha256 == sha256 && e.Status == AnalysisStatus.Done).Select(a => new DocumentAnalysisResult { Type = a.AnalysisType ?? AnalysisTypes.Undefined, Status = a.Status, DocumentId = a.Id, Analysis = a.Analysis }).FirstOrDefaultAsync();
 				return analysis;
 			}
 			catch (Exception ex)
 			{
-				Log.Error(ex, $"Error:{ex.Message}");
 				throw;
-			}
-            
+			}			
 		}
 
-		public async Task<IEnumerable<DocumentAnalysisResult>> GetAnalysisAsync(string tenantId, string userId, string? documentId = null)
+		public async Task<DocumentAnalysisResult> GetAnalysisAsync(string tenantId, string documentId)
 		{
-            Log.Information($"Get analysis for tenantId: {tenantId}, userId: {userId}, documentId: {documentId}");
-            List<DocumentAnalysisResult> items = new List<DocumentAnalysisResult>();
-			try
+            Log.Information($"Get analysis for tenantId: {tenantId}, documentId: {documentId}");
+            DocumentAnalysisResult item = new DocumentAnalysisResult();
+            try
 			{
-				if (string.IsNullOrWhiteSpace(documentId))
+				if (!string.IsNullOrEmpty(documentId))
 				{
-					var query = dbContext.Analysis.Where(e => e.TenantId == tenantId && e.UserId == userId).Select(a => new DocumentAnalysisResult { Status = a.Status, DocumentId = a.Id, Analysis = a.Analysis });
-					items = await query.ToListAsync();
-				}
-				else
-				{
-					Guid guid = new Guid(documentId);
-					var analysis = await dbContext.Analysis.Where(e => e.TenantId == tenantId && e.UserId == userId && e.Id == guid).Select(a => new DocumentAnalysisResult { Status = a.Status, DocumentId = a.Id, Analysis = a.Analysis }).FirstOrDefaultAsync();
+                    Guid guid = new Guid(documentId);
+
+					var analysis = await dbContext.Analysis.Where(e => e.TenantId == tenantId && e.Id == guid).Select(a => new DocumentAnalysisResult { Type = a.AnalysisType ?? AnalysisTypes.Undefined, Status = a.Status, DocumentId = a.Id, Analysis = a.Analysis }).FirstOrDefaultAsync();
 					if (analysis != null)
-						items.Add(analysis);
+                        item = analysis;
+                }
+			}
+			catch (Exception ex)
+			{
+				throw;
+			}
+			return item;
+
+		}
+
+		public async Task<IEnumerable<DocumentAnalysisResult>> GetAnalysisListAsync(string tenantId, string documentIdList)
+		{
+            Log.Information($"Get analysis for tenantId: {tenantId}, documentIdList: {documentIdList}");
+            List<DocumentAnalysisResult> analysis = new List<DocumentAnalysisResult>();
+
+            try
+			{
+                if (!string.IsNullOrEmpty(documentIdList))
+                {
+					List<Guid> listaDocsGuid = documentIdList.Split(';').Select(x => new Guid(x)).ToList();
+                    analysis = await dbContext.Analysis
+						.Where(e => e.TenantId == tenantId && listaDocsGuid.Contains(e.Id) && !e.Status.Equals(AnalysisStatus.Pending))
+						.Select(a => new DocumentAnalysisResult { Type = a.AnalysisType ?? AnalysisTypes.Undefined, Status = a.Status, DocumentId = a.Id, Analysis = a.Analysis }).ToListAsync();
 				}
 			}
 			catch (Exception ex)
 			{
-				Log.Error(ex, $"Error:{ex.Message}");
 				throw;
 			}
-			return items;
-
+			
+			return analysis;
 		}
 
-		#endregion
+		#endregion Get
 
 	}
 }

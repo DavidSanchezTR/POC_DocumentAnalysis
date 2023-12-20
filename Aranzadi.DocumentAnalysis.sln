@@ -11,11 +11,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Aranzadi.DocumentAnalysis.T
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Aranzadi.DocumentAnalysis.Data.Test", "Aranzadi.DocumentAnalysis.Data.Test\Aranzadi.DocumentAnalysis.Data.Test.csproj", "{AE6AC64E-957F-44F5-A40D-51F647802AE8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleClientApp", "SampleClientApp\SampleClientApp.csproj", "{16C0ED1F-AF7B-494E-B572-5E70C743DD91}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Aranzadi.DocumentAnalysis.Integration.Test", "Aranzadi.DocumentAnalysis.Integration.Test\Aranzadi.DocumentAnalysis.Integration.Test.csproj", "{461AB61D-3BF8-4973-B186-31EB4DA61283}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aranzadi.DocumentAnalysis.System.Test", "Aranzadi.DocumentAnalysis.System.Test\Aranzadi.DocumentAnalysis.System.Test.csproj", "{A728615F-3558-46FC-8845-80ED141722C2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Aranzadi.DocumentAnalysis.System.Test", "Aranzadi.DocumentAnalysis.System.Test\Aranzadi.DocumentAnalysis.System.Test.csproj", "{A728615F-3558-46FC-8845-80ED141722C2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Aranzadi.HttpPooling", "Aranzadi.HttpPooling\Aranzadi.HttpPooling.csproj", "{F722E992-17A6-4BBF-AB90-0FF6F4DD3539}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Aranzadi.HttpPooling.Test", "Aranzadi.HttpPooling.Test\Aranzadi.HttpPooling.Test.csproj", "{5783A04B-59A4-4581-9FE6-E67318C20D3B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,10 +41,6 @@ Global
 		{AE6AC64E-957F-44F5-A40D-51F647802AE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AE6AC64E-957F-44F5-A40D-51F647802AE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AE6AC64E-957F-44F5-A40D-51F647802AE8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{16C0ED1F-AF7B-494E-B572-5E70C743DD91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{16C0ED1F-AF7B-494E-B572-5E70C743DD91}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{16C0ED1F-AF7B-494E-B572-5E70C743DD91}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{16C0ED1F-AF7B-494E-B572-5E70C743DD91}.Release|Any CPU.Build.0 = Release|Any CPU
 		{461AB61D-3BF8-4973-B186-31EB4DA61283}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{461AB61D-3BF8-4973-B186-31EB4DA61283}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{461AB61D-3BF8-4973-B186-31EB4DA61283}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -51,6 +49,14 @@ Global
 		{A728615F-3558-46FC-8845-80ED141722C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A728615F-3558-46FC-8845-80ED141722C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A728615F-3558-46FC-8845-80ED141722C2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F722E992-17A6-4BBF-AB90-0FF6F4DD3539}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F722E992-17A6-4BBF-AB90-0FF6F4DD3539}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F722E992-17A6-4BBF-AB90-0FF6F4DD3539}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F722E992-17A6-4BBF-AB90-0FF6F4DD3539}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5783A04B-59A4-4581-9FE6-E67318C20D3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5783A04B-59A4-4581-9FE6-E67318C20D3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5783A04B-59A4-4581-9FE6-E67318C20D3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5783A04B-59A4-4581-9FE6-E67318C20D3B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

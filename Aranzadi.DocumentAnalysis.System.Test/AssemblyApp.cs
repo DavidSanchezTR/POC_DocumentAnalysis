@@ -11,10 +11,13 @@ namespace Aranzadi.DocumentAnalysis.System.Test
 	{
 		public static WebApplicationBuilder builder = null;
 		public static DocumentAnalysisOptions? documentAnalysisOptions = null;
+		public static WebApplication? app = null;
 
+		public static string TenantId = "";
+		public static string UserId = "";
 		public static string sasToken = "";
 		public static string urlBaseDocumentAnalysisService = "";
 			
-		public static int waitingSeconds = 10;
+		public static int waitingSeconds = 180;
 	}
 }

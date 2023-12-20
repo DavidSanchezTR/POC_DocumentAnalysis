@@ -19,5 +19,5 @@ namespace Aranzadi.DocumentAnalysis.Util
 				});
 		}
 
-	}
+    }
 }

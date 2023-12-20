@@ -1,6 +1,8 @@
 ﻿using Aranzadi.DocumentAnalysis.Data.IRepository;
 using Aranzadi.DocumentAnalysis.Messaging.Model.Enums;
 using Aranzadi.DocumentAnalysis.Messaging.Model.Response;
+using Aranzadi.DocumentAnalysis.Models.Anaconda;
+using Aranzadi.DocumentAnalysis.Models.Anaconda.Providers;
 using Aranzadi.DocumentAnalysis.Services.IServices;
 using Newtonsoft.Json;
 
@@ -16,36 +18,73 @@ namespace Aranzadi.DocumentAnalysis.Services
 			_documentAnalysisRepository = documentAnalysisRepository;
 		}
 
-		public async Task<IEnumerable<DocumentAnalysisResponse>> GetAnalysisAsync(string tenantId, string userId, string? documentId = null)
-		{
-			if (string.IsNullOrWhiteSpace(tenantId) || string.IsNullOrWhiteSpace(userId))
-			{
-				throw new ArgumentNullException();
-			}
+        public async Task<DocumentAnalysisResponse> GetAnalysisAsync(string tenantId, string documentId)
+        {
+            if (string.IsNullOrWhiteSpace(tenantId) || string.IsNullOrWhiteSpace(documentId))
+            {
+                throw new ArgumentNullException();
+            }
 
-			var listaAnalisis = await _documentAnalysisRepository.GetAnalysisAsync(tenantId, userId, documentId);
+            Data.Entities.DocumentAnalysisResult analisis = await _documentAnalysisRepository.GetAnalysisAsync(tenantId, documentId);
 
-			var listDocumentAnalysisResponse = new List<DocumentAnalysisResponse>();
-			foreach (var singleAnalisis in listaAnalisis)
-			{
-				var documentAnalysisResponse = new DocumentAnalysisResponse();
-				documentAnalysisResponse.DocumentUniqueRefences = singleAnalisis.DocumentId.ToString();
-				documentAnalysisResponse.Status = singleAnalisis?.Status ?? AnalysisStatus.Unknown;
+            DocumentAnalysisResponse documentAnalysisResponse = new DocumentAnalysisResponse()
+            {
+                DocumentUniqueRefences = analisis.DocumentId.ToString(),
+                Status = analisis?.Status ?? AnalysisStatus.Unknown
+            };
 
-				if (string.IsNullOrWhiteSpace(singleAnalisis?.Analysis))
-				{
-					documentAnalysisResponse.Result = new DocumentAnalysisDataResultContent();
+            if (analisis?.Type == AnalysisTypes.Demand)
+            {
+                documentAnalysisResponse.ResultAppeal = new AppealsNotification(new AppealsProvider(string.IsNullOrWhiteSpace(analisis?.Analysis)
+                    ? new DocumentAnalysisAnaconda()
+                    : JsonConvert.DeserializeObject<DocumentAnalysisAnaconda>(analisis.Analysis)));
+            }
+            else
+            {
+                documentAnalysisResponse.Result = new JudicialNotification(new JudicialNotificationProvider(string.IsNullOrWhiteSpace(analisis?.Analysis)
+                    ? new DocumentAnalysisAnaconda()
+                    : JsonConvert.DeserializeObject<DocumentAnalysisAnaconda>(analisis.Analysis)));
+            }
+
+            return documentAnalysisResponse;
+        }
+
+        public async Task<IEnumerable<DocumentAnalysisResponse>> GetAnalysisListAsync(string tenantId, string documentIdList)
+        {
+            if (string.IsNullOrWhiteSpace(tenantId))
+            {
+                throw new ArgumentNullException();
+            }
+
+            IEnumerable<Data.Entities.DocumentAnalysisResult> listaAnalisis =
+                await _documentAnalysisRepository.GetAnalysisListAsync(tenantId, documentIdList);
+
+            List<DocumentAnalysisResponse> listDocumentAnalysisResponse = new List<DocumentAnalysisResponse>();
+            foreach (Data.Entities.DocumentAnalysisResult singleAnalisis in listaAnalisis)
+            {
+                DocumentAnalysisResponse documentAnalysisResponse = new DocumentAnalysisResponse()
+                {   
+                    DocumentUniqueRefences = singleAnalisis.DocumentId.ToString(),
+                    Status = singleAnalisis?.Status ?? AnalysisStatus.Unknown,
+                };
+
+                if (singleAnalisis?.Type == AnalysisTypes.Demand)
+                {
+                    documentAnalysisResponse.ResultAppeal = new AppealsNotification(new AppealsProvider(string.IsNullOrWhiteSpace(singleAnalisis?.Analysis)
+                        ? new DocumentAnalysisAnaconda()
+                        : JsonConvert.DeserializeObject<DocumentAnalysisAnaconda>(singleAnalisis.Analysis)));
 				}
-				else
-				{
-					documentAnalysisResponse.Result = JsonConvert.DeserializeObject<DocumentAnalysisDataResultContent>(singleAnalisis.Analysis);
+                else
+                {
+                    documentAnalysisResponse.Result = new JudicialNotification(new JudicialNotificationProvider(string.IsNullOrWhiteSpace(singleAnalisis?.Analysis)
+                        ? new DocumentAnalysisAnaconda()
+                        : JsonConvert.DeserializeObject<DocumentAnalysisAnaconda>(singleAnalisis.Analysis)));
 				}
-				listDocumentAnalysisResponse.Add(documentAnalysisResponse);
-			}
 
-			return listDocumentAnalysisResponse;
+                listDocumentAnalysisResponse.Add(documentAnalysisResponse);
+            }
 
-		}
-	}
-
+            return listDocumentAnalysisResponse;
+        }
+    }
 }

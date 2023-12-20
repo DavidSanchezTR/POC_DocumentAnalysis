@@ -6,5 +6,6 @@ namespace Aranzadi.DocumentAnalysis.Services.IServices
 	public interface IAnalysisProviderService
 	{
 		Task<(HttpResponseMessage, AnalysisJobResponse?)> SendAnalysisJob(DocumentAnalysisData data);
+		Task<(HttpResponseMessage, string)> GetAnalysisResult(string data, string clientDocumentId);
 	}
 }
