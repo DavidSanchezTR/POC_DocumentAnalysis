@@ -364,3 +364,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /SampleExecutor/test.txt
 SampleClientApp/log-file.txt
+/Aranzadi.DocumentAnalysis/Properties/ServiceDependencies
