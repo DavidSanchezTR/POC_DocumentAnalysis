@@ -15,6 +15,11 @@ Please check the correct option
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
 - [ ] This change requires a documentation update
 
+## Modules or Resources affected
+
+@name_of_module or
+@name_of_resource
+
 ## Tests Performed
 
 - [ ] Test Required
